@@ -13,6 +13,10 @@ locals {
 }
 
 locals {
+  target_subscriptions = distinct([var.subscription_id_connectivity, var.subscription_id_identity, var.subscription_id_management])
+}
+
+locals {
   environments = {
     (local.plan_key)  = local.resource_names.version_control_system_environment_plan
     (local.apply_key) = local.resource_names.version_control_system_environment_apply

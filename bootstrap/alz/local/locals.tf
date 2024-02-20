@@ -9,6 +9,10 @@ locals {
 }
 
 locals {
+  target_subscriptions = distinct([var.subscription_id_connectivity, var.subscription_id_identity, var.subscription_id_management])
+}
+
+locals {
   managed_identities = {
     (local.plan_key)  = local.resource_names.user_assigned_managed_identity_plan
     (local.apply_key) = local.resource_names.user_assigned_managed_identity_apply

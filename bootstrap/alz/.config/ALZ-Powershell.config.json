@@ -63,11 +63,5 @@
             "display_order": 6,
             "description": "The identifier of the Connectivity Subscription."
         }
-    },
-    "bootstrap": {
-        "variablesFileName": "variables.tf"
-    },
-    "starter": {
-        "variablesFileName": "variables.tf"
     }
 }

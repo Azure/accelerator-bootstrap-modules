@@ -1,0 +1,129 @@
+variable "built_in_configurartion_file_name" {
+  description = "The name of the built-in configuration file"
+  type        = string
+  default     = "config.yaml"
+}
+
+variable "module_folder_path" {
+  description = "The folder for the starter modules"
+  type        = string
+}
+
+variable "module_folder_path_relative" {
+  description = "Whether the module folder path is relative to the bootstrap module"
+  type        = bool
+  default     = true
+}
+
+variable "pipeline_folder_path" {
+  description = "The folder for the pipelines"
+  type        = string
+}
+
+variable "pipeline_folder_path_relative" {
+  description = "Whether the pipeline folder path is relative to the bootstrap module"
+  type        = bool
+  default     = true
+}
+
+variable "pipeline_files" {
+  description = "The pipeline files to upload to the repository"
+  type = map(object({
+    file_path   = string
+    target_path = string
+  }))
+}
+
+variable "pipeline_template_files" {
+  description = "The pipeline template files to upload to the repository"
+  type = map(object({
+    file_path   = string
+    target_path = string
+    environment_user_assigned_managed_identity_mappings = list(object({
+      environment_key                    = string
+      user_assigned_managed_identity_key = string
+    }))
+  }))
+}
+
+variable "resource_names" {
+  type        = map(string)
+  description = "Overrides for resource names"
+}
+
+variable "runner_container_image" {
+  description = "The container image to use for GitHub Runners"
+  type        = string
+}
+
+variable "runner_container_cpu" {
+  description = "The container cpu default"
+  type        = number
+  default     = 2
+}
+
+variable "runner_container_memory" {
+  description = "The container memory default"
+  type        = number
+  default     = 4
+}
+
+variable "runner_container_cpu_max" {
+  description = "The container cpu default"
+  type        = number
+  default     = 2
+}
+
+variable "runner_container_memory_max" {
+  description = "The container memory default"
+  type        = number
+  default     = 4
+}
+
+variable "runner_name_environment_variable" {
+  description = "The runner name environment variable supplied to the container"
+  type        = string
+  default     = "GH_RUNNER_NAME"
+}
+
+variable "runner_group_environment_variable" {
+  description = "The runner group environment variable supplied to the container"
+  type        = string
+  default     = "GH_RUNNER_GROUP"
+}
+
+variable "runner_organization_environment_variable" {
+  description = "The runner url environment variable supplied to the container"
+  type        = string
+  default     = "GH_RUNNER_URL"
+}
+
+variable "runner_token_environment_variable" {
+  description = "The runner token environment variable supplied to the container"
+  type        = string
+  default     = "GH_RUNNER_TOKEN"
+}
+
+variable "default_runner_group_name" {
+  description = "The default runner group name for unlicenses orgs"
+  type        = string
+  default     = "Default"
+}
+
+variable "virtual_network_address_space" {
+  type        = string
+  description = "The address space for the virtual network"
+  default     = "10.0.0.0/24"
+}
+
+variable "virtual_network_subnet_address_prefix_container_instances" {
+  type        = string
+  description = "Address prefix for the virtual network subnet"
+  default     = "10.0.0.0/26"
+}
+
+variable "virtual_network_subnet_address_prefix_storage" {
+  type        = string
+  description = "Address prefix for the virtual network subnet"
+  default     = "10.0.0.64/26"
+}

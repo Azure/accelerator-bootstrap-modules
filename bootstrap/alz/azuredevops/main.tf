@@ -37,8 +37,8 @@ module "azure" {
   agent_pool_environment_variable                           = var.agent_pool_environment_variable
   agent_name_environment_variable                           = var.agent_name_environment_variable
   agent_token_environment_variable                          = var.agent_token_environment_variable
-  target_subscriptions                                      = var.target_subscriptions
-  root_parent_management_group_display_name                 = var.root_parent_management_group_display_name
+  target_subscriptions                                      = local.target_subscriptions
+  root_parent_management_group_id                           = var.root_parent_management_group_id
   virtual_network_name                                      = local.resource_names.virtual_network
   virtual_network_subnet_name_container_instances           = local.resource_names.subnet_container_instances
   virtual_network_subnet_name_storage                       = local.resource_names.subnet_storage

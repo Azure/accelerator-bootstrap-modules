@@ -25,8 +25,8 @@ module "azure" {
   storage_account_name                      = local.resource_names.storage_account
   storage_container_name                    = local.resource_names.storage_container
   azure_location                            = var.bootstrap_location
-  target_subscriptions                      = var.target_subscriptions
-  root_parent_management_group_display_name = var.root_parent_management_group_display_name
+  target_subscriptions                      = local.target_subscriptions
+  root_parent_management_group_id           = var.root_parent_management_group_id
 }
 
 resource "local_file" "alz" {
