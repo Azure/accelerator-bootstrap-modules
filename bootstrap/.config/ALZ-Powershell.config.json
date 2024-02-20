@@ -106,17 +106,6 @@
             "Description": "A number e.g. '1234'",
             "Valid": "^(0|[1-9][0-9]*)$"
         },
-        "repo_visibility": {
-            "Type": "AllowedValues",
-            "Description": "A valid repository visibility e.g. 'private'",
-            "AllowedValues": {
-                "Display": true,
-                "Values": [
-                    "public",
-                    "private"
-                ]
-            }
-        },
         "cidr_range": {
             "Type": "Valid",
             "Description": "A valid CIDR range e.g '10.0.0.0/16'",

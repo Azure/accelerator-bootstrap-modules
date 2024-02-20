@@ -1,14 +1,48 @@
-# Project
+# Azure Landing Zones Accelerator Bootstrap Modules
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+This repository contains the Terraform modules that are used to deploy the Azure Landing Zones (ALZ) bootstrap environment.
 
-As the maintainer of this project, please make a few updates:
+## Bootstrap Specific Configurstion Schema
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+```json
+    "inputs": {
+        "iac_type": {
+            "type": "string", # The data type of the input
+            "source": "powershell", # The source of the input. Can be `powershell` or `input`. If PowerShell is chosen, then ALZ PowerShell module will need to explicity set this value based on its input logic
+            "maps_to": [ "bootstrap" ] # The modules the input maps to. The values can be `bootstrap` and / or `starter`. If the input is missing from the relvant module, then it will be ignored.
+        },
+        "root_parent_management_group_id": {
+            "type": "string",
+            "default": "Tenant Root Group", # For source `input`, a default empty value can be specified.
+            "required": false, # For source `input`. Required `false` can be used in combination with a default value to make the input optional.
+            "source": "input",
+            "maps_to": [ "bootstrap", "starter" ],
+            "display_order": 2, # The order in which the input will be displayed in the UI
+            "description": "The identifier of the Tenant Root Management Group, if left blank will use the tenant id (Tenant Root Group)." # The description shown in the UI. This will be concatenated with the description of the input validation.
+        },
+        "subscription_id_connectivity": {
+            "type": "string",
+            "required": true, # For source `input`, required `true` can be used to make the input mandatory. This meant a non-empty value must be provided.
+            "source": "input",
+            "maps_to": [ "bootstrap", "starter" ],
+            "validation": "azure_subscription_id", # Validation uses the validation type specified in the root .config file.
+            "display_order": 3,
+            "description": "The identifier of the Connectivity Subscription."
+        },
+        "configuration_file_path" :{
+            "type": "string",
+            "source": "input",
+            "default": "", # For source `input`, a default empty value can be specified.
+            "required": false,
+            "maps_to": [ "bootstrap", "starter" ],
+            "display_map_filter" : "starter", # This setting is used to filter out this input if it is not present in the specified module. For example, if the `configuration_file_path` is not present in the `starter` module, then it will not be displayed in the UI and no attempt will be made to map it to the `starter` module. The default value will be set for the `bootstrap` module if it is present there.
+            "validation": "configuration_file_path",
+            "display_order": 6,
+            "description": "The identifier of the Connectivity Subscription."
+        }
+    }
+
+```
 
 ## Contributing
 

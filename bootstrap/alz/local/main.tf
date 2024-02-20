@@ -1,5 +1,5 @@
 module "resource_names" {
-  source           = "./../modules/resource_names"
+  source           = "../../modules/resource_names"
   azure_location   = var.bootstrap_location
   environment_name = var.environment_name
   service_name     = var.service_name
@@ -8,7 +8,7 @@ module "resource_names" {
 }
 
 module "files" {
-  source                            = "./../modules/files"
+  source                            = "../../modules/files"
   starter_module_folder_path        = local.starter_module_folder_path
   additional_files                  = var.additional_files
   configuration_file_path           = var.configuration_file_path
@@ -16,7 +16,7 @@ module "files" {
 }
 
 module "azure" {
-  source                                    = "./../modules/azure"
+  source                                    = "../../modules/azure"
   count                                     = var.create_bootstrap_resources_in_azure ? 1 : 0
   user_assigned_managed_identities          = local.managed_identities
   federated_credentials                     = local.federated_credentials

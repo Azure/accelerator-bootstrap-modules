@@ -1,0 +1,73 @@
+{
+    "inputs": {
+        "iac_type": {
+            "type": "string",
+            "source": "powershell",
+            "maps_to": [ "bootstrap" ]
+        },
+        "starter_module":
+        {
+            "type": "string",
+            "default": "basic",
+            "required": true,
+            "source": "input",
+            "maps_to": [ "bootstrap" ],
+            "display_iac_filter" : [ "terraform" ],
+            "display_order": 1,
+            "description": "The starter module to use for the deployment. (e.g. 'basic')"
+        },
+        "root_parent_management_group_id": {
+            "type": "string",
+            "default": "Tenant Root Group",
+            "required": false,
+            "source": "input",
+            "maps_to": [ "bootstrap", "starter" ],
+            "display_order": 2,
+            "description": "The identifier of the Tenant Root Management Group, if left blank will use the tenant id (Tenant Root Group)."
+        },
+        "subscription_id_connectivity": {
+            "type": "string",
+            "required": true,
+            "source": "input",
+            "maps_to": [ "bootstrap", "starter" ],
+            "validation": "azure_subscription_id",
+            "display_order": 3,
+            "description": "The identifier of the Connectivity Subscription."
+        },
+        "subscription_id_identity" : {
+            "type": "string",
+            "required": true,
+            "source": "input",
+            "maps_to": [ "bootstrap", "starter" ],
+            "validation": "azure_subscription_id",
+            "display_order": 4,
+            "description": "The identifier of the Connectivity Subscription."
+        },
+        "subscription_id_management" : {
+            "type": "string",
+            "required": true,
+            "source": "input",
+            "maps_to": [ "bootstrap", "starter" ],
+            "validation": "azure_subscription_id",
+            "display_order": 5,
+            "description": "The identifier of the Management Subscription."
+        },
+        "configuration_file_path" :{
+            "type": "string",
+            "default": "",
+            "required": false,
+            "source": "input",
+            "maps_to": [ "bootstrap", "starter" ],
+            "display_map_filter" : [ "starter" ],
+            "validation": "configuration_file_path",
+            "display_order": 6,
+            "description": "The identifier of the Connectivity Subscription."
+        }
+    },
+    "bootstrap": {
+        "variablesFileName": "variables.tf"
+    },
+    "starter": {
+        "variablesFileName": "variables.tf"
+    }
+}
