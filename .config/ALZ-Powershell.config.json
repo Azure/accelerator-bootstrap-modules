@@ -1,25 +1,45 @@
 {
     "bootstrap_modules": {
-        "azuredevops": {
+        "alz_azuredevops": {
             "location": "alz/azuredevops",
             "description": "Azure Landing Zones with Azure DevOps",
             "input_variable_files": [ "variables.input.tf" ],
             "interface_variable_files": [ "variables.interface.tf" ],
-            "interface_config_file": "alz/.config/ALZ-Powershell.config.json"
+            "interface_config_file": "alz/.config/ALZ-Powershell.config.json",
+            "aliases": [ "azuredevops" ],
+            "starter_modules": "alz"
         },
-        "github": {
+        "alz_github": {
             "location": "alz/github",
             "description": "Azure Landing Zones with GitHub",
             "input_variable_files": [ "variables.input.tf" ],
             "interface_variable_files": [ "variables.interface.tf" ],
-            "interface_config_file": "alz/.config/ALZ-Powershell.config.json"
+            "interface_config_file": "alz/.config/ALZ-Powershell.config.json",
+            "aliases": [ "github" ],
+            "starter_modules": "alz"
         },
-        "local": {
+        "alz_local": {
             "location": "alz/local",
             "description": "Azure Landing Zones local file system",
             "input_variable_files": [ "variables.input.tf" ],
             "interface_variable_files": [ "variables.interface.tf" ],
-            "interface_config_file": "alz/.config/ALZ-Powershell.config.json"
+            "interface_config_file": "alz/.config/ALZ-Powershell.config.json",
+            "aliases": [ "local" ],
+            "starter_modules": "alz"
+        }
+    },
+    "starter_modules": {
+        "alz": {
+            "terraform": {
+                "url": "https://github.com/Azure/alz-terraform-accelerator",
+                "module_path": "templates",
+                "pipeline_folder": "ci_cd"
+            },
+            "bicep": {
+                "url": "https://github.com/Azure/ALZ-Bicep",
+                "module_path": ".",
+                "pipeline_folder": "."
+            }
         }
     },
     "validators": {
