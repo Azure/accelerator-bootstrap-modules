@@ -17,11 +17,6 @@ variable "built_in_configurartion_file_name" {
   default     = "config.yaml"
 }
 
-variable "module_folder_path" {
-  description = "The folder for the starter modules"
-  type        = string
-}
-
 variable "module_folder_path_relative" {
   description = "Whether the module folder path is relative to the bootstrap module"
   type        = bool

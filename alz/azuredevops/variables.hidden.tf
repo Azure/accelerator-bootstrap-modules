@@ -1,7 +1,3 @@
-
-
-
-
 variable "additional_files" {
   description = "Additional files to upload to the repository. This must be specified as a comma-separated list of absolute file paths (e.g. c:\\config\\config.yaml or /home/user/config/config.yaml)"
   type        = list(string)
@@ -37,28 +33,16 @@ variable "agent_container_memory_max" {
   default     = 4
 }
 
-
-
 variable "built_in_configurartion_file_name" {
   description = "The name of the built-in configuration file"
   type        = string
   default     = "config.yaml"
 }
 
-variable "module_folder_path" {
-  description = "The folder for the starter modules"
-  type        = string
-}
-
 variable "module_folder_path_relative" {
   description = "Whether the module folder path is relative to the bootstrap module"
   type        = bool
   default     = true
-}
-
-variable "pipeline_folder_path" {
-  description = "The folder for the pipelines"
-  type        = string
 }
 
 variable "pipeline_folder_path_relative" {

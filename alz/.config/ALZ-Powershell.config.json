@@ -5,6 +5,16 @@
             "source": "powershell",
             "maps_to": [ "bootstrap" ]
         },
+        "module_folder_path" :{
+            "type": "string",
+            "source": "powershell",
+            "maps_to": [ "bootstrap" ]
+        },
+        "pipeline_folder_path" :{
+            "type": "string",
+            "source": "powershell",
+            "maps_to": [ "bootstrap" ]
+        },
         "starter_module":
         {
             "type": "string",
@@ -63,5 +73,6 @@
             "display_order": 6,
             "description": "The identifier of the Connectivity Subscription."
         }
+
     }
 }
