@@ -1,10 +1,5 @@
 variable "iac_type" {
-  description = "The type of infrastructure as code to use for the deployment. (e.g. 'terraform' or `bicep)"
-  type        = string
-}
-
-variable "starter_module" {
-  description = "The starter module to use for the deployment. (e.g. 'basic')"
+  description = "The type of infrastructure as code to use for the deployment. (e.g. 'terraform' or 'bicep')"
   type        = string
 }
 

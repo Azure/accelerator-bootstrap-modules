@@ -3,11 +3,6 @@ variable "iac_type" {
   type        = string
 }
 
-variable "starter_module" {
-  description = "The starter module to use for the deployment. (e.g. 'basic')"
-  type        = string
-}
-
 variable "module_folder_path" {
   description = "The folder for the starter modules"
   type        = string

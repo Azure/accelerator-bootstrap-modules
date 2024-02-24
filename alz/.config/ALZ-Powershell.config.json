@@ -15,17 +15,6 @@
             "source": "powershell",
             "maps_to": [ "bootstrap" ]
         },
-        "starter_module":
-        {
-            "type": "string",
-            "default": "basic",
-            "required": true,
-            "source": "input",
-            "maps_to": [ "bootstrap" ],
-            "display_iac_filter" : [ "terraform" ],
-            "display_order": 1,
-            "description": "The starter module to use for the deployment. (e.g. 'basic')"
-        },
         "root_parent_management_group_id": {
             "type": "string",
             "default": "Tenant Root Group",
