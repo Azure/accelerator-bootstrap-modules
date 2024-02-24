@@ -18,7 +18,7 @@
         "root_parent_management_group_id": {
             "type": "string",
             "default": "Tenant Root Group",
-            "required": false,
+            "required": true,
             "source": "input",
             "maps_to": [ "bootstrap", "starter" ],
             "display_order": 2,
