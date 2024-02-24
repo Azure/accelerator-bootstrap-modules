@@ -67,9 +67,3 @@ variable "apply_approvers" {
   type        = list(string)
   default     = []
 }
-
-variable "additional_files" {
-  description = "Additional files to upload to the repository. This must be specified as a comma-separated list of absolute file paths (e.g. c:\\config\\config.yaml or /home/user/config/config.yaml)|hidden"
-  type        = list(string)
-  default     = []
-}

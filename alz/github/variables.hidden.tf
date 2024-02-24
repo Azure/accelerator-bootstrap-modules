@@ -117,3 +117,9 @@ variable "virtual_network_subnet_address_prefix_storage" {
   description = "Address prefix for the virtual network subnet"
   default     = "10.0.0.64/26"
 }
+
+variable "additional_files" {
+  description = "Additional files to upload to the repository. This must be specified as a comma-separated list of absolute file paths (e.g. c:\\config\\config.yaml or /home/user/config/config.yaml)"
+  type        = list(string)
+  default     = []
+}
