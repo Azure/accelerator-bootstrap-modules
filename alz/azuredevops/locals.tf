@@ -147,6 +147,6 @@ locals {
 }
 
 locals {
-  starter_module_folder_path = var.module_folder_path_relative ? ("${path.module}/${var.module_folder_path}/${var.starter_module}") : "${var.module_folder_path}/${var.starter_module}"
+  starter_module_folder_path = var.module_folder_path_relative ? ("${path.module}/${var.module_folder_path}") : var.module_folder_path
   pipeline_folder_path       = var.pipeline_folder_path_relative ? ("${path.module}/${var.pipeline_folder_path}") : var.pipeline_folder_path
 }
