@@ -22,7 +22,7 @@
             "source": "input",
             "maps_to": [ "bootstrap", "starter" ],
             "display_order": 2,
-            "description": "The identifier of the Tenant Root Management Group, if left blank will use the tenant id (Tenant Root Group)."
+            "description": "The identifier of the parent management group for your hierarchy, if left blank will use the tenant id (Tenant Root Group)."
         },
         "subscription_id_connectivity": {
             "type": "string",
