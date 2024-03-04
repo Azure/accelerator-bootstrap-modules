@@ -50,6 +50,13 @@ variable "use_self_hosted_runners" {
   default     = true
 }
 
+variable "github_runners_personal_access_token" {
+  description = "Personal access token for GitHub self-hosted runners (the token requires the 'repo' scope and should not expire). Only required if 'use_self_hosted_runners' is 'true'|11"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
 variable "use_private_networking" {
   description = "Controls whether to use private networking for the runner to storage account communication|11"
   type        = bool

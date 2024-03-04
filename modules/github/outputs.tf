@@ -22,11 +22,6 @@ output "organization_plan" {
   value = data.github_organization.alz.plan
 }
 
-output "runner_registration_token" {
-  sensitive = true
-  value     = data.github_organization.alz.plan == local.enterprise_plan ? data.github_actions_organization_registration_token.alz.token : data.github_actions_registration_token.alz.token
-}
-
 output "repository_names" {
   value = {
     module    = github_repository.alz.name

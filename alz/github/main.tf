@@ -34,7 +34,7 @@ module "azure" {
   agent_container_instances                                 = local.runner_container_instances
   agent_container_instance_image                            = var.runner_container_image
   agent_organization_url                                    = "${module.github.organization_url}/${module.github.repository_names.module}"
-  agent_token                                               = module.github.runner_registration_token
+  agent_token                                               = var.github_runners_personal_access_token
   agent_organization_environment_variable                   = var.runner_organization_environment_variable
   agent_pool_environment_variable                           = var.runner_group_environment_variable
   agent_name_environment_variable                           = var.runner_name_environment_variable
