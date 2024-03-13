@@ -192,7 +192,7 @@ jobs:
             $retryCount++
             try {
               Write-Host "Running the ALZ Module"
-              Deploy-Accelerator -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "." -autoApprove -ErrorAction Stop
+              Deploy-Accelerator -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "." -autoApprove -ErrorAction Stop -Verbose
               if ($LastExitCode -eq 0) {
                 $success = $true
               } else {
