@@ -2,11 +2,179 @@
 
 This repository contains the Terraform modules that are used to deploy the Azure Landing Zones (ALZ) bootstrap environment.
 
-## Bootstrap Specific Configurstion Schema
+## Bootstrap Configuraiton Schema
+
+The bootstrap configuration json file is used to define the locations and associated starter module for the bootstrap.
+
+Schema:
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://accelerator.ms/bootstrap.schema.json",
+  "title": "Bootstrap Configuration",
+  "description": "Configuration definition for the Azure Landing Zones Accelerator Bootstrap. This file is used to define the locations and associated starter module for the bootstrap.",
+  "type": "object",
+  "properties": {
+    "bootstrap_modules": {"$ref": "#/definitions/mapBootstrap"},
+    "starter_modules": {"$ref": "#/definitions/mapStarter"},
+    "validators": {"$ref": "#/definitions/mapValidator"}
+  },
+  "definitions": {
+    "mapBootstrap": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "input_variable_files": {
+            "type": "array",
+            "items": [
+              {
+                "type": "string"
+              }
+            ],
+          },
+          "interface_variable_files": {
+            "type": "array",
+            "items": [
+              {
+                "type": "string"
+              }
+            ],
+          },
+          "interface_config_file": {
+            "type": "string"
+          },
+          "aliases": {
+            "type": "array",
+            "items": [
+              {
+                "type": "string"
+              }
+            ],
+          },
+          "starter_modules": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "location",
+          "description",
+          "input_variable_files",
+          "interface_variable_files",
+          "interface_config_file",
+          "aliases",
+          "starter_modules"
+        ]
+      }
+    },
+    "mapStarter": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "input_variable_files": {
+            "type": "array",
+            "items": [
+              {
+                "type": "string"
+              }
+            ],
+          },
+          "interface_variable_files": {
+            "type": "array",
+            "items": [
+              {
+                "type": "string"
+              }
+            ],
+          },
+          "interface_config_file": {
+            "type": "string"
+          },
+          "aliases": {
+            "type": "array",
+            "items": [
+              {
+                "type": "string"
+              }
+            ],
+          },
+          "starter_modules": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "location",
+          "description",
+          "input_variable_files",
+          "interface_variable_files",
+          "interface_config_file",
+          "aliases",
+          "starter_modules"
+        ]
+      }
+    }
+  }
+}
+```
+
+## Input Configuration Schema
+
+The bootstrap input json file is used to define the inputs that are required for the bootstrap and / or starter module.
+
+Schema:
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://accelerator.ms/input.schema.json",
+  "title": "Accelerator Inputs",
+  "description": "Input definition for the Azure Landing Zones Accelerator. This file is used to define the inputs that are required for the bootstrap and / or starter module.",
+  "type": "object",
+  "properties": {
+    "inputs": {"$ref": "#/definitions/mapInput"}
+  },
+  "definitions": {
+    "mapInput": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "type": {"type": "string"},
+          "source": {"type": "string"},
+          "maps_to": {"type": "array", "items": {"type": "string"}},
+          "default": {"type": "string"},
+          "required": {"type": "boolean"},
+          "validation": {"type": "string"},
+          "display_order": {"type": "integer"},
+          "description": {"type": "string"},
+          "display_map_filter": {"type": "string"}
+        },
+        "required": ["type", "source", "maps_to"]
+      }
+    }
+  }
+}
+```
+
+Example code:
 
 ```json
     "inputs": {
-        "iac_type": {
+        "iac_type": { # The name of the input which maps to a variable in the Terraform module
             "type": "string", # The data type of the input
             "source": "powershell", # The source of the input. Can be `powershell` or `input`. If PowerShell is chosen, then ALZ PowerShell module will need to explicity set this value based on its input logic
             "maps_to": [ "bootstrap" ] # The modules the input maps to. The values can be `bootstrap` and / or `starter`. If the input is missing from the relvant module, then it will be ignored.
