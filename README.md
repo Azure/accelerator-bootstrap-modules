@@ -1,6 +1,6 @@
-# Azure Landing Zones Accelerator Bootstrap Modules
+# Accelerator Bootstrap Modules
 
-This repository contains the Terraform modules that are used to deploy the Azure Landing Zones (ALZ) bootstrap environment.
+This repository contains the Terraform modules that are used to deploy the bootstrap environments.
 
 ## Bootstrap Configuraiton Schema
 
@@ -20,6 +20,11 @@ Schema:
     "starter_modules": {"$ref": "#/definitions/mapStarter"},
     "validators": {"$ref": "#/definitions/mapValidator"}
   },
+  "required": [
+    "bootstrap_modules",
+    "starter_modules",
+    "validators"
+  ],
   "definitions": {
     "mapBootstrap": {
       "type": "object",
@@ -79,55 +84,279 @@ Schema:
       "additionalProperties": {
         "type": "object",
         "properties": {
-          "location": {
+          "bicep": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string"
+                },
+                "module_path": {
+                  "type": "string"
+                },
+                "pipeline_folder": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "url",
+                "module_path",
+                "pipeline_folder"
+              ]
+            }
+          },
+          "terraform": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string"
+                },
+                "module_path": {
+                  "type": "string"
+                },
+                "pipeline_folder": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "url",
+                "module_path",
+                "pipeline_folder"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "mapValidator": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "Type": {
             "type": "string"
           },
-          "description": {
+          "Description": {
             "type": "string"
           },
-          "input_variable_files": {
-            "type": "array",
-            "items": [
-              {
-                "type": "string"
+          "Valid": {
+            "type": "string",
+          },
+          "AllowedValues": {
+            "type": "object",
+            "properties": {
+              "Display": {
+                "type": "boolean"
+              },
+              "Values": {
+                "type": "array",
+                "items": [
+                  {
+                    "type": "string"
+                  }
+                ]
               }
-            ],
-          },
-          "interface_variable_files": {
-            "type": "array",
-            "items": [
-              {
-                "type": "string"
-              }
-            ],
-          },
-          "interface_config_file": {
-            "type": "string"
-          },
-          "aliases": {
-            "type": "array",
-            "items": [
-              {
-                "type": "string"
-              }
-            ],
-          },
-          "starter_modules": {
-            "type": "string"
+            }
           }
         },
         "required": [
-          "location",
-          "description",
-          "input_variable_files",
-          "interface_variable_files",
-          "interface_config_file",
-          "aliases",
-          "starter_modules"
+          "Type",
+          "Description"
         ]
       }
     }
   }
+}
+```
+
+Example code:
+
+```json
+{
+    "bootstrap_modules": {
+        "alz_azuredevops": {
+            "location": "alz/azuredevops",
+            "description": "Azure Landing Zones with Azure DevOps",
+            "input_variable_files": [ "variables.input.tf" ],
+            "interface_variable_files": [ "variables.interface.tf" ],
+            "interface_config_file": "alz/.config/ALZ-Powershell.config.json",
+            "aliases": [ "azuredevops" ],
+            "starter_modules": "alz"
+        },
+        "alz_github": {
+            "location": "alz/github",
+            "description": "Azure Landing Zones with GitHub",
+            "input_variable_files": [ "variables.input.tf" ],
+            "interface_variable_files": [ "variables.interface.tf" ],
+            "interface_config_file": "alz/.config/ALZ-Powershell.config.json",
+            "aliases": [ "github" ],
+            "starter_modules": "alz"
+        },
+        "alz_local": {
+            "location": "alz/local",
+            "description": "Azure Landing Zones local file system",
+            "input_variable_files": [ "variables.input.tf" ],
+            "interface_variable_files": [ "variables.interface.tf" ],
+            "interface_config_file": "alz/.config/ALZ-Powershell.config.json",
+            "aliases": [ "local" ],
+            "starter_modules": "alz"
+        }
+    },
+    "starter_modules": {
+        "alz": {
+            "terraform": {
+                "url": "https://github.com/Azure/alz-terraform-accelerator",
+                "module_path": "templates",
+                "pipeline_folder": "ci_cd"
+            },
+            "bicep": {
+                "url": "https://github.com/Azure/ALZ-Bicep",
+                "module_path": ".",
+                "pipeline_folder": "."
+            }
+        }
+    },
+    "validators": {
+        "auth_scheme": {
+            "Type": "AllowedValues",
+            "Description": "A valid authentication scheme e.g. 'WorkloadIdentityFederation'",
+            "AllowedValues": {
+                "Display": true,
+                "Values": [
+                    "WorkloadIdentityFederation",
+                    "ManagedServiceIdentity"
+                ]
+            }
+        },
+        "azure_location": {
+            "Type": "AllowedValues",
+            "Description": "An Azure deployment location e.g. 'uksouth'",
+            "AllowedValues": {
+                "Display": false,
+                "Values": [
+                    "australiacentral",
+                    "australiacentral2",
+                    "australiaeast",
+                    "australiasoutheast",
+                    "brazilsouth",
+                    "brazilsoutheast",
+                    "centraluseuap",
+                    "canadacentral",
+                    "canadaeast",
+                    "centralus",
+                    "eastasia",
+                    "eastus2euap",
+                    "eastus",
+                    "eastus2",
+                    "francecentral",
+                    "francesouth",
+                    "germanycentral",
+                    "germanynorth",
+                    "germanynortheast",
+                    "germanywestcentral",
+                    "israelcentral",
+                    "italynorth",
+                    "centralindia",
+                    "southindia",
+                    "westindia",
+                    "japaneast",
+                    "japanwest",
+                    "jioindiacentral",
+                    "jioindiawest",
+                    "koreacentral",
+                    "koreasouth",
+                    "northcentralus",
+                    "northeurope",
+                    "norwayeast",
+                    "norwaywest",
+                    "polandcentral",
+                    "qatarcentral",
+                    "southafricanorth",
+                    "southafricawest",
+                    "southcentralus",
+                    "swedencentral",
+                    "swedensouth",
+                    "southeastasia",
+                    "switzerlandnorth",
+                    "switzerlandwest",
+                    "uaecentral",
+                    "uaenorth",
+                    "uksouth",
+                    "ukwest",
+                    "westcentralus",
+                    "westeurope",
+                    "westus",
+                    "westus2",
+                    "westus3",
+                    "usdodcentral",
+                    "usdodeast",
+                    "usgovarizona",
+                    "usgoviowa",
+                    "usgovtexas",
+                    "usgovvirginia",
+                    "usnateast",
+                    "usnatwest",
+                    "usseceast",
+                    "ussecwest",
+                    "chinanorth",
+                    "chinanorth2",
+                    "chinanorth3",
+                    "chinaeast",
+                    "chinaeast2",
+                    "chinaeast3"
+                ]
+            }
+        },
+        "azure_subscription_id": {
+            "Type": "Valid",
+            "Description": "A valid subscription id GUID e.g. '12345678-1234-1234-1234-123456789012'",
+            "Valid": "^( {){0,1}[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}(}){0,1}$"
+        },
+        "azure_name": {
+            "Type": "Valid",
+            "Description": "A valid Azure name e.g. 'my-azure-name'",
+            "Valid": "^[a-zA-Z0-9]{2,10}(-[a-zA-Z0-9]{2,10}){0,1}(-[a-zA-Z0-9]{2,10})?$"
+        },
+        "azure_name_section": {
+            "Type": "Valid",
+            "Description": "A valid Azure name with no hyphens and limited length e.g. 'abcd'",
+            "Valid": "^[a-zA-Z0-9]{2,10}$"
+        },
+        "guid": {
+            "Type": "Valid",
+            "Description": "A valid GUID e.g. '12345678-1234-1234-1234-123456789012'",
+            "Valid": "^( {){0,1}[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}(}){0,1}$"
+        },
+        "bool": {
+            "Type": "AllowedValues",
+            "Description": "A boolean value e.g. 'true'",
+            "AllowedValues": {
+                "Display": true,
+                "Values": [
+                    "true",
+                    "false"
+                ]
+            }
+        },
+        "number": {
+            "Type": "Valid",
+            "Description": "A number e.g. '1234'",
+            "Valid": "^(0|[1-9][0-9]*)$"
+        },
+        "cidr_range": {
+            "Type": "Valid",
+            "Description": "A valid CIDR range e.g '10.0.0.0/16'",
+            "Valid": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(/(3[0-2]|[1-2][0-9]|[0-9]))$"
+        },
+        "configuration_file_path": {
+            "Type": "Valid",
+            "Description": "A valid yaml or json configuration file path e.g. './my-folder/my-config-file.yaml' or `c:\\my-folder\\my-config-file.yaml`",
+            "Valid": "^.+\\.(yaml|yml|json)$"
+        }
+    }
 }
 ```
 
