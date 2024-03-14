@@ -14,6 +14,9 @@ permissions:
   id-token: write
   contents: read
 
+env:
+  SOURCE_CODE_FOLDER: source-code
+
 jobs:
   e2e-test:
     name: "OS: ${{ matrix.os }}, VCS: ${{ matrix.vcs }}, A: ${{ matrix.as }}, TF: ${{ matrix.tf }}, AG: ${{ matrix.ag }}"
@@ -59,7 +62,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          path: accelerator-bootstrap-modules
+          path: ${{ env.SOURCE_CODE_FOLDER }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -182,7 +185,7 @@ jobs:
           Write-Host "Installing the Accelerator PowerShell Module"
           #Install-Module -Name ALZ -Force -Scope CurrentUser -Repository PSGallery -AllowPrerelease
           #$module = Get-InstalledModule ALZ
-          ./accelerator-bootstrap-modules/.github/tests/scripts/Install-AcceleratorModule.ps1 -ModuleBranch "bug-fixing-for-e2e-tests"
+          ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Install-AcceleratorModule.ps1 -ModuleBranch "bug-fixing-for-e2e-tests"
           Write-Host "Installed Accelerator Module: $($module.Name) $($module.Version)"
 
           # Run the Module in a retry loop
@@ -195,7 +198,7 @@ jobs:
             $retryCount++
             try {
               Write-Host "Running the ALZ Module"
-              Deploy-Accelerator -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "./accelerator-bootstrap-modules" -autoApprove -ErrorAction Stop -Verbose
+              Deploy-Accelerator -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "./${{ env.SOURCE_CODE_FOLDER }}" -autoApprove -ErrorAction Stop -Verbose
               if ($LastExitCode -eq 0) {
                 $success = $true
               } else {
@@ -203,7 +206,7 @@ jobs:
               }
             } catch {
               Write-Host "Failed to apply the bootstrap environment. Destroy and retry..."
-              ./accelerator-bootstrap-modules/.github/tests/scripts/destroy.ps1 -versionControlSystem $versionControlSystem
+              ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/destroy.ps1 -versionControlSystem $versionControlSystem
             }
           } while ($success -eq $false -and $retryCount -lt $maximumRetries)
 
@@ -234,7 +237,7 @@ jobs:
             $repositoryName = "alz-$uniqueId"
 
             Write-Host "Running GitHub Actions Test for CI"
-            ./accelerator-bootstrap-modules/.github/tests/scripts/github-action-run.ps1 `
+            ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/github-action-run.ps1 `
               -organizationName $versionControlSystemOrganisationName `
               -repositoryName $repositoryName `
               -workflowFileName "ci.yaml" `
@@ -242,7 +245,7 @@ jobs:
               -personalAccessToken "${{ secrets.VCS_TOKEN_GITHUB }}"
 
             Write-Host "Running GitHub Actions Test for CD"
-            ./accelerator-bootstrap-modules/.github/tests/scripts/github-action-run.ps1 `
+            ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/github-action-run.ps1 `
               -organizationName $versionControlSystemOrganisationName `
               -repositoryName $repositoryName `
               -workflowFileName "cd.yaml" `
@@ -253,7 +256,7 @@ jobs:
             $projectName = "alz-test-$uniqueId"
 
             Write-Host "Running Azure DevOps Pipelines Test for CI"
-            ./accelerator-bootstrap-modules/.github/tests/scripts/azuredevops-pipeline-run.ps1 `
+            ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/azuredevops-pipeline-run.ps1 `
               -organizationName $versionControlSystemOrganisationName `
               -projectName $projectName `
               -pipelineNamePart "Continuous Integration" `
@@ -261,7 +264,7 @@ jobs:
               -personalAccessToken "${{ secrets.VCS_TOKEN_AZURE_DEVOPS }}"
 
             Write-Host "Running Azure DevOps Pipelines Test for CD"
-            ./accelerator-bootstrap-modules/.github/tests/scripts/azuredevops-pipeline-run.ps1 `
+            ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/azuredevops-pipeline-run.ps1 `
               -organizationName $versionControlSystemOrganisationName `
               -projectName $projectName `
               -pipelineNamePart "Continuous Delivery" `
@@ -288,7 +291,7 @@ jobs:
           $versionControlSystem = "${{ matrix.vcs }}"
 
           # Run destroy
-          ./accelerator-bootstrap-modules/.github/tests/scripts/destroy.ps1 -versionControlSystem $versionControlSystem
+          ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/destroy.ps1 -versionControlSystem $versionControlSystem
 
         shell: pwsh
         env:
