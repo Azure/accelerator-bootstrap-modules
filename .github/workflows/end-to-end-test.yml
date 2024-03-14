@@ -207,7 +207,8 @@ jobs:
           } while ($success -eq $false -and $retryCount -lt $maximumRetries)
 
           Write-Host "File Structure after Bootstrap..."
-          ls -Recurse -ErrorAction SilentlyContinue | % { Write-Host $_.FullName }
+          $files = Get-ChildItem -Recurse
+          $files | ForEach-Object { Write-Host $_ }
 
           if ($success -eq $false) {
             throw "Failed to apply the bootstrap environment after $maximumRetries attempts."
