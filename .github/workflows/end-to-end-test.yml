@@ -211,7 +211,7 @@ jobs:
           } while ($success -eq $false -and $retryCount -lt $maximumRetries)
 
           Write-Host "File Structure after Bootstrap..."
-          $files = Get-ChildItem -Recurse
+          $files = Get-ChildItem -Recurse -Force
           $files | ForEach-Object { Write-Host $_ }
 
           if ($success -eq $false) {
