@@ -20,18 +20,31 @@ env:
 
 jobs:
   e2e-test:
-    name: "OS: ${{ matrix.os }}, VCS: ${{ matrix.vcs }}, A: ${{ matrix.as }}, TF: ${{ matrix.tf }}, AG: ${{ matrix.ag }}"
+    name: "IAC: ${{ matrix.iac }}, OS: ${{ matrix.os }}, VCS: ${{ matrix.vcs }}, A: ${{ matrix.as }}, TF: ${{ matrix.tf }}, AG: ${{ matrix.ag }}"
     environment: ${{ github.event_name == 'schedule' && 'CSUTFAUTO' || 'CSUTF' }}
     if: "${{ github.repository == 'Azure/accelerator-bootstrap-modules' && (contains(github.event.pull_request.labels.*.name, 'PR: Safe to test 🧪') || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') }}"
     strategy:
       fail-fast: false
       matrix:
+        iac: ['terraform', 'bicep']
         os: ['ubuntu-latest', 'windows-latest', 'macos-latest']  # Operating System
         tf: ['latest', '1.5.0']  # Terraform Version
         vcs: ['github', 'azuredevops', 'local']  # Version Control System
         as: ['ManagedServiceIdentity', 'WorkloadIdentityFederation']  # Authentication Scheme
         ag: ['public', 'private', 'none']  # Self Hosted Agents
         exclude:
+          - iac: bicep
+            tf: 1.5.0
+          - iac: bicep
+            vcs: azuredevops
+          - iac: bicep
+            vcs: github
+          - iac: bicep
+            as: ManagedServiceIdentity
+          - iac: bicep
+            ag: public
+          - iac: bicep
+            ag: private
           - vcs: github
             as: ManagedServiceIdentity
           - vcs: local
@@ -76,6 +89,7 @@ jobs:
         run: |
 
           # Get Inputs
+          $infrastructureAsCode = "${{ matrix.iac }}"
           $versionControlSystem = "${{ matrix.vcs }}"
           $authScheme = "${{ matrix.as }}"
           $operatingSystem = "${{ matrix.os }}"
@@ -93,6 +107,7 @@ jobs:
           }
 
           # Get Unique ID
+          $infrastructureAsCodeShort = $infrastructureAsCode.Substring(0, 1)
           $versionControlSystemShort = $versionControlSystem.Substring(0, 1)
           $authSchemeShort = $authScheme.Substring(0, 1)
           $operatingSystemShort = $operatingSystem.Substring(0, 1)
@@ -109,6 +124,7 @@ jobs:
 
           $runNumber = "${{ github.run_number }}"
 
+          Write-Host "Infrastructure As Code: $infrastructureAsCode ($infrastructureAsCodeShort)"
           Write-Host "Version Control System: $versionControlSystem ($versionControlSystemShort)"
           Write-Host "Auth Scheme: $authScheme ($authSchemeShort)"
           Write-Host "Operating System: $operatingSystem ($operatingSystemShort)"
@@ -117,13 +133,13 @@ jobs:
           Write-Host "Local Deploy Azure Resources: $localDeployAzureResources"
           Write-Host "Run Number: $runNumber"
 
-          $uniqueId = "$operatingSystemShort$versionControlSystemShort$authSchemeShort$terraformVersionShort$selfhostedAgentsShort$runNumber".ToLower()
+          $uniqueId = "$infrastructureAsCodeShort$operatingSystemShort$versionControlSystemShort$authSchemeShort$terraformVersionShort$selfhostedAgentsShort$runNumber".ToLower()
           echo "UNIQUE_ID=$uniqueId" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
 
           Write-Host "Unique ID: $uniqueId"
 
           $Inputs = @{}
-          $Inputs["iac"] = "terraform"
+          $Inputs["iac"] = $infrastructureAsCode
           $Inputs["bootstrap"] = "alz_$versionControlSystem"
           $Inputs["starter"] = ".test"
           $Inputs["bootstrap_location"] = "uksouth"
@@ -228,6 +244,12 @@ jobs:
 
       - name: Run Pipelines or Actions
         run: |
+          $infrastructureAsCode = "${{ matrix.iac }}"
+
+          if($infrastructureAsCode -eq "bicep") {
+            Write-Host "Skipping Pipelines or Actions for Bicep"
+            exit 0
+          }
 
           # Get Inputs
           $versionControlSystem = "${{ matrix.vcs }}"
