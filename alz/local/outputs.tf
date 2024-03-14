@@ -5,7 +5,7 @@ output "module_output_directory_path" {
 
 output "details" {
   description = "The details of the settings used"
-  value       = {
+  value = {
     iac_type = var.iac_type
   }
 }
