@@ -58,6 +58,8 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          path: accelerator-bootstrap-modules
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -192,7 +194,7 @@ jobs:
             $retryCount++
             try {
               Write-Host "Running the ALZ Module"
-              Deploy-Accelerator -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "." -autoApprove -ErrorAction Stop -Verbose
+              Deploy-Accelerator -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "./accelerator-bootstrap-modules" -autoApprove -ErrorAction Stop -Verbose
               if ($LastExitCode -eq 0) {
                 $success = $true
               } else {

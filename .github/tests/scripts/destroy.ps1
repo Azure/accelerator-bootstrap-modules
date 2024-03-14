@@ -5,18 +5,7 @@ param (
     [string]$versionControlSystem
 )
 
-$directories = Get-ChildItem -Directory
-
-$directoryName = ""
-
-foreach($directory in $directories) {
-    if($directory.Name -like "v*") {
-        $directoryName = $directory.Name
-        break
-    }
-}
-
-$bootstrapDirectoryPath = "./$directoryName/bootstrap/$versionControlSystem"
+$bootstrapDirectoryPath = "./bootstrap/local/alz/$versionControlSystem"
 Write-Host "Bootstrap Directory Path: $bootstrapDirectoryPath"
 
 if(Test-Path -Path "$bootstrapDirectoryPath/override.tfvars") {
@@ -35,7 +24,7 @@ do {
         Write-Host "Runner IP Address: $myIp"
 
         Write-Host "Running Terraform Destroy"
-        Deploy-Accelerator -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "." -autoApprove -destroy -ErrorAction Stop
+        Deploy-Accelerator -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "./accelerator-bootstrap-modules" -autoApprove -destroy -ErrorAction Stop
         if ($LastExitCode -eq 0) {
             $success = $true
         } else {
