@@ -36,9 +36,7 @@ jobs:
           - iac: bicep
             tf: 1.5.0
           - iac: bicep
-            vcs: azuredevops
-          - iac: bicep
-            vcs: github
+            vcs: local
           - iac: bicep
             as: ManagedServiceIdentity
           - iac: bicep
