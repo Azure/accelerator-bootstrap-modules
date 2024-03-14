@@ -209,10 +209,8 @@ jobs:
 
           # Install the Module
           Write-Host "Installing the Accelerator PowerShell Module"
-          #Install-Module -Name ALZ -Force -Scope CurrentUser -Repository PSGallery -AllowPrerelease
-          #$module = Get-InstalledModule ALZ
           ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Install-AcceleratorModule.ps1 -ModuleBranch "${{ env.ALZ_POWERSHELL_BRANCH }}"
-          Write-Host "Installed Accelerator Module: $($module.Name) $($module.Version)"
+          Write-Host "Installed Accelerator Module"
 
           # Run the Module in a retry loop
           $retryCount = 0
