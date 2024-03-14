@@ -5,7 +5,7 @@ param (
 
 $targetDirectory = "./accelerator-powershell-module"
 
-if(!Test-Path $targetDirectory) {
+if(!(Test-Path $targetDirectory)) {
     git clone -b $ModuleBranch $ModuleUrl $targetDirectory
 }
 
