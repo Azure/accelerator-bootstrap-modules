@@ -4,6 +4,11 @@ locals {
 }
 
 locals {
+  root_parent_management_group_id = var.root_parent_management_group_id == "" ? data.azurerm_client_config.current.tenant_id : var.root_parent_management_group_id
+}
+
+
+locals {
   plan_key  = "plan"
   apply_key = "apply"
 }

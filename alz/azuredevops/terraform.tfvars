@@ -39,9 +39,6 @@ resource_names = {
 }
 
 # Version Control System Variables
-module_folder_path   = "../../templates"
-pipeline_folder_path = "../../templates/ci_cd"
-
 pipeline_files = {
   ci = {
     pipeline_name = "01 Azure Landing Zone Continuous Integration"

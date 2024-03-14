@@ -8,6 +8,3 @@ resource_names = {
   storage_account                                             = "sto{{service_name}}{{environment_name}}{{azure_location_short}}{{postfix_number}}{{random_string}}"
   storage_container                                           = "{{environment_name}}-tfstate"
 }
-
-# Version Control System Variables
-module_folder_path = "../../templates"
