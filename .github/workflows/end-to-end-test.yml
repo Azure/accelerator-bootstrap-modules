@@ -16,6 +16,7 @@ permissions:
 
 env:
   SOURCE_CODE_FOLDER: source-code
+  ALZ_POWERSHELL_BRANCH: "bug-fixing-for-e2e-tests"
 
 jobs:
   e2e-test:
@@ -186,7 +187,7 @@ jobs:
           Write-Host "Installing the Accelerator PowerShell Module"
           #Install-Module -Name ALZ -Force -Scope CurrentUser -Repository PSGallery -AllowPrerelease
           #$module = Get-InstalledModule ALZ
-          ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Install-AcceleratorModule.ps1 -ModuleBranch "bug-fixing-for-e2e-tests"
+          ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Install-AcceleratorModule.ps1 -ModuleBranch "${{ env.ALZ_POWERSHELL_BRANCH }}"
           Write-Host "Installed Accelerator Module: $($module.Name) $($module.Version)"
 
           # Run the Module in a retry loop
@@ -211,11 +212,10 @@ jobs:
             }
           } while ($success -eq $false -and $retryCount -lt $maximumRetries)
 
-          Write-Host "File Structure after Bootstrap..."
-          $files = Get-ChildItem -Recurse -Force
-          $files | ForEach-Object { Write-Host $_ }
-
           if ($success -eq $false) {
+            Write-Host "File Structure after Bootstrap..."
+            $files = Get-ChildItem -Recurse -Force
+            $files | ForEach-Object { Write-Host  (Resolve-Path $_ -Relative)}
             throw "Failed to apply the bootstrap environment after $maximumRetries attempts."
           }
 
@@ -290,6 +290,12 @@ jobs:
 
           # Get Inputs
           $versionControlSystem = "${{ matrix.vcs }}"
+
+          Write-Host "Installing the Accelerator PowerShell Module"
+          #Install-Module -Name ALZ -Force -Scope CurrentUser -Repository PSGallery -AllowPrerelease
+          #$module = Get-InstalledModule ALZ
+          ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Install-AcceleratorModule.ps1 -ModuleBranch "${{ env.ALZ_POWERSHELL_BRANCH }}"
+          Write-Host "Installed Accelerator Module: $($module.Name) $($module.Version)"
 
           # Run destroy
           ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/destroy.ps1 -versionControlSystem $versionControlSystem

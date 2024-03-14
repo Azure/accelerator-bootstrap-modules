@@ -3,7 +3,11 @@ param (
     [string]$ModuleBranch = "main"
 )
 
-git clone -b $ModuleBranch $ModuleUrl ./accelerator-powershell-module
+$targetDirectory = "./accelerator-powershell-module"
 
-./accelerator-powershell-module/actions_bootstrap.ps1
-Invoke-Build -File ./accelerator-powershell-module/src/ALZ.build.ps1
+if(!Test-Path $targetDirectory) {
+    git clone -b $ModuleBranch $ModuleUrl $targetDirectory
+}
+
+./accelerator-powershell-module/actions_bootstrap.ps1 | Out-String | Write-Verbose
+Invoke-Build -File ./accelerator-powershell-module/src/ALZ.build.ps1 | Out-String | Write-Verbose
