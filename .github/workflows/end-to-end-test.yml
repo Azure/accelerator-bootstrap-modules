@@ -201,8 +201,9 @@ jobs:
                 throw "Failed to apply the bootstrap environment."
               }
             } catch {
+              ls -Recurse -ErrorAction SilentlyContinue | % { Write-Host $_.FullName }
               Write-Host "Failed to apply the bootstrap environment. Destroy and retry..."
-              ./.github/tests/scripts/destroy.ps1 -versionControlSystem $versionControlSystem
+              ./accelerator-bootstrap-modules/.github/tests/scripts/destroy.ps1 -versionControlSystem $versionControlSystem
             }
           } while ($success -eq $false -and $retryCount -lt $maximumRetries)
 
@@ -229,7 +230,7 @@ jobs:
             $repositoryName = "alz-$uniqueId"
 
             Write-Host "Running GitHub Actions Test for CI"
-            ./.github/tests/scripts/github-action-run.ps1 `
+            ./accelerator-bootstrap-modules/.github/tests/scripts/github-action-run.ps1 `
               -organizationName $versionControlSystemOrganisationName `
               -repositoryName $repositoryName `
               -workflowFileName "ci.yaml" `
@@ -237,7 +238,7 @@ jobs:
               -personalAccessToken "${{ secrets.VCS_TOKEN_GITHUB }}"
 
             Write-Host "Running GitHub Actions Test for CD"
-            ./.github/tests/scripts/github-action-run.ps1 `
+            ./accelerator-bootstrap-modules/.github/tests/scripts/github-action-run.ps1 `
               -organizationName $versionControlSystemOrganisationName `
               -repositoryName $repositoryName `
               -workflowFileName "cd.yaml" `
@@ -248,7 +249,7 @@ jobs:
             $projectName = "alz-test-$uniqueId"
 
             Write-Host "Running Azure DevOps Pipelines Test for CI"
-            ./.github/tests/scripts/azuredevops-pipeline-run.ps1 `
+            ./accelerator-bootstrap-modules/.github/tests/scripts/azuredevops-pipeline-run.ps1 `
               -organizationName $versionControlSystemOrganisationName `
               -projectName $projectName `
               -pipelineNamePart "Continuous Integration" `
@@ -256,7 +257,7 @@ jobs:
               -personalAccessToken "${{ secrets.VCS_TOKEN_AZURE_DEVOPS }}"
 
             Write-Host "Running Azure DevOps Pipelines Test for CD"
-            ./.github/tests/scripts/azuredevops-pipeline-run.ps1 `
+            ./accelerator-bootstrap-modules/.github/tests/scripts/azuredevops-pipeline-run.ps1 `
               -organizationName $versionControlSystemOrganisationName `
               -projectName $projectName `
               -pipelineNamePart "Continuous Delivery" `
@@ -283,7 +284,7 @@ jobs:
           $versionControlSystem = "${{ matrix.vcs }}"
 
           # Run destroy
-          ./.github/tests/scripts/destroy.ps1 -versionControlSystem $versionControlSystem
+          ./accelerator-bootstrap-modules/.github/tests/scripts/destroy.ps1 -versionControlSystem $versionControlSystem
 
         shell: pwsh
         env:
