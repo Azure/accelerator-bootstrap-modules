@@ -42,13 +42,13 @@ variable "built_in_configurartion_file_name" {
 variable "module_folder_path_relative" {
   description = "Whether the module folder path is relative to the bootstrap module"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "pipeline_folder_path_relative" {
   description = "Whether the pipeline folder path is relative to the bootstrap module"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "pipeline_files" {

@@ -16,17 +16,17 @@ module "files" {
 }
 
 module "azure" {
-  source                                    = "../../modules/azure"
-  count                                     = var.create_bootstrap_resources_in_azure ? 1 : 0
-  user_assigned_managed_identities          = local.managed_identities
-  federated_credentials                     = local.federated_credentials
-  resource_group_identity_name              = local.resource_names.resource_group_identity
-  resource_group_state_name                 = local.resource_names.resource_group_state
-  storage_account_name                      = local.resource_names.storage_account
-  storage_container_name                    = local.resource_names.storage_container
-  azure_location                            = var.bootstrap_location
-  target_subscriptions                      = local.target_subscriptions
-  root_parent_management_group_id           = var.root_parent_management_group_id
+  source                           = "../../modules/azure"
+  count                            = var.create_bootstrap_resources_in_azure ? 1 : 0
+  user_assigned_managed_identities = local.managed_identities
+  federated_credentials            = local.federated_credentials
+  resource_group_identity_name     = local.resource_names.resource_group_identity
+  resource_group_state_name        = local.resource_names.resource_group_state
+  storage_account_name             = local.resource_names.storage_account
+  storage_container_name           = local.resource_names.storage_container
+  azure_location                   = var.bootstrap_location
+  target_subscriptions             = local.target_subscriptions
+  root_parent_management_group_id  = local.root_parent_management_group_id
 }
 
 resource "local_file" "alz" {

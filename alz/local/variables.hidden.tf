@@ -1,14 +1,7 @@
-
 variable "additional_files" {
   description = "Additional files to upload to the repository. This must be specified as a comma-separated list of absolute file paths (e.g. c:\\config\\config.yaml or /home/user/config/config.yaml)"
   type        = list(string)
   default     = []
-}
-
-variable "configuration_file_path" {
-  description = "The name of the configuration file to be generated"
-  type        = string
-  default     = ""
 }
 
 variable "built_in_configurartion_file_name" {
@@ -20,7 +13,7 @@ variable "built_in_configurartion_file_name" {
 variable "module_folder_path_relative" {
   description = "Whether the module folder path is relative to the bootstrap module"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "resource_names" {

@@ -432,7 +432,7 @@ Example code:
             "default": "", # For source `input`, a default empty value can be specified.
             "required": false,
             "maps_to": [ "bootstrap", "starter" ],
-            "display_map_filter" : "starter", # This setting is used to filter out this input if it is not present in the specified module. For example, if the `configuration_file_path` is not present in the `starter` module, then it will not be displayed in the UI and no attempt will be made to map it to the `starter` module. The default value will be set for the `bootstrap` module if it is present there.
+            "display_map_filter" : "starter", # Used to filter out this input if it is not present in the specified module. For example, if the `configuration_file_path` is not present in the `starter` module, then it will not be displayed in the UI and no attempt will be made to map it to the `starter` module. The default value will be set for the `bootstrap` module if it is present there.
             "validation": "configuration_file_path",
             "display_order": 6,
             "description": "The identifier of the Connectivity Subscription."
@@ -445,7 +445,7 @@ Example code:
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
+the rights to use your contribution. For details, visit [https://cla.opensource.microsoft.com](https://cla.opensource.microsoft.com).
 
 When you submit a pull request, a CLA bot will automatically determine whether you need to provide
 a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
@@ -457,8 +457,8 @@ contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additio
 
 ## Trademarks
 
-This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft 
-trademarks or logos is subject to and must follow 
+This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft
+trademarks or logos is subject to and must follow
 [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general).
 Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
 Any use of third-party trademarks or logos are subject to those third-party's policies.

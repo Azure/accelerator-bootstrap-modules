@@ -30,7 +30,7 @@ module "azure" {
   storage_container_name                                    = local.resource_names.storage_container
   azure_location                                            = var.bootstrap_location
   target_subscriptions                                      = local.target_subscriptions
-  root_parent_management_group_id                           = var.root_parent_management_group_id
+  root_parent_management_group_id                           = local.root_parent_management_group_id
   agent_container_instances                                 = local.runner_container_instances
   agent_container_instance_image                            = var.runner_container_image
   agent_organization_url                                    = "${module.github.organization_url}/${module.github.repository_names.module}"
