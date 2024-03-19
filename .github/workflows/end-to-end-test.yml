@@ -7,6 +7,11 @@ on:
       - main
     types: ['opened', 'reopened', 'synchronize', 'labeled']
   workflow_dispatch:
+    inputs:
+      powershell_branch:
+        description: 'The branch to use for the powershell module'
+        default: 'main'
+        type: string
   schedule:
     - cron: '0 9 * * 1'
 
@@ -16,8 +21,7 @@ permissions:
 
 env:
   SOURCE_CODE_FOLDER: source-code
-  ALZ_POWERSHELL_BRANCH: "bug-fixing-for-e2e-tests"
-
+  ALZ_POWERSHELL_BRANCH: ${{ github.event.inputs.powershell_branch }}
 jobs:
   e2e-test:
     name: "IAC: ${{ matrix.iac }}, OS: ${{ matrix.os }}, VCS: ${{ matrix.vcs }}, A: ${{ matrix.as }}, TF: ${{ matrix.tf }}, AG: ${{ matrix.ag }}"
@@ -320,10 +324,8 @@ jobs:
           $versionControlSystem = "${{ matrix.vcs }}"
 
           Write-Host "Installing the Accelerator PowerShell Module"
-          #Install-Module -Name ALZ -Force -Scope CurrentUser -Repository PSGallery -AllowPrerelease
-          #$module = Get-InstalledModule ALZ
           ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Install-AcceleratorModule.ps1 -ModuleBranch "${{ env.ALZ_POWERSHELL_BRANCH }}"
-          Write-Host "Installed Accelerator Module: $($module.Name) $($module.Version)"
+          Write-Host "Installed Accelerator Module"
 
           # Run destroy
           ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/destroy.ps1 -versionControlSystem $versionControlSystem
