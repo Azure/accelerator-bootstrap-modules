@@ -1,338 +1,338 @@
 ---
-  name: End to End Tests
+name: End to End Tests
 
-  on:
-    pull_request:
-      branches:
-        - main
-      types: ['opened', 'reopened', 'synchronize', 'labeled']
-    workflow_dispatch:
-      inputs:
-        powershell_branch:
-          description: 'The branch to use for the powershell module'
-          default: 'main'
-          type: string
-    schedule:
-      - cron: '0 9 * * 1'
+on:
+  pull_request:
+    branches:
+      - main
+    types: ['opened', 'reopened', 'synchronize', 'labeled']
+  workflow_dispatch:
+    inputs:
+      powershell_branch:
+        description: 'The branch to use for the powershell module'
+        default: 'main'
+        type: string
+  schedule:
+    - cron: '0 9 * * 1'
 
-  permissions:
-    id-token: write
-    contents: read
+permissions:
+  id-token: write
+  contents: read
 
-  env:
-    SOURCE_CODE_FOLDER: source-code
-    ALZ_POWERSHELL_BRANCH: ${{ github.event.inputs.powershell_branch }}
-  jobs:
-    e2e-test:
-      name: "IAC: ${{ matrix.iac }}, OS: ${{ matrix.os }}, VCS: ${{ matrix.vcs }}, A: ${{ matrix.as }}, TF: ${{ matrix.tf }}, AG: ${{ matrix.ag }}"
-      environment: ${{ github.event_name == 'schedule' && 'CSUTFAUTO' || 'CSUTF' }}
-      if: "${{ github.repository == 'Azure/accelerator-bootstrap-modules' && (contains(github.event.pull_request.labels.*.name, 'PR: Safe to test 🧪') || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') }}"
-      strategy:
-        fail-fast: false
-        matrix:
-          iac: ['terraform', 'bicep']
-          os: ['ubuntu-latest', 'windows-latest', 'macos-latest']  # Operating System
-          tf: ['latest', '1.5.0']  # Terraform Version
-          vcs: ['github', 'azuredevops', 'local']  # Version Control System
-          as: ['ManagedServiceIdentity', 'WorkloadIdentityFederation']  # Authentication Scheme
-          ag: ['public', 'private', 'none']  # Self Hosted Agents
-          exclude:
-            - iac: bicep
-              tf: 1.5.0
-            - iac: bicep
-              vcs: local
-            - iac: bicep
-              as: ManagedServiceIdentity
-            - iac: bicep
-              ag: public
-            - iac: bicep
-              ag: private
-            - vcs: github
-              as: ManagedServiceIdentity
-            - vcs: local
-              as: ManagedServiceIdentity
-            - vcs: local
-              ag: public
-            - vcs: local
-              ag: private
-            - vcs: azuredevops
-              tf: 1.5.0
-            - vcs: github
-              tf: 1.5.0
-            - as: ManagedServiceIdentity
-              ag: none
-            - os: windows-latest
-              vcs: azuredevops
-            - os: macos-latest
-              vcs: azuredevops
-            - os: windows-latest
-              vcs: github
-            - os: macos-latest
-              vcs: github
+env:
+  SOURCE_CODE_FOLDER: source-code
+  ALZ_POWERSHELL_BRANCH: ${{ github.event.inputs.powershell_branch }}
+jobs:
+  e2e-test:
+    name: "IAC: ${{ matrix.iac }}, OS: ${{ matrix.os }}, VCS: ${{ matrix.vcs }}, A: ${{ matrix.as }}, TF: ${{ matrix.tf }}, AG: ${{ matrix.ag }}"
+    environment: ${{ github.event_name == 'schedule' && 'CSUTFAUTO' || 'CSUTF' }}
+    if: "${{ github.repository == 'Azure/accelerator-bootstrap-modules' && (contains(github.event.pull_request.labels.*.name, 'PR: Safe to test 🧪') || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') }}"
+    strategy:
+      fail-fast: false
+      matrix:
+        iac: ['terraform', 'bicep']
+        os: ['ubuntu-latest', 'windows-latest', 'macos-latest']  # Operating System
+        tf: ['latest', '1.5.0']  # Terraform Version
+        vcs: ['github', 'azuredevops', 'local']  # Version Control System
+        as: ['ManagedServiceIdentity', 'WorkloadIdentityFederation']  # Authentication Scheme
+        ag: ['public', 'private', 'none']  # Self Hosted Agents
+        exclude:
+          - iac: bicep
+            tf: 1.5.0
+          - iac: bicep
+            vcs: local
+          - iac: bicep
+            as: ManagedServiceIdentity
+          - iac: bicep
+            ag: public
+          - iac: bicep
+            ag: private
+          - vcs: github
+            as: ManagedServiceIdentity
+          - vcs: local
+            as: ManagedServiceIdentity
+          - vcs: local
+            ag: public
+          - vcs: local
+            ag: private
+          - vcs: azuredevops
+            tf: 1.5.0
+          - vcs: github
+            tf: 1.5.0
+          - as: ManagedServiceIdentity
+            ag: none
+          - os: windows-latest
+            vcs: azuredevops
+          - os: macos-latest
+            vcs: azuredevops
+          - os: windows-latest
+            vcs: github
+          - os: macos-latest
+            vcs: github
 
-      runs-on: ${{ matrix.os }}
-      steps:
-        - name: Show env
-          run: env | sort
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Show env
+        run: env | sort
 
-        - name: Checkout repository
-          uses: actions/checkout@v4
-          with:
-            path: ${{ env.SOURCE_CODE_FOLDER }}
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: ${{ env.SOURCE_CODE_FOLDER }}
 
-        - name: Setup Terraform
-          uses: hashicorp/setup-terraform@v2
-          with:
-            terraform_version: ${{ matrix.tf }}
-            terraform_wrapper: false
-          if: ${{ matrix.tf != 'latest' }}
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ matrix.tf }}
+          terraform_wrapper: false
+        if: ${{ matrix.tf != 'latest' }}
 
-        - name: Setup ALZ Module Inputs
-          run: |
+      - name: Setup ALZ Module Inputs
+        run: |
 
-            # Get Inputs
-            $infrastructureAsCode = "${{ matrix.iac }}"
-            $versionControlSystem = "${{ matrix.vcs }}"
-            $authScheme = "${{ matrix.as }}"
-            $operatingSystem = "${{ matrix.os }}"
-            $terraformVersion = "${{ matrix.tf }}"
-            $selfHostedAgents = "${{ matrix.ag }}"
+          # Get Inputs
+          $infrastructureAsCode = "${{ matrix.iac }}"
+          $versionControlSystem = "${{ matrix.vcs }}"
+          $authScheme = "${{ matrix.as }}"
+          $operatingSystem = "${{ matrix.os }}"
+          $terraformVersion = "${{ matrix.tf }}"
+          $selfHostedAgents = "${{ matrix.ag }}"
 
-            $enableSelfHostedAgents = "false"
-            if($selfHostedAgents -eq "public" -or $selfHostedAgents -eq "private") {
-              $enableSelfHostedAgents = "true"
-            }
+          $enableSelfHostedAgents = "false"
+          if($selfHostedAgents -eq "public" -or $selfHostedAgents -eq "private") {
+            $enableSelfHostedAgents = "true"
+          }
 
-            $enablePrivateNetworking = "false"
-            if($selfHostedAgents -eq "private") {
-              $enablePrivateNetworking = "true"
-            }
+          $enablePrivateNetworking = "false"
+          if($selfHostedAgents -eq "private") {
+            $enablePrivateNetworking = "true"
+          }
 
-            # Get Unique ID
-            $infrastructureAsCodeShort = $infrastructureAsCode.Substring(0, 1)
-            $versionControlSystemShort = $versionControlSystem.Substring(0, 1)
-            $authSchemeShort = $authScheme.Substring(0, 1)
-            $operatingSystemShort = $operatingSystem.Substring(0, 1)
-            $terraformVersionShort = if ($terraformVersion -eq "latest") { "l" } else { "m" }
-            $selfhostedAgentsShort = "n"
-            if($selfHostedAgents -eq "public") {
-              $selfhostedAgentsShort = "p"
-            }
-            if($selfHostedAgents -eq "private") {
-              $selfhostedAgentsShort = "r"
-            }
+          # Get Unique ID
+          $infrastructureAsCodeShort = $infrastructureAsCode.Substring(0, 1)
+          $versionControlSystemShort = $versionControlSystem.Substring(0, 1)
+          $authSchemeShort = $authScheme.Substring(0, 1)
+          $operatingSystemShort = $operatingSystem.Substring(0, 1)
+          $terraformVersionShort = if ($terraformVersion -eq "latest") { "l" } else { "m" }
+          $selfhostedAgentsShort = "n"
+          if($selfHostedAgents -eq "public") {
+            $selfhostedAgentsShort = "p"
+          }
+          if($selfHostedAgents -eq "private") {
+            $selfhostedAgentsShort = "r"
+          }
 
-            $localDeployAzureResources = if($terraformVersion -eq "latest") { "true" } else { "false" }
+          $localDeployAzureResources = if($terraformVersion -eq "latest") { "true" } else { "false" }
 
-            $runNumber = "${{ github.run_number }}"
+          $runNumber = "${{ github.run_number }}"
 
-            Write-Host "Infrastructure As Code: $infrastructureAsCode ($infrastructureAsCodeShort)"
-            Write-Host "Version Control System: $versionControlSystem ($versionControlSystemShort)"
-            Write-Host "Auth Scheme: $authScheme ($authSchemeShort)"
-            Write-Host "Operating System: $operatingSystem ($operatingSystemShort)"
-            Write-Host "Terraform Version: $terraformVersion ($terraformVersionShort)"
-            Write-Host "Self Hosted Agents: $selfHostedAgents ($selfhostedAgentsShort)"
-            Write-Host "Local Deploy Azure Resources: $localDeployAzureResources"
-            Write-Host "Run Number: $runNumber"
+          Write-Host "Infrastructure As Code: $infrastructureAsCode ($infrastructureAsCodeShort)"
+          Write-Host "Version Control System: $versionControlSystem ($versionControlSystemShort)"
+          Write-Host "Auth Scheme: $authScheme ($authSchemeShort)"
+          Write-Host "Operating System: $operatingSystem ($operatingSystemShort)"
+          Write-Host "Terraform Version: $terraformVersion ($terraformVersionShort)"
+          Write-Host "Self Hosted Agents: $selfHostedAgents ($selfhostedAgentsShort)"
+          Write-Host "Local Deploy Azure Resources: $localDeployAzureResources"
+          Write-Host "Run Number: $runNumber"
 
-            $uniqueId = "$infrastructureAsCodeShort$operatingSystemShort$versionControlSystemShort$authSchemeShort$terraformVersionShort$selfhostedAgentsShort$runNumber".ToLower()
-            echo "UNIQUE_ID=$uniqueId" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
+          $uniqueId = "$infrastructureAsCodeShort$operatingSystemShort$versionControlSystemShort$authSchemeShort$terraformVersionShort$selfhostedAgentsShort$runNumber".ToLower()
+          echo "UNIQUE_ID=$uniqueId" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
 
-            Write-Host "Unique ID: $uniqueId"
+          Write-Host "Unique ID: $uniqueId"
 
-            $Inputs = @{}
-            $Inputs["iac"] = $infrastructureAsCode
-            $Inputs["bootstrap"] = "alz_$versionControlSystem"
-            $Inputs["starter"] = ".test"
-            $Inputs["bootstrap_location"] = "uksouth"
-            $Inputs["bootstrap_subscription_id"] = ""
-            $Inputs["service_name"] = "alz"
-            $Inputs["environment_name"] = $uniqueId
-            $Inputs["postfix_number"] = "1"
+          $Inputs = @{}
+          $Inputs["iac"] = $infrastructureAsCode
+          $Inputs["bootstrap"] = "alz_$versionControlSystem"
+          $Inputs["starter"] = ".test"
+          $Inputs["bootstrap_location"] = "uksouth"
+          $Inputs["bootstrap_subscription_id"] = ""
+          $Inputs["service_name"] = "alz"
+          $Inputs["environment_name"] = $uniqueId
+          $Inputs["postfix_number"] = "1"
 
-            $Inputs["use_private_networking"] = $enablePrivateNetworking
-            $Inputs["allow_storage_access_from_my_ip"] = "true"
+          $Inputs["use_private_networking"] = $enablePrivateNetworking
+          $Inputs["allow_storage_access_from_my_ip"] = "true"
 
-            if($versionControlSystem -eq "github") {
-              $Inputs["github_personal_access_token"] = "${{ secrets.VCS_TOKEN_GITHUB }}"
-              $Inputs["github_runners_personal_access_token"] = "${{ secrets.VCS_TOKEN_GITHUB }}"
-              $Inputs["github_organization_name"] = "${{ vars.VCS_ORGANIZATION }}"
-              $Inputs["use_separate_repository_for_workflow_templates"] = "true"
-              $Inputs["use_self_hosted_runners"] = $enableSelfHostedAgents
-            }
+          if($versionControlSystem -eq "github") {
+            $Inputs["github_personal_access_token"] = "${{ secrets.VCS_TOKEN_GITHUB }}"
+            $Inputs["github_runners_personal_access_token"] = "${{ secrets.VCS_TOKEN_GITHUB }}"
+            $Inputs["github_organization_name"] = "${{ vars.VCS_ORGANIZATION }}"
+            $Inputs["use_separate_repository_for_workflow_templates"] = "true"
+            $Inputs["use_self_hosted_runners"] = $enableSelfHostedAgents
+          }
 
-            if($versionControlSystem -eq "azuredevops") {
-              $Inputs["azure_devops_personal_access_token"] = "${{ secrets.VCS_TOKEN_AZURE_DEVOPS }}"
-              $Inputs["azure_devops_organization_name"] = "${{ vars.VCS_ORGANIZATION }}"
-              $Inputs["use_separate_repository_for_pipeline_templates"] = "true"
-              $Inputs["azure_devops_use_organisation_legacy_url"] = "false"
-              $Inputs["azure_devops_create_project"] = "true"
-              $Inputs["azure_devops_project_name"] = "alz-test-$uniqueId"
-              $Inputs["azure_devops_authentication_scheme"] = $authScheme
-              $Inputs["use_self_hosted_agents"] = $enableSelfHostedAgents
-            }
+          if($versionControlSystem -eq "azuredevops") {
+            $Inputs["azure_devops_personal_access_token"] = "${{ secrets.VCS_TOKEN_AZURE_DEVOPS }}"
+            $Inputs["azure_devops_organization_name"] = "${{ vars.VCS_ORGANIZATION }}"
+            $Inputs["use_separate_repository_for_pipeline_templates"] = "true"
+            $Inputs["azure_devops_use_organisation_legacy_url"] = "false"
+            $Inputs["azure_devops_create_project"] = "true"
+            $Inputs["azure_devops_project_name"] = "alz-test-$uniqueId"
+            $Inputs["azure_devops_authentication_scheme"] = $authScheme
+            $Inputs["use_self_hosted_agents"] = $enableSelfHostedAgents
+          }
 
-            if($versionControlSystem -eq "local") {
-              $Inputs["target_directory"] = ""
-              $Inputs["create_bootstrap_resources_in_azure"] = $localDeployAzureResources
-            }
+          if($versionControlSystem -eq "local") {
+            $Inputs["target_directory"] = ""
+            $Inputs["create_bootstrap_resources_in_azure"] = $localDeployAzureResources
+          }
 
-            $Inputs["apply_approvers"] = "" # if ($versionControlSystem -eq "github") { "${{ vars.VCS_APPROVER_GITHUB }}" } else { "${{ vars.VCS_APPROVER_AZUREDEVOPS }}" }
-            $Inputs["root_parent_management_group_id"] = ""
-            $Inputs["root_parent_management_group_display_name"] = "Tenant Root Group"
+          $Inputs["apply_approvers"] = "" # if ($versionControlSystem -eq "github") { "${{ vars.VCS_APPROVER_GITHUB }}" } else { "${{ vars.VCS_APPROVER_AZUREDEVOPS }}" }
+          $Inputs["root_parent_management_group_id"] = ""
+          $Inputs["root_parent_management_group_display_name"] = "Tenant Root Group"
 
-            $Inputs["subscription_id_connectivity"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
-            $Inputs["subscription_id_identity"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
-            $Inputs["subscription_id_management"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
-            $Inputs["parent_management_group_display_name"] = "Tenant Root Group"
-            $Inputs["child_management_group_display_name"] = "E2E Test"
-            $Inputs["resource_group_location"] = "uksouth"
+          $Inputs["subscription_id_connectivity"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
+          $Inputs["subscription_id_identity"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
+          $Inputs["subscription_id_management"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
+          $Inputs["parent_management_group_display_name"] = "Tenant Root Group"
+          $Inputs["child_management_group_display_name"] = "E2E Test"
+          $Inputs["resource_group_location"] = "uksouth"
 
-            if($infrastructureAsCode -eq "bicep") {
-              $Inputs["Prefix"] = "alz"
-              $Inputs["Location"] = "uksouth"
-              $Inputs["Environment"] = "live"
-              $Inputs["IdentitySubscriptionId"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
-              $Inputs["ConnectivitySubscriptionId"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
-              $Inputs["ManagementSubscriptionId"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
-              $Inputs["SecurityContact"] = "test@test.com"
-            }
+          if($infrastructureAsCode -eq "bicep") {
+            $Inputs["Prefix"] = "alz"
+            $Inputs["Location"] = "uksouth"
+            $Inputs["Environment"] = "live"
+            $Inputs["IdentitySubscriptionId"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
+            $Inputs["ConnectivitySubscriptionId"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
+            $Inputs["ManagementSubscriptionId"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
+            $Inputs["SecurityContact"] = "test@test.com"
+          }
 
-            $json = $Inputs | ConvertTo-Json -Depth 100 | Out-File -FilePath inputs.json -Encoding utf8 -Force
+          $json = $Inputs | ConvertTo-Json -Depth 100 | Out-File -FilePath inputs.json -Encoding utf8 -Force
 
-          shell: pwsh
+        shell: pwsh
 
-        - name: Run ALZ PowerShell
-          run: |
+      - name: Run ALZ PowerShell
+        run: |
 
-            $myIp = Invoke-RestMethod -Uri http://ipinfo.io/json | Select -ExpandProperty ip
-            Write-Host "Runner IP Address: $myIp"
+          $myIp = Invoke-RestMethod -Uri http://ipinfo.io/json | Select -ExpandProperty ip
+          Write-Host "Runner IP Address: $myIp"
 
-            # Get Inputs
-            $versionControlSystem = "${{ matrix.vcs }}"
+          # Get Inputs
+          $versionControlSystem = "${{ matrix.vcs }}"
 
-            # Install the Module
-            Write-Host "Installing the Accelerator PowerShell Module"
-            ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Install-AcceleratorModule.ps1 -ModuleBranch "${{ env.ALZ_POWERSHELL_BRANCH }}"
-            Write-Host "Installed Accelerator Module"
+          # Install the Module
+          Write-Host "Installing the Accelerator PowerShell Module"
+          ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Install-AcceleratorModule.ps1 -ModuleBranch "${{ env.ALZ_POWERSHELL_BRANCH }}"
+          Write-Host "Installed Accelerator Module"
 
-            # Run the Module in a retry loop
-            $retryCount = 0
-            $maximumRetries = 10
-            $retryDelay = 10000
-            $success = $false
+          # Run the Module in a retry loop
+          $retryCount = 0
+          $maximumRetries = 10
+          $retryDelay = 10000
+          $success = $false
 
-            do {
-              $retryCount++
-              try {
-                Write-Host "Running the ALZ Module"
-                Deploy-Accelerator -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "./${{ env.SOURCE_CODE_FOLDER }}" -autoApprove -ErrorAction Stop -Verbose
-                if ($LastExitCode -eq 0) {
-                  $success = $true
-                } else {
-                  throw "Failed to apply the bootstrap environment."
-                }
-              } catch {
-                Write-Host "Failed to apply the bootstrap environment. Destroy and retry..."
-                ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/destroy.ps1 -versionControlSystem $versionControlSystem
+          do {
+            $retryCount++
+            try {
+              Write-Host "Running the ALZ Module"
+              Deploy-Accelerator -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "./${{ env.SOURCE_CODE_FOLDER }}" -autoApprove -ErrorAction Stop -Verbose
+              if ($LastExitCode -eq 0) {
+                $success = $true
+              } else {
+                throw "Failed to apply the bootstrap environment."
               }
-            } while ($success -eq $false -and $retryCount -lt $maximumRetries)
-
-            if ($success -eq $false) {
-              Write-Host "File Structure after Bootstrap..."
-              $files = Get-ChildItem -Recurse -Force
-              $files | ForEach-Object { Write-Host  (Resolve-Path $_ -Relative)}
-              throw "Failed to apply the bootstrap environment after $maximumRetries attempts."
+            } catch {
+              Write-Host "Failed to apply the bootstrap environment. Destroy and retry..."
+              ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/destroy.ps1 -versionControlSystem $versionControlSystem
             }
+          } while ($success -eq $false -and $retryCount -lt $maximumRetries)
 
-          shell: pwsh
-          env:
-            ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
-            ARM_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }}
-            ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
-            ARM_USE_OIDC: true
+          if ($success -eq $false) {
+            Write-Host "File Structure after Bootstrap..."
+            $files = Get-ChildItem -Recurse -Force
+            $files | ForEach-Object { Write-Host  (Resolve-Path $_ -Relative)}
+            throw "Failed to apply the bootstrap environment after $maximumRetries attempts."
+          }
 
-        - name: Run Pipelines or Actions
-          run: |
-            $infrastructureAsCode = "${{ matrix.iac }}"
+        shell: pwsh
+        env:
+          ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }}
+          ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
+          ARM_USE_OIDC: true
 
-            if($infrastructureAsCode -eq "bicep") {
-              Write-Host "Skipping Pipelines or Actions for Bicep"
-              exit 0
-            }
+      - name: Run Pipelines or Actions
+        run: |
+          $infrastructureAsCode = "${{ matrix.iac }}"
 
-            # Get Inputs
-            $versionControlSystem = "${{ matrix.vcs }}"
-            $versionControlSystemOrganisationName = "${{ vars.VCS_ORGANIZATION }}"
-            $uniqueId = $ENV:UNIQUE_ID
+          if($infrastructureAsCode -eq "bicep") {
+            Write-Host "Skipping Pipelines or Actions for Bicep"
+            exit 0
+          }
 
-            if($versionControlSystem -eq "github") {
-              $repositoryName = "alz-$uniqueId"
+          # Get Inputs
+          $versionControlSystem = "${{ matrix.vcs }}"
+          $versionControlSystemOrganisationName = "${{ vars.VCS_ORGANIZATION }}"
+          $uniqueId = $ENV:UNIQUE_ID
 
-              Write-Host "Running GitHub Actions Test for CI"
-              ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/github-action-run.ps1 `
-                -organizationName $versionControlSystemOrganisationName `
-                -repositoryName $repositoryName `
-                -workflowFileName "ci.yaml" `
-                -skipDestroy `
-                -personalAccessToken "${{ secrets.VCS_TOKEN_GITHUB }}"
+          if($versionControlSystem -eq "github") {
+            $repositoryName = "alz-$uniqueId"
 
-              Write-Host "Running GitHub Actions Test for CD"
-              ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/github-action-run.ps1 `
-                -organizationName $versionControlSystemOrganisationName `
-                -repositoryName $repositoryName `
-                -workflowFileName "cd.yaml" `
-                -personalAccessToken "${{ secrets.VCS_TOKEN_GITHUB }}"
-            }
+            Write-Host "Running GitHub Actions Test for CI"
+            ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/github-action-run.ps1 `
+              -organizationName $versionControlSystemOrganisationName `
+              -repositoryName $repositoryName `
+              -workflowFileName "ci.yaml" `
+              -skipDestroy `
+              -personalAccessToken "${{ secrets.VCS_TOKEN_GITHUB }}"
 
-            if($versionControlSystem -eq "azuredevops") {
-              $projectName = "alz-test-$uniqueId"
+            Write-Host "Running GitHub Actions Test for CD"
+            ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/github-action-run.ps1 `
+              -organizationName $versionControlSystemOrganisationName `
+              -repositoryName $repositoryName `
+              -workflowFileName "cd.yaml" `
+              -personalAccessToken "${{ secrets.VCS_TOKEN_GITHUB }}"
+          }
 
-              Write-Host "Running Azure DevOps Pipelines Test for CI"
-              ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/azuredevops-pipeline-run.ps1 `
-                -organizationName $versionControlSystemOrganisationName `
-                -projectName $projectName `
-                -pipelineNamePart "Continuous Integration" `
-                -skipDestroy `
-                -personalAccessToken "${{ secrets.VCS_TOKEN_AZURE_DEVOPS }}"
+          if($versionControlSystem -eq "azuredevops") {
+            $projectName = "alz-test-$uniqueId"
 
-              Write-Host "Running Azure DevOps Pipelines Test for CD"
-              ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/azuredevops-pipeline-run.ps1 `
-                -organizationName $versionControlSystemOrganisationName `
-                -projectName $projectName `
-                -pipelineNamePart "Continuous Delivery" `
-                -personalAccessToken "${{ secrets.VCS_TOKEN_AZURE_DEVOPS }}"
-            }
+            Write-Host "Running Azure DevOps Pipelines Test for CI"
+            ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/azuredevops-pipeline-run.ps1 `
+              -organizationName $versionControlSystemOrganisationName `
+              -projectName $projectName `
+              -pipelineNamePart "Continuous Integration" `
+              -skipDestroy `
+              -personalAccessToken "${{ secrets.VCS_TOKEN_AZURE_DEVOPS }}"
 
-          shell: pwsh
+            Write-Host "Running Azure DevOps Pipelines Test for CD"
+            ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/azuredevops-pipeline-run.ps1 `
+              -organizationName $versionControlSystemOrganisationName `
+              -projectName $projectName `
+              -pipelineNamePart "Continuous Delivery" `
+              -personalAccessToken "${{ secrets.VCS_TOKEN_AZURE_DEVOPS }}"
+          }
 
-        - name: Setup Terraform
-          uses: hashicorp/setup-terraform@v2
-          with:
-            terraform_version: "latest"
-            terraform_wrapper: false
-          if: always()
+        shell: pwsh
 
-        - name: Run Terraform Destroy to Clean Up
-          if: always()
-          run: |
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: "latest"
+          terraform_wrapper: false
+        if: always()
 
-            $myIp = Invoke-RestMethod -Uri http://ipinfo.io/json | Select -ExpandProperty ip
-            Write-Host "Runner IP Address: $myIp"
+      - name: Run Terraform Destroy to Clean Up
+        if: always()
+        run: |
 
-            # Get Inputs
-            $versionControlSystem = "${{ matrix.vcs }}"
+          $myIp = Invoke-RestMethod -Uri http://ipinfo.io/json | Select -ExpandProperty ip
+          Write-Host "Runner IP Address: $myIp"
 
-            Write-Host "Installing the Accelerator PowerShell Module"
-            ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Install-AcceleratorModule.ps1 -ModuleBranch "${{ env.ALZ_POWERSHELL_BRANCH }}"
-            Write-Host "Installed Accelerator Module"
+          # Get Inputs
+          $versionControlSystem = "${{ matrix.vcs }}"
 
-            # Run destroy
-            ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/destroy.ps1 -versionControlSystem $versionControlSystem
+          Write-Host "Installing the Accelerator PowerShell Module"
+          ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Install-AcceleratorModule.ps1 -ModuleBranch "${{ env.ALZ_POWERSHELL_BRANCH }}"
+          Write-Host "Installed Accelerator Module"
 
-          shell: pwsh
-          env:
-            ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
-            ARM_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }}
-            ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
-            ARM_USE_OIDC: true
+          # Run destroy
+          ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/destroy.ps1 -versionControlSystem $versionControlSystem
+
+        shell: pwsh
+        env:
+          ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }}
+          ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
+          ARM_USE_OIDC: true
