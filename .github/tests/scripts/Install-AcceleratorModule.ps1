@@ -3,6 +3,10 @@ param (
     [string]$ModuleBranch = "main"
 )
 
+if($null -eq $ModuleBranch -or $ModuleBranch -eq "") {
+    $ModuleBranch = "main"
+}
+
 $targetDirectory = "./accelerator-powershell-module"
 
 if(!(Test-Path $targetDirectory)) {
