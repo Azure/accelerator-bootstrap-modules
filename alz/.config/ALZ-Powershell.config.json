@@ -40,7 +40,7 @@
             "maps_to": [ "bootstrap", "starter" ],
             "validation": "azure_subscription_id",
             "display_order": 4,
-            "description": "The identifier of the Connectivity Subscription."
+            "description": "The identifier of the Identity Subscription."
         },
         "subscription_id_management" : {
             "type": "string",
