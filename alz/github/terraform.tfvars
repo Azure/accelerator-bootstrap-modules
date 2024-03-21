@@ -1,5 +1,5 @@
 # Azure Variables
-runner_container_image = "jaredfholgate/github-runner:0.0.6"
+runner_container_image = "microsoftavm/github-runner:1.0.0"
 
 # Naming
 resource_names = {
