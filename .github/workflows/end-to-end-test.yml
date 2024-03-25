@@ -177,10 +177,8 @@ jobs:
             $Inputs["create_bootstrap_resources_in_azure"] = $localDeployAzureResources
           }
 
-          $Inputs["apply_approvers"] = "" # if ($versionControlSystem -eq "github") { "${{ vars.VCS_APPROVER_GITHUB }}" } else { "${{ vars.VCS_APPROVER_AZUREDEVOPS }}" }
+          $Inputs["apply_approvers"] = ""
           $Inputs["root_parent_management_group_id"] = ""
-          $Inputs["root_parent_management_group_display_name"] = "Tenant Root Group"
-
           $Inputs["subscription_id_connectivity"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
           $Inputs["subscription_id_identity"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
           $Inputs["subscription_id_management"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
