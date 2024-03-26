@@ -38,5 +38,5 @@ locals {
 }
 
 locals {
-  runner_group_name = data.github_organization.alz.plan == local.enterprise_plan ? github_actions_runner_group.alz[keys(var.runner_groups)[0]].name : var.default_runner_group_name
+  runner_group_name = (data.github_organization.alz.plan == local.enterprise_plan && length(var.runner_groups) > 0) ? github_actions_runner_group.alz[keys(var.runner_groups)[0]].name : var.default_runner_group_name
 }
