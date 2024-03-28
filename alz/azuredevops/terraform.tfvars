@@ -1,5 +1,5 @@
 # Azure Variables
-agent_container_image = "microsoftavm/azure-devops-agent:1.0.0"
+agent_container_image = "microsoftavm/azure-devops-agent:1.1.0"
 
 # Names
 resource_names = {
