@@ -77,20 +77,27 @@ variable "use_self_hosted_agents" {
   default     = true
 }
 
+variable "azure_devops_agents_personal_access_token" {
+  description = "Personal access token for Azure DevOps self-hosted agents (the token requires the 'Agent Pools - Read & Manage' scope and should have the maximum expiry). Only required if 'use_self_hosted_runners' is 'true'|15"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
 variable "use_private_networking" {
-  description = "Controls whether to use private networking for the agent to storage account communication|15"
+  description = "Controls whether to use private networking for the agent to storage account communication|16"
   type        = bool
   default     = true
 }
 
 variable "allow_storage_access_from_my_ip" {
-  description = "Allow access to the storage account from the current IP address. We recommend this is kept off for security|16"
+  description = "Allow access to the storage account from the current IP address. We recommend this is kept off for security|17"
   type        = bool
   default     = false
 }
 
 variable "apply_approvers" {
-  description = "Apply stage approvers to the action / pipeline, must be a list of SPNs separate by a comma (e.g. abcdef@microsoft.com,ghijklm@microsoft.com)|17"
+  description = "Apply stage approvers to the action / pipeline, must be a list of SPNs separate by a comma (e.g. abcdef@microsoft.com,ghijklm@microsoft.com)|18"
   type        = list(string)
   default     = []
 }
