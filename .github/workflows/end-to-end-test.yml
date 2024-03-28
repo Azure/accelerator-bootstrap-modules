@@ -163,6 +163,7 @@ jobs:
 
           if($versionControlSystem -eq "azuredevops") {
             $Inputs["azure_devops_personal_access_token"] = "${{ secrets.VCS_TOKEN_AZURE_DEVOPS }}"
+            $Inputs["azure_devops_agents_personal_access_token"] = "${{ secrets.VCS_TOKEN_AZURE_DEVOPS }}"
             $Inputs["azure_devops_organization_name"] = "${{ vars.VCS_ORGANIZATION }}"
             $Inputs["use_separate_repository_for_pipeline_templates"] = "true"
             $Inputs["azure_devops_use_organisation_legacy_url"] = "false"

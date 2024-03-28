@@ -32,7 +32,7 @@ module "azure" {
   agent_container_instances                                 = local.agent_container_instances
   agent_container_instance_image                            = var.agent_container_image
   agent_organization_url                                    = module.azure_devops.organization_url
-  agent_token                                               = var.azure_devops_personal_access_token
+  agent_token                                               = var.azure_devops_agents_personal_access_token
   agent_organization_environment_variable                   = var.agent_organization_environment_variable
   agent_pool_environment_variable                           = var.agent_pool_environment_variable
   agent_name_environment_variable                           = var.agent_name_environment_variable
