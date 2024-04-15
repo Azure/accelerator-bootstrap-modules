@@ -14,7 +14,7 @@ variable "pipeline_folder_path" {
 }
 
 variable "root_parent_management_group_id" {
-  description = "The root parent management group ID. This will default to the Tenant Root Group IDif not supplied"
+  description = "The root parent management group ID. This will default to the Tenant Root Group ID if not supplied"
   type        = string
   default     = ""
 }
