@@ -66,7 +66,7 @@ variable "use_private_networking" {
 variable "use_runner_group" {
   description = "Controls whether to use a runner group. This is only relevant if using a GitHub Enterprise licensed organization|12"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "allow_storage_access_from_my_ip" {
