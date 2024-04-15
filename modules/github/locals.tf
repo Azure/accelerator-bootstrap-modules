@@ -13,7 +13,7 @@ locals {
 }
 
 locals {
-  use_runner_group = var.use_runner_group && module.github.organization_plan == local.enterprise_plan
+  use_runner_group = var.use_runner_group &&  data.github_organization.alz.plan == local.enterprise_plan
   runner_groups    = local.use_runner_group ? var.runner_groups : {}
 }
 
