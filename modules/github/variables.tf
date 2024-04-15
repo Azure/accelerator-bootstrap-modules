@@ -75,3 +75,11 @@ variable "runner_groups" {
 variable "default_runner_group_name" {
   type = string
 }
+
+variable "use_runner_group" {
+  type = bool
+}
+
+variable "use_self_hosted_runners" {
+  type = bool
+}

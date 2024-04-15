@@ -14,8 +14,9 @@ variable "pipeline_folder_path" {
 }
 
 variable "root_parent_management_group_id" {
-  description = "The root parent management group display name. This will default to 'Tenant Root Group' if not supplied"
+  description = "The root parent management group ID. This will default to the Tenant Root Group ID if not supplied"
   type        = string
+  default     = ""
 }
 
 variable "subscription_id_connectivity" {

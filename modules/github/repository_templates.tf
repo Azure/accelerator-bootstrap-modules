@@ -35,3 +35,9 @@ resource "github_branch_protection" "alz_templates" {
     required_approving_review_count = length(var.approvers) > 1 ? 1 : 0
   }
 }
+
+resource "github_actions_repository_access_level" "alz_templates" {
+  count        = var.use_template_repository && data.github_organization.alz.plan == local.enterprise_plan ? 1 : 0
+  access_level = "organization"
+  repository   = github_repository.alz_templates[0].name
+}

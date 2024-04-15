@@ -63,14 +63,20 @@ variable "use_private_networking" {
   default     = true
 }
 
+variable "use_runner_group" {
+  description = "Controls whether to use a runner group. This is only relevant if using a GitHub Enterprise licensed organization|12"
+  type        = bool
+  default     = true
+}
+
 variable "allow_storage_access_from_my_ip" {
-  description = "Allow access to the storage account from the current IP address. We recommend this is kept off for security|12"
+  description = "Allow access to the storage account from the current IP address. We recommend this is kept off for security|13"
   type        = bool
   default     = false
 }
 
 variable "apply_approvers" {
-  description = "Apply stage approvers to the action / pipeline, must be a list of SPNs separate by a comma (e.g. abcdef@microsoft.com,ghijklm@microsoft.com)|13"
+  description = "Apply stage approvers to the action / pipeline, must be a list of SPNs separate by a comma (e.g. abcdef@microsoft.com,ghijklm@microsoft.com)|14"
   type        = list(string)
   default     = []
 }
