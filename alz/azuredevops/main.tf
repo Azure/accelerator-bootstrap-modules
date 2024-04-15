@@ -75,4 +75,5 @@ module "azure_devops" {
   approvers                                    = var.apply_approvers
   group_name                                   = local.resource_names.version_control_system_group
   agent_pools                                  = local.agent_pools
+  use_self_hosted_agents                       = var.use_self_hosted_agents
 }

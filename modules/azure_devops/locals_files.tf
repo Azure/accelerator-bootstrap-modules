@@ -1,6 +1,6 @@
 locals {
-  agent_pool_configuration_plan  = local.has_agent_pools ? "name: ${var.environments[local.plan_key].agent_pool_name}" : "vmImage: ubuntu-latest"
-  agent_pool_configuration_apply = local.has_agent_pools ? "name: ${var.environments[local.apply_key].agent_pool_name}" : "vmImage: ubuntu-latest"
+  agent_pool_configuration_plan  = var.use_self_hosted_agents ? "name: ${var.environments[local.plan_key].agent_pool_name}" : "vmImage: ubuntu-latest"
+  agent_pool_configuration_apply = var.use_self_hosted_agents ? "name: ${var.environments[local.apply_key].agent_pool_name}" : "vmImage: ubuntu-latest"
   service_connection_plan_name   = var.environments[local.plan_key].service_connection_name
   service_connection_apply_name  = var.environments[local.apply_key].service_connection_name
   environment_name_plan          = var.environments[local.plan_key].environment_name

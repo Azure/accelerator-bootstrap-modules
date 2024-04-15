@@ -1,5 +1,7 @@
 # Accelerator Bootstrap Modules
 
+[![End to End Tests](https://github.com/Azure/accelerator-bootstrap-modules/actions/workflows/end-to-end-test.yml/badge.svg)](https://github.com/Azure/accelerator-bootstrap-modules/actions/workflows/end-to-end-test.yml)
+
 This repository contains the Terraform modules that are used to deploy the bootstrap environments.
 
 ## Bootstrap Configuraiton Schema

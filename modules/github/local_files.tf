@@ -1,6 +1,6 @@
 locals {
   self_hosted_runner_name = local.use_runner_group ? "group: ${local.runner_group_name}" : "self-hosted"
-  runner_name             = local.use_runner_group && length(var.runner_groups) != 0 ? local.self_hosted_runner_name : "ubuntu-latest"
+  runner_name             = var.use_self_hosted_runners ? local.self_hosted_runner_name : "ubuntu-latest"
 }
 
 locals {

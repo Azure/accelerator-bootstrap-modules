@@ -112,3 +112,7 @@ variable "pipeline_templates" {
 variable "agent_pools" {
   type = map(string)
 }
+
+variable "use_self_hosted_agents" {
+  type = bool
+}

@@ -71,4 +71,5 @@ module "github" {
   runner_groups                                = local.runner_groups
   use_runner_group                             = local.use_runner_group
   default_runner_group_name                    = var.default_runner_group_name
+  use_self_hosted_runners                      = var.use_self_hosted_runners
 }
