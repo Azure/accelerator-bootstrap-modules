@@ -8,7 +8,6 @@ locals {
 }
 
 locals {
-  free_plan       = "free"
   enterprise_plan = "enterprise"
 }
 
