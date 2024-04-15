@@ -37,7 +37,7 @@ resource "github_branch_protection" "alz_templates" {
 }
 
 resource "github_actions_repository_access_level" "alz_templates" {
-  count        = var.use_template_repository ? 1 : 0
+  count        = var.use_template_repository && data.github_organization.alz.plan == local.enterprise_plan ? 1 : 0
   access_level = "organization"
   repository   = github_repository.alz_templates[0].name
 }
