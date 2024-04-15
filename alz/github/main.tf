@@ -33,12 +33,12 @@ module "azure" {
   root_parent_management_group_id                           = local.root_parent_management_group_id
   agent_container_instances                                 = local.runner_container_instances
   agent_container_instance_image                            = var.runner_container_image
-  agent_organization_url                                    = "${module.github.organization_url}/${module.github.repository_names.module}"
+  agent_organization_url                                    = local.runner_organization_repository_url
   agent_token                                               = var.github_runners_personal_access_token
   agent_organization_environment_variable                   = var.runner_organization_environment_variable
   agent_pool_environment_variable                           = var.runner_group_environment_variable
   agent_name_environment_variable                           = var.runner_name_environment_variable
-  use_agent_pool_environment_variable                       = module.github.organization_plan == "enterprise"
+  use_agent_pool_environment_variable                       = local.use_runner_group
   agent_token_environment_variable                          = var.runner_token_environment_variable
   virtual_network_name                                      = local.resource_names.virtual_network
   virtual_network_subnet_name_container_instances           = local.resource_names.subnet_container_instances
@@ -69,5 +69,6 @@ module "github" {
   approvers                                    = var.apply_approvers
   team_name                                    = local.resource_names.version_control_system_team
   runner_groups                                = local.runner_groups
+  use_runner_group                             = local.use_runner_group
   default_runner_group_name                    = var.default_runner_group_name
 }

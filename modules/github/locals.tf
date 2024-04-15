@@ -13,6 +13,10 @@ locals {
 }
 
 locals {
+  runner_groups = var.use_runner_group ? var.runner_groups : {}
+}
+
+locals {
   primary_approver     = length(var.approvers) > 0 ? var.approvers[0] : ""
   default_commit_email = coalesce(local.primary_approver, "demo@microsoft.com")
 }
@@ -38,5 +42,5 @@ locals {
 }
 
 locals {
-  runner_group_name = (data.github_organization.alz.plan == local.enterprise_plan && length(var.runner_groups) > 0) ? github_actions_runner_group.alz[keys(var.runner_groups)[0]].name : var.default_runner_group_name
+  runner_group_name = (var.use_runner_group && length(var.runner_groups) > 0) ? github_actions_runner_group.alz[keys(var.runner_groups)[0]].name : var.default_runner_group_name
 }

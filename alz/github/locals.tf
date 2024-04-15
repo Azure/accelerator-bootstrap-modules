@@ -8,6 +8,16 @@ locals {
 }
 
 locals {
+  free_plan       = "free"
+  enterprise_plan = "enterprise"
+}
+
+locals {
+  use_runner_group                   = var.use_runner_group && module.github.organization_plan == local.enterprise_plan
+  runner_organization_repository_url = local.use_runner_group ? module.github.organization_url : "${module.github.organization_url}/${module.github.repository_names.module}"
+}
+
+locals {
   plan_key  = "plan"
   apply_key = "apply"
 }
