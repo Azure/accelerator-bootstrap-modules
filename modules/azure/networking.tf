@@ -12,7 +12,7 @@ resource "azurerm_subnet" "container_instances" {
   resource_group_name                       = azurerm_resource_group.network[0].name
   virtual_network_name                      = azurerm_virtual_network.alz[0].name
   address_prefixes                          = [var.virtual_network_subnet_address_prefix_container_instances]
-  private_endpoint_network_policies_enabled = true
+  private_endpoint_network_policies         = "Enabled"
   delegation {
     name = "aci-delegation"
     service_delegation {
@@ -28,7 +28,7 @@ resource "azurerm_subnet" "storage" {
   resource_group_name                       = azurerm_resource_group.network[0].name
   virtual_network_name                      = azurerm_virtual_network.alz[0].name
   address_prefixes                          = [var.virtual_network_subnet_address_prefix_storage]
-  private_endpoint_network_policies_enabled = true
+  private_endpoint_network_policies         = "Enabled"
 }
 
 resource "azurerm_private_dns_zone" "alz" {
