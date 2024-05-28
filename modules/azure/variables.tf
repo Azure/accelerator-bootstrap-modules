@@ -62,7 +62,7 @@ variable "agent_container_instances" {
     memory                  = optional(number, 16)
     cpu_max                 = optional(number, 4)
     memory_max              = optional(number, 16)
-    zones                   = optional(set(string), ["1", "2", "3"])
+    zones                   = optional(set(string), ["1"])
   }))
   default = {}
 }
