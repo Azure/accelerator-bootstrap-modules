@@ -27,11 +27,11 @@ resource "azapi_resource" "storage_account_container" {
   type      = "Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01"
   parent_id = data.azapi_resource_id.storage_account_blob_service.id
   name      = var.storage_container_name
-  body = jsonencode({
+  body = {
     properties = {
       publicAccess = "None"
     }
-  })
+  }
   depends_on = [azurerm_storage_account_network_rules.alz]
 }
 
