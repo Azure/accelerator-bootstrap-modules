@@ -81,7 +81,7 @@ locals {
       memory                  = var.agent_container_memory
       cpu_max                 = var.agent_container_cpu_max
       memory_max              = var.agent_container_memory_max
-      zones                   = ["3"] 
+      zones                   = ["3"]
     }
     agent_04 = {
       container_instance_name = local.resource_names.container_instance_04
