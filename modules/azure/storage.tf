@@ -32,6 +32,7 @@ resource "azapi_resource" "storage_account_container" {
       publicAccess = "None"
     }
   }
+  schema_validation_enabled = false
   depends_on = [azurerm_storage_account_network_rules.alz]
 }
 
