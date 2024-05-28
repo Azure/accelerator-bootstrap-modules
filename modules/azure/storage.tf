@@ -33,7 +33,7 @@ resource "azapi_resource" "storage_account_container" {
     }
   }
   schema_validation_enabled = false
-  depends_on = [azurerm_storage_account_network_rules.alz]
+  depends_on                = [azurerm_storage_account_network_rules.alz]
 }
 
 resource "azurerm_role_assignment" "alz_storage_container" {
