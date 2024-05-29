@@ -25,8 +25,8 @@ resource "azurerm_nat_gateway" "alz" {
 
 resource "azurerm_nat_gateway_public_ip_association" "alz" {
   count                = local.use_private_networking ? 1 : 0
-  nat_gateway_id       = azurerm_nat_gateway.alz[1].id
-  public_ip_address_id = azurerm_public_ip.alz[1].id
+  nat_gateway_id       = azurerm_nat_gateway.alz[0].id
+  public_ip_address_id = azurerm_public_ip.alz[0].id
 }
 
 resource "azurerm_subnet" "container_instances" {
@@ -46,8 +46,8 @@ resource "azurerm_subnet" "container_instances" {
 }
 
 resource "azurerm_subnet_nat_gateway_association" "container_instances" {
-  subnet_id      = azurerm_subnet.container_instances[1].id
-  nat_gateway_id = azurerm_nat_gateway.alz[1].id
+  subnet_id      = azurerm_subnet.container_instances[0].id
+  nat_gateway_id = azurerm_nat_gateway.alz[0].id
 }
 
 resource "azurerm_subnet" "storage" {
