@@ -44,7 +44,7 @@ variable "storage_container_name" {
 
 variable "storage_account_replication_type" {
   type    = string
-  default = "ZRS"
+  default = "GZRS"
   validation {
     condition     = var.storage_account_replication_type == "ZRS" || var.storage_account_replication_type == "GZRS" || var.storage_account_replication_type == "RAGZRS"
     error_message = "Invalid storage account replication type. Valid values are LRS, GZRS and RAGZRS."

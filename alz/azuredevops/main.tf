@@ -48,6 +48,7 @@ module "azure" {
   virtual_network_address_space                             = var.virtual_network_address_space
   virtual_network_subnet_address_prefix_container_instances = var.virtual_network_subnet_address_prefix_container_instances
   virtual_network_subnet_address_prefix_storage             = var.virtual_network_subnet_address_prefix_storage
+  storage_account_replication_type                          = var.storage_account_replication_type
 }
 
 module "azure_devops" {

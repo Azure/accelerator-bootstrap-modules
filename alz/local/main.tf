@@ -27,6 +27,7 @@ module "azure" {
   azure_location                   = var.bootstrap_location
   target_subscriptions             = local.target_subscriptions
   root_parent_management_group_id  = local.root_parent_management_group_id
+  storage_account_replication_type = var.storage_account_replication_type
 }
 
 resource "local_file" "alz" {
