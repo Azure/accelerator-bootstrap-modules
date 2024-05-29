@@ -202,6 +202,18 @@ variable "virtual_network_address_space" {
   default     = "10.0.0.0/24"
 }
 
+variable "public_ip_name" {
+  type        = string
+  description = "The name of the public ip"
+  default     = ""
+}
+
+variable "nat_gateway_name" {
+  type        = string
+  description = "The name of the nat gateway"
+  default     = ""
+}
+
 variable "virtual_network_subnet_name_container_instances" {
   type        = string
   description = "Name of the virtual network subnet"
