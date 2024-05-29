@@ -46,6 +46,7 @@ resource "azurerm_subnet" "container_instances" {
 }
 
 resource "azurerm_subnet_nat_gateway_association" "container_instances" {
+  count          = local.use_private_networking ? 1 : 0
   subnet_id      = azurerm_subnet.container_instances[0].id
   nat_gateway_id = azurerm_nat_gateway.alz[0].id
 }
