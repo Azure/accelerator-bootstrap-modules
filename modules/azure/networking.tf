@@ -24,7 +24,7 @@ resource "azurerm_nat_gateway" "alz" {
 }
 
 resource "azurerm_nat_gateway_public_ip_association" "alz" {
-  count               = local.use_private_networking ? 1 : 0
+  count                = local.use_private_networking ? 1 : 0
   nat_gateway_id       = azurerm_nat_gateway.alz[1].id
   public_ip_address_id = azurerm_public_ip.alz[1].id
 }
