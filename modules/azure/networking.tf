@@ -7,11 +7,11 @@ resource "azurerm_virtual_network" "alz" {
 }
 
 resource "azurerm_subnet" "container_instances" {
-  count                             = local.use_private_networking ? 1 : 0
-  name                              = var.virtual_network_subnet_name_container_instances
-  resource_group_name               = azurerm_resource_group.network[0].name
-  virtual_network_name              = azurerm_virtual_network.alz[0].name
-  address_prefixes                  = [var.virtual_network_subnet_address_prefix_container_instances]
+  count                = local.use_private_networking ? 1 : 0
+  name                 = var.virtual_network_subnet_name_container_instances
+  resource_group_name  = azurerm_resource_group.network[0].name
+  virtual_network_name = azurerm_virtual_network.alz[0].name
+  address_prefixes     = [var.virtual_network_subnet_address_prefix_container_instances]
   delegation {
     name = "aci-delegation"
     service_delegation {
@@ -22,11 +22,11 @@ resource "azurerm_subnet" "container_instances" {
 }
 
 resource "azurerm_subnet" "storage" {
-  count                             = local.use_private_networking ? 1 : 0
-  name                              = var.virtual_network_subnet_name_storage
-  resource_group_name               = azurerm_resource_group.network[0].name
-  virtual_network_name              = azurerm_virtual_network.alz[0].name
-  address_prefixes                  = [var.virtual_network_subnet_address_prefix_storage]
+  count                = local.use_private_networking ? 1 : 0
+  name                 = var.virtual_network_subnet_name_storage
+  resource_group_name  = azurerm_resource_group.network[0].name
+  virtual_network_name = azurerm_virtual_network.alz[0].name
+  address_prefixes     = [var.virtual_network_subnet_address_prefix_storage]
 }
 
 resource "azurerm_private_dns_zone" "alz" {
