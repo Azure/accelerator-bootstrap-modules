@@ -42,6 +42,15 @@ variable "storage_container_name" {
   type = string
 }
 
+variable "storage_account_replication_type" {
+  type    = string
+  default = "GZRS"
+  validation {
+    condition     = var.storage_account_replication_type == "ZRS" || var.storage_account_replication_type == "GZRS" || var.storage_account_replication_type == "RAGZRS"
+    error_message = "Invalid storage account replication type. Valid values are LRS, GZRS and RAGZRS."
+  }
+}
+
 variable "agent_container_instances" {
   type = map(object({
     container_instance_name = string
@@ -53,6 +62,7 @@ variable "agent_container_instances" {
     memory                  = optional(number, 16)
     cpu_max                 = optional(number, 4)
     memory_max              = optional(number, 16)
+    zones                   = optional(set(string), ["1"])
   }))
   default = {}
 }

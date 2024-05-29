@@ -6,6 +6,7 @@ resource "azurerm_container_group" "alz" {
   ip_address_type     = var.use_private_networking ? "Private" : "None"
   os_type             = "Linux"
   subnet_ids          = var.use_private_networking ? [azurerm_subnet.container_instances[0].id] : []
+  zones               = each.value.zones
 
   dynamic "identity" {
     for_each = each.value.attach_managed_identity ? [1] : []

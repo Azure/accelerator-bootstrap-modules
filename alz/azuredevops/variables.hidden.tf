@@ -117,3 +117,13 @@ variable "virtual_network_subnet_address_prefix_storage" {
   description = "Address prefix for the virtual network subnet"
   default     = "10.0.0.64/26"
 }
+
+variable "storage_account_replication_type" {
+  description = "Controls the redundancy for the storage account"
+  type        = string
+  default     = "GZRS"
+  validation {
+    condition     = var.storage_account_replication_type == "ZRS" || var.storage_account_replication_type == "GZRS" || var.storage_account_replication_type == "RAGZRS"
+    error_message = "Invalid storage account replication type. Valid values are ZRS, GZRS and RAGZRS."
+  }
+}

@@ -57,6 +57,7 @@ locals {
       memory                  = var.agent_container_memory
       cpu_max                 = var.agent_container_cpu_max
       memory_max              = var.agent_container_memory_max
+      zones                   = ["1"]
     }
     agent_02 = {
       container_instance_name = local.resource_names.container_instance_02
@@ -68,6 +69,7 @@ locals {
       memory                  = var.agent_container_memory
       cpu_max                 = var.agent_container_cpu_max
       memory_max              = var.agent_container_memory_max
+      zones                   = ["2"]
     }
     agent_03 = {
       container_instance_name = local.resource_names.container_instance_03
@@ -79,6 +81,7 @@ locals {
       memory                  = var.agent_container_memory
       cpu_max                 = var.agent_container_cpu_max
       memory_max              = var.agent_container_memory_max
+      zones                   = ["3"]
     }
     agent_04 = {
       container_instance_name = local.resource_names.container_instance_04
@@ -90,6 +93,7 @@ locals {
       memory                  = var.agent_container_memory
       cpu_max                 = var.agent_container_cpu_max
       memory_max              = var.agent_container_memory_max
+      zones                   = ["1"]
     }
   } : {}
 
@@ -102,6 +106,7 @@ locals {
       memory                  = var.agent_container_memory
       cpu_max                 = var.agent_container_cpu_max
       memory_max              = var.agent_container_memory_max
+      zones                   = ["1"]
     }
     agent_02 = {
       container_instance_name = local.resource_names.container_instance_02
@@ -111,6 +116,7 @@ locals {
       memory                  = var.agent_container_memory
       cpu_max                 = var.agent_container_cpu_max
       memory_max              = var.agent_container_memory_max
+      zones                   = ["2"]
     }
   } : {}
 

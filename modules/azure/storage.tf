@@ -3,7 +3,7 @@ resource "azurerm_storage_account" "alz" {
   resource_group_name             = azurerm_resource_group.state.name
   location                        = var.azure_location
   account_tier                    = "Standard"
-  account_replication_type        = "GRS"
+  account_replication_type        = var.storage_account_replication_type
   allow_nested_items_to_be_public = false
   shared_access_key_enabled       = false
   public_network_access_enabled   = local.use_private_networking && !var.allow_storage_access_from_my_ip ? false : true
@@ -27,12 +27,13 @@ resource "azapi_resource" "storage_account_container" {
   type      = "Microsoft.Storage/storageAccounts/blobServices/containers@2023-01-01"
   parent_id = data.azapi_resource_id.storage_account_blob_service.id
   name      = var.storage_container_name
-  body = jsonencode({
+  body = {
     properties = {
       publicAccess = "None"
     }
-  })
-  depends_on = [azurerm_storage_account_network_rules.alz]
+  }
+  schema_validation_enabled = false
+  depends_on                = [azurerm_storage_account_network_rules.alz]
 }
 
 resource "azurerm_role_assignment" "alz_storage_container" {
