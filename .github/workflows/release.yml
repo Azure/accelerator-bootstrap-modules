@@ -1,0 +1,40 @@
+name: Release
+
+on:
+  push:
+    tags: [ "*" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write  
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+     
+    - name: Publish Windows
+      run: |
+        mkdir bootstrap
+        cp -r .config bootstrap
+        cp -r alz bootstrap
+        cp -r modules bootstrap
+        tar -cvzf bootstrap_modules.tar.gz bootstrap
+        zip -r bootstrap_modules.zip bootstrap
+    
+    - name: Upload Artefacts Tar
+      uses: actions/upload-artifact@v4
+      with:
+        name: bootstrap_modules
+        path: |
+          bootstrap_modules.tar.gz
+          bootstrap_modules.zip
+
+    - name: Release
+      uses: softprops/action-gh-release@v2
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        files: |
+          ./bootstrap_modules.tar.gz
+          ./bootstrap_modules.zip
