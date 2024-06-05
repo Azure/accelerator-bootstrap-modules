@@ -9,12 +9,13 @@ permissions:
   contents: write  
 
 jobs:
-  build:
+  release:
+    name: Generate Release
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
      
-    - name: Publish Windows
+    - name: Zip and Tar
       run: |
         mkdir bootstrap
         cp -r .config bootstrap
@@ -23,7 +24,7 @@ jobs:
         tar -cvzf bootstrap_modules.tar.gz bootstrap
         zip -r bootstrap_modules.zip bootstrap
     
-    - name: Upload Artefacts Tar
+    - name: Upload Artefacts
       uses: actions/upload-artifact@v4
       with:
         name: bootstrap_modules
