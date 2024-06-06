@@ -36,7 +36,8 @@
                 "pipeline_folder": "ci_cd",
                 "release_artefact_name": "starter_modules.zip",
                 "release_artefact_root_path": ".",
-                "release_artefact_ci_cd_path": "ci_cd"
+                "release_artefact_ci_cd_path": "ci_cd",
+                "release_artefact_config_file": ".config/ALZ-Powershell.config.json"
 
             },
             "bicep": {
@@ -45,7 +46,8 @@
                 "pipeline_folder": ".",
                 "release_artefact_name": "",
                 "release_artefact_root_path": ".",
-                "release_artefact_ci_cd_path": "."
+                "release_artefact_ci_cd_path": ".",
+                "release_artefact_config_file": ""
             }
         }
     },
