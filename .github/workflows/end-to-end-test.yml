@@ -143,7 +143,7 @@ jobs:
           $Inputs = @{}
           $Inputs["iac"] = $infrastructureAsCode
           $Inputs["bootstrap"] = "alz_$versionControlSystem"
-          $Inputs["starter"] = ".test"
+          $Inputs["starter"] = "test"
           $Inputs["bootstrap_location"] = "uksouth"
           $Inputs["bootstrap_subscription_id"] = ""
           $Inputs["service_name"] = "alz"
