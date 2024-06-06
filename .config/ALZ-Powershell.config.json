@@ -2,6 +2,7 @@
     "bootstrap_modules": {
         "alz_azuredevops": {
             "location": "alz/azuredevops",
+            "short_name": "Azure DevOps: Azure Landing Zones",
             "description": "Azure Landing Zones with Azure DevOps",
             "input_variable_files": [ "variables.input.tf" ],
             "interface_variable_files": [ "variables.interface.tf" ],
@@ -11,6 +12,7 @@
         },
         "alz_github": {
             "location": "alz/github",
+            "short_name": "GitHub: Azure Landing Zones",
             "description": "Azure Landing Zones with GitHub",
             "input_variable_files": [ "variables.input.tf" ],
             "interface_variable_files": [ "variables.interface.tf" ],
@@ -20,7 +22,8 @@
         },
         "alz_local": {
             "location": "alz/local",
-            "description": "Azure Landing Zones local file system",
+            "short_name": "Local: Azure Landing Zones",
+            "description": "Azure Landing Zones for local file system",
             "input_variable_files": [ "variables.input.tf" ],
             "interface_variable_files": [ "variables.interface.tf" ],
             "interface_config_file": "alz/.config/ALZ-Powershell.config.json",
