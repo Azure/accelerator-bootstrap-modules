@@ -22,8 +22,8 @@ jobs:
         cp -r alz bootstrap
         cp -r modules bootstrap
         cd bootstrap
-        tar -cvzf bootstrap_modules.tar.gz .
-        zip -r bootstrap_modules.zip .
+        tar -cvzf ../bootstrap_modules.tar.gz .
+        zip -r ../bootstrap_modules.zip .
     
     - name: Upload Artefacts
       uses: actions/upload-artifact@v4
