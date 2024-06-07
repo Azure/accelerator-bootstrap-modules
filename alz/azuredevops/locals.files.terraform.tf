@@ -1,14 +1,3 @@
-output "test" {
-  value = {
-    paths = {
-      pipeline_files = local.pipeline_files_directory_path
-      pipeline_template_files = local.pipeline_template_files_directory_path
-    }
-    pipeline_files = local.pipeline_files
-    pipeline_template_files = local.pipeline_template_files
-  }
-}
-
 locals {
   agent_pool_configuration       = var.use_self_hosted_agents ? "name: ${local.resource_names.version_control_system_agent_pool}" : "vmImage: ubuntu-latest"
   repository_name_templates      = var.use_separate_repository_for_pipeline_templates ? local.resource_names.version_control_system_repository_templates : local.resource_names.version_control_system_repository
@@ -19,7 +8,7 @@ locals {
   pipeline_files = fileset(local.pipeline_files_directory_path, "*.yaml")
   pipeline_template_files = fileset(local.pipeline_template_files_directory_path, "**/*.yaml")
 
-  cicd_file = { for pipeline_file in local.pipeline_files : pipeline_file =>
+  cicd_file = { for pipeline_file in local.pipeline_files : ".pipelines/${pipeline_file}" =>
     {
       content = templatefile("${local.pipeline_files_directory_path}/${pipeline_file}", {
         project_name              = var.azure_devops_project_name
