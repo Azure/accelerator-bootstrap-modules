@@ -36,6 +36,7 @@ module "azure" {
   agent_organization_url                                    = local.runner_organization_repository_url
   agent_token                                               = var.github_runners_personal_access_token
   agent_organization_environment_variable                   = var.runner_organization_environment_variable
+  agent_pool_name                                           = local.resource_names.version_control_system_runner_group
   agent_pool_environment_variable                           = var.runner_group_environment_variable
   agent_name_environment_variable                           = var.runner_name_environment_variable
   use_agent_pool_environment_variable                       = local.use_runner_group

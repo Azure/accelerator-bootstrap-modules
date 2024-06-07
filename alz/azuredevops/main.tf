@@ -10,9 +10,6 @@ module "resource_names" {
 module "files" {
   source                            = "../../modules/files"
   starter_module_folder_path        = local.starter_module_folder_path
-  pipeline_folder_path              = local.pipeline_folder_path
-  pipeline_files                    = var.pipeline_files
-  pipeline_template_files           = var.pipeline_template_files
   additional_files                  = concat(var.additional_files)
   configuration_file_path           = var.configuration_file_path
   built_in_configurartion_file_name = var.built_in_configurartion_file_name
@@ -34,6 +31,7 @@ module "azure" {
   agent_organization_url                                    = module.azure_devops.organization_url
   agent_token                                               = var.azure_devops_agents_personal_access_token
   agent_organization_environment_variable                   = var.agent_organization_environment_variable
+  agent_pool_name                                           = module.azure_devops.agent_pool_name
   agent_pool_environment_variable                           = var.agent_pool_environment_variable
   agent_name_environment_variable                           = var.agent_name_environment_variable
   agent_token_environment_variable                          = var.agent_token_environment_variable
@@ -57,26 +55,25 @@ module "azure_devops" {
   source                                       = "../../modules/azure_devops"
   use_legacy_organization_url                  = var.azure_devops_use_organisation_legacy_url
   organization_name                            = var.azure_devops_organization_name
-  authentication_scheme                        = var.azure_devops_authentication_scheme
   create_project                               = var.azure_devops_create_project
   project_name                                 = var.azure_devops_project_name
   environments                                 = local.environments
   managed_identity_client_ids                  = module.azure.user_assigned_managed_identity_client_ids
   repository_name                              = local.resource_names.version_control_system_repository
-  repository_files                             = module.files.files
+  repository_files                             = local.repository_files
+  template_repository_files                    = local.template_repository_files
   use_template_repository                      = var.use_separate_repository_for_pipeline_templates
   repository_name_templates                    = local.resource_names.version_control_system_repository_templates
   variable_group_name                          = local.resource_names.version_control_system_variable_group
   azure_tenant_id                              = data.azurerm_client_config.current.tenant_id
   azure_subscription_id                        = data.azurerm_client_config.current.subscription_id
   azure_subscription_name                      = data.azurerm_subscription.current.display_name
-  pipelines                                    = var.pipeline_files
-  pipeline_templates                           = var.pipeline_template_files
+  pipelines                                    = local.pipelines
   backend_azure_resource_group_name            = local.resource_names.resource_group_state
   backend_azure_storage_account_name           = local.resource_names.storage_account
   backend_azure_storage_account_container_name = local.resource_names.storage_container
   approvers                                    = var.apply_approvers
   group_name                                   = local.resource_names.version_control_system_group
-  agent_pools                                  = local.agent_pools
+  agent_pool_name                              = local.resource_names.version_control_system_agent_pool
   use_self_hosted_agents                       = var.use_self_hosted_agents
 }

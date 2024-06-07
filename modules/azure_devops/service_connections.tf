@@ -3,14 +3,11 @@ resource "azuredevops_serviceendpoint_azurerm" "alz" {
   project_id                             = local.project_id
   service_endpoint_name                  = each.value.service_connection_name
   description                            = "Managed by Terraform"
-  service_endpoint_authentication_scheme = var.authentication_scheme
+  service_endpoint_authentication_scheme = local.authentication_scheme_workload_identity_federation
 
-  dynamic "credentials" {
-    for_each = local.is_authentication_scheme_workload_identity_federation ? [1] : []
-    content {
-      serviceprincipalid = var.managed_identity_client_ids[each.key]
-    }
-  }
+  credentials {
+    serviceprincipalid = var.managed_identity_client_ids[each.key]
+   }
 
   azurerm_spn_tenantid      = var.azure_tenant_id
   azurerm_subscription_id   = var.azure_subscription_id
@@ -46,12 +43,12 @@ resource "azuredevops_check_required_template" "alz" {
   target_resource_type = "endpoint"
 
   dynamic "required_template" {
-    for_each = each.value.service_connection_template_keys
+    for_each = each.value.service_connection_required_templates
     content {
       repository_type = "azuregit"
       repository_name = "${var.project_name}/${local.repository_name_templates}"
       repository_ref  = "refs/heads/main"
-      template_path   = var.pipeline_templates[required_template.value].target_path
+      template_path   = required_template.value
     }
   }
 }

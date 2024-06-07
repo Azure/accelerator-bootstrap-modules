@@ -32,9 +32,9 @@ resource "azuredevops_pipeline_authorization" "alz_service_connection" {
 }
 
 resource "azuredevops_pipeline_authorization" "alz_agent_pool" {
-  for_each    = local.pipeline_agent_pools_map
+  for_each    = local.pipelines
   project_id  = local.project_id
-  resource_id = each.value.agent_pool_id
+  resource_id = azuredevops_agent_queue.alz[0].id
   type        = "queue"
-  pipeline_id = each.value.pipeline_id
+  pipeline_id = azuredevops_build_definition.alz[each.key].id
 }

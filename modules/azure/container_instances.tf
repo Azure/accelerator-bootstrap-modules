@@ -8,16 +8,6 @@ resource "azurerm_container_group" "alz" {
   subnet_ids          = var.use_private_networking ? [azurerm_subnet.container_instances[0].id] : []
   zones               = each.value.zones
 
-  dynamic "identity" {
-    for_each = each.value.attach_managed_identity ? [1] : []
-    content {
-      type = "UserAssigned"
-      identity_ids = [
-        azurerm_user_assigned_identity.alz[each.value.managed_identity_key].id
-      ]
-    }
-  }
-
   container {
     name         = each.value.container_instance_name
     image        = var.agent_container_instance_image
@@ -35,7 +25,7 @@ resource "azurerm_container_group" "alz" {
       (var.agent_organization_environment_variable) = var.agent_organization_url
       (var.agent_name_environment_variable)         = each.value.agent_name
       }, var.use_agent_pool_environment_variable ? {
-      (var.agent_pool_environment_variable) = each.value.agent_pool_name
+      (var.agent_pool_environment_variable) = var.agent_pool_name
     } : {})
 
     secure_environment_variables = {

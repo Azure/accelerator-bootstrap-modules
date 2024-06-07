@@ -1,11 +1,3 @@
-variable "authentication_scheme" {
-  type = string
-  validation {
-    condition     = can(regex("^(ManagedServiceIdentity|WorkloadIdentityFederation)$", var.authentication_scheme))
-    error_message = "authentication_scheme must be either ManagedServiceIdentity or WorkloadIdentityFederation"
-  }
-}
-
 variable "use_legacy_organization_url" {
   type = bool
 }
@@ -24,10 +16,18 @@ variable "project_name" {
 
 variable "environments" {
   type = map(object({
-    environment_name                 = string
-    service_connection_name          = string
-    service_connection_template_keys = list(string)
-    agent_pool_name                  = string
+    environment_name                      = string
+    service_connection_name               = string
+    service_connection_required_templates = list(string)
+  }))
+}
+
+variable "pipelines" {
+  type = map(object({
+    pipeline_name           = string
+    pipeline_file_name      = string
+    environment_keys        = list(string)
+    service_connection_keys = list(string)
   }))
 }
 
@@ -41,20 +41,13 @@ variable "repository_name" {
 
 variable "repository_files" {
   type = map(object({
-    path = string
-    flag = string
+    content = string
   }))
 }
 
-variable "pipelines" {
-  description = "The pipelines to create|hidden"
+variable "template_repository_files" {
   type = map(object({
-    pipeline_name           = string
-    file_path               = string
-    target_path             = string
-    environment_keys        = list(string)
-    service_connection_keys = list(string)
-    agent_pool_keys         = list(string)
+    content = string
   }))
 }
 
@@ -102,15 +95,8 @@ variable "repository_name_templates" {
   type = string
 }
 
-variable "pipeline_templates" {
-  type = map(object({
-    target_path = string
-    file_path   = string
-  }))
-}
-
-variable "agent_pools" {
-  type = map(string)
+variable "agent_pool_name" {
+  type = string
 }
 
 variable "use_self_hosted_agents" {
