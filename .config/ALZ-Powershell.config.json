@@ -37,20 +37,20 @@
                 "url": "https://github.com/Azure/alz-terraform-accelerator",
                 "module_path": "templates",
                 "pipeline_folder": "ci_cd",
-                "release_artefact_name": "starter_modules.zip",
-                "release_artefact_root_path": ".",
-                "release_artefact_ci_cd_path": "ci_cd",
-                "release_artefact_config_file": ".config/ALZ-Powershell.config.json"
+                "release_artifact_name": "starter_modules.zip",
+                "release_artifact_root_path": ".",
+                "release_artifact_ci_cd_path": "ci_cd",
+                "release_artifact_config_file": ".config/ALZ-Powershell.config.json"
 
             },
             "bicep": {
                 "url": "https://github.com/Azure/ALZ-Bicep",
                 "module_path": ".",
                 "pipeline_folder": ".",
-                "release_artefact_name": "",
-                "release_artefact_root_path": ".",
-                "release_artefact_ci_cd_path": ".",
-                "release_artefact_config_file": ""
+                "release_artifact_name": "",
+                "release_artifact_root_path": ".",
+                "release_artifact_ci_cd_path": ".",
+                "release_artifact_config_file": ""
             }
         }
     },
