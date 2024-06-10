@@ -10,7 +10,7 @@ locals {
 
   target_folder_name = ".pipelines"
 
-  cicd_files = { for pipeline_file in local.pipeline_files : "${target_folder_name}/${pipeline_file}" =>
+  cicd_files = { for pipeline_file in local.pipeline_files : "${local.target_folder_name}/${pipeline_file}" =>
     {
       content = templatefile("${local.pipeline_files_directory_path}/${pipeline_file}", {
         project_name              = var.azure_devops_project_name
