@@ -13,8 +13,8 @@ locals {
 }
 
 locals {
-  ci_key = "ci"
-  cd_key = "cd"
+  ci_file_name = "ci.yaml"
+  cd_file_name = "cd.yaml"
 }
 
 locals {
@@ -70,15 +70,15 @@ locals {
       environment_name        = local.resource_names.version_control_system_environment_plan
       service_connection_name = local.resource_names.version_control_system_service_connection_plan
       service_connection_required_templates = [
-        "ci.yaml",
-        "cd.yaml"
+        local.ci_file_name,
+        local.cd_file_name
       ]
     }
     (local.apply_key) = {
       environment_name        = local.resource_names.version_control_system_environment_apply
       service_connection_name = local.resource_names.version_control_system_service_connection_apply
       service_connection_required_templates = [
-        "cd.yaml"
+        local.cd_file_name
       ]
     }
   }

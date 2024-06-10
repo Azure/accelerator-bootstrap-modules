@@ -1,21 +1,21 @@
 locals {
   workflows = {
     ci = {
-      workflow_file_name = ".github/workflows/ci.yaml"
+      workflow_file_name = "${local.target_folder_name}/${local.ci_file_name}"
       environment_user_assigned_managed_identity_mappings = [{
-        environment_key                    = "plan"
-        user_assigned_managed_identity_key = "plan"
+        environment_key                    = local.plan_key
+        user_assigned_managed_identity_key = local.plan_key
       }]
     }
     cd = {
-      workflow_file_name = ".github/workflows/cd.yaml"
+      workflow_file_name = "${local.target_folder_name}/${local.cd_file_name}"
       environment_user_assigned_managed_identity_mappings = [{
-        environment_key                    = "plan"
-        user_assigned_managed_identity_key = "plan"
+        environment_key                    = local.plan_key
+        user_assigned_managed_identity_key = local.plan_key
         },
         {
-          environment_key                    = "apply"
-          user_assigned_managed_identity_key = "apply"
+          environment_key                    = local.apply_key
+          user_assigned_managed_identity_key = local.apply_key
       }]
     }
   }

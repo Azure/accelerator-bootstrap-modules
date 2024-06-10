@@ -8,13 +8,15 @@ locals {
   pipeline_files          = fileset(local.pipeline_files_directory_path, "*.yaml")
   pipeline_template_files = fileset(local.pipeline_template_files_directory_path, "**/*.yaml")
 
-  cicd_files = { for pipeline_file in local.pipeline_files : ".pipelines/${pipeline_file}" =>
+  target_folder_name = ".pipelines"
+
+  cicd_files = { for pipeline_file in local.pipeline_files : "${target_folder_name}/${pipeline_file}" =>
     {
       content = templatefile("${local.pipeline_files_directory_path}/${pipeline_file}", {
         project_name              = var.azure_devops_project_name
         repository_name_templates = local.repository_name_templates
-        ci_template_path          = "ci.yaml"
-        cd_template_path          = "cd.yaml"
+        ci_template_path          = local.ci_file_name
+        cd_template_path          = local.cd_file_name
       })
     }
   }
