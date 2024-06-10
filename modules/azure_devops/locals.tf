@@ -3,7 +3,6 @@ locals {
 }
 
 locals {
-  plan_key  = "plan"
   apply_key = "apply"
 }
 

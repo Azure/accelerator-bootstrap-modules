@@ -12,7 +12,7 @@ locals {
     {
       content = templatefile("${local.pipeline_files_directory_path}/${pipeline_file}", {
         project_name              = var.azure_devops_project_name
-        repository_name_templates = local.resource_names.version_control_system_repository_templates
+        repository_name_templates = local.repository_name_templates
         ci_template_path          = "ci.yaml"
         cd_template_path          = "cd.yaml"
       })
@@ -27,7 +27,7 @@ locals {
         environment_name_apply        = local.resource_names.version_control_system_environment_apply
         variable_group_name           = local.resource_names.version_control_system_variable_group
         project_name                  = var.azure_devops_project_name
-        repository_name_templates     = local.resource_names.version_control_system_repository_templates
+        repository_name_templates     = local.repository_name_templates
         service_connection_name_plan  = local.resource_names.version_control_system_service_connection_plan
         service_connection_name_apply = local.resource_names.version_control_system_service_connection_apply
       })
