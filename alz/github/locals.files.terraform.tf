@@ -10,7 +10,7 @@ locals {
   pipeline_files          = fileset(local.pipeline_files_directory_path, "*.yaml")
   pipeline_template_files = fileset(local.pipeline_template_files_directory_path, "**/*.yaml")
 
-  target_folder_name = local.target_folder_name
+  target_folder_name = ".github/workflows"
 
   cicd_files = { for pipeline_file in local.pipeline_files : "${local.target_folder_name}/${pipeline_file}" =>
     {
