@@ -12,17 +12,13 @@ locals {
 }
 
 locals {
-  use_runner_group                   = var.use_runner_group && module.github.organization_plan == local.enterprise_plan
+  use_runner_group                   = var.use_runner_group && module.github.organization_plan == local.enterprise_plan && var.use_self_hosted_runners
   runner_organization_repository_url = local.use_runner_group ? module.github.organization_url : "${module.github.organization_url}/${module.github.repository_names.module}"
 }
 
 locals {
   plan_key  = "plan"
   apply_key = "apply"
-}
-
-locals {
-  general_agent_pool_key = "general"
 }
 
 locals {
@@ -70,10 +66,6 @@ locals {
       memory_max              = var.runner_container_memory_max
       zones                   = ["2"]
     }
-  } : {}
-
-  runner_groups = var.use_self_hosted_runners ? {
-    (local.general_agent_pool_key) = local.resource_names.version_control_system_runner_group
   } : {}
 }
 

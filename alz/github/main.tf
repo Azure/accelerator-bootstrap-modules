@@ -70,7 +70,7 @@ module "github" {
   backend_azure_storage_account_container_name = local.resource_names.storage_container
   approvers                                    = var.apply_approvers
   team_name                                    = local.resource_names.version_control_system_team
-  runner_groups                                = local.runner_groups
+  runner_group_name                            = local.resource_names.version_control_system_runner_group
   use_runner_group                             = local.use_runner_group
   default_runner_group_name                    = var.default_runner_group_name
   use_self_hosted_runners                      = var.use_self_hosted_runners

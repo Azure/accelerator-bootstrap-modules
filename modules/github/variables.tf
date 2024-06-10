@@ -72,8 +72,8 @@ variable "workflows" {
   }))
 }
 
-variable "runner_groups" {
-  type = map(string)
+variable "runner_group_name" {
+  type = string
 }
 
 variable "default_runner_group_name" {

@@ -13,8 +13,7 @@ locals {
 }
 
 locals {
-  use_runner_group = var.use_runner_group && data.github_organization.alz.plan == local.enterprise_plan
-  runner_groups    = local.use_runner_group ? var.runner_groups : {}
+  use_runner_group = var.use_runner_group && data.github_organization.alz.plan == local.enterprise_plan && var.use_self_hosted_runners
 }
 
 locals {
@@ -43,5 +42,5 @@ locals {
 }
 
 locals {
-  runner_group_name = (local.use_runner_group && length(var.runner_groups) > 0) ? github_actions_runner_group.alz[keys(var.runner_groups)[0]].name : var.default_runner_group_name
+  runner_group_name = local.use_runner_group ? github_actions_runner_group.alz[0].name : var.default_runner_group_name
 }

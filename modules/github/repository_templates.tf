@@ -1,12 +1,13 @@
 resource "github_repository" "alz_templates" {
-  count               = var.use_template_repository ? 1 : 0
-  name                = var.repository_name_templates
-  description         = var.repository_name_templates
-  auto_init           = true
-  visibility          = data.github_organization.alz.plan == local.free_plan ? "public" : "private"
-  allow_update_branch = true
-  allow_merge_commit  = false
-  allow_rebase_merge  = false
+  count                = var.use_template_repository ? 1 : 0
+  name                 = var.repository_name_templates
+  description          = var.repository_name_templates
+  auto_init            = true
+  visibility           = data.github_organization.alz.plan == local.free_plan ? "public" : "private"
+  allow_update_branch  = true
+  allow_merge_commit   = false
+  allow_rebase_merge   = false
+  vulnerability_alerts = true
 }
 
 resource "github_repository_file" "alz_templates" {

@@ -14,8 +14,8 @@ output "organization_users" {
   value = data.github_organization.alz.users
 }
 
-output "runner_group_names" {
-  value = { for key, value in var.runner_groups : key => local.runner_group_name }
+output "runner_group_name" {
+  value = local.runner_group_name
 }
 
 output "organization_plan" {
