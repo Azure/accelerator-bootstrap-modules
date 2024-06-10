@@ -8,8 +8,13 @@ variable "repository_name" {
 
 variable "repository_files" {
   type = map(object({
-    path = string
-    flag = string
+    content = string
+  }))
+}
+
+variable "template_repository_files" {
+  type = map(object({
+    content = string
   }))
 }
 
@@ -57,10 +62,9 @@ variable "repository_name_templates" {
   type = string
 }
 
-variable "pipeline_templates" {
+variable "workflows" {
   type = map(object({
-    target_path = string
-    file_path   = string
+    workflow_file_name = string
     environment_user_assigned_managed_identity_mappings = list(object({
       environment_key                    = string
       user_assigned_managed_identity_key = string

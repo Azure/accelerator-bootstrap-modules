@@ -9,7 +9,7 @@ resource "github_repository" "alz" {
 }
 
 resource "github_repository_file" "alz" {
-  for_each            = local.repository_files
+  for_each            = var.repository_files
   repository          = github_repository.alz.name
   file                = each.key
   content             = each.value.content

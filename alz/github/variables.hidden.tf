@@ -10,32 +10,6 @@ variable "module_folder_path_relative" {
   default     = false
 }
 
-variable "pipeline_folder_path_relative" {
-  description = "Whether the pipeline folder path is relative to the bootstrap module"
-  type        = bool
-  default     = false
-}
-
-variable "pipeline_files" {
-  description = "The pipeline files to upload to the repository"
-  type = map(object({
-    file_path   = string
-    target_path = string
-  }))
-}
-
-variable "pipeline_template_files" {
-  description = "The pipeline template files to upload to the repository"
-  type = map(object({
-    file_path   = string
-    target_path = string
-    environment_user_assigned_managed_identity_mappings = list(object({
-      environment_key                    = string
-      user_assigned_managed_identity_key = string
-    }))
-  }))
-}
-
 variable "resource_names" {
   type        = map(string)
   description = "Overrides for resource names"

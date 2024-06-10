@@ -8,7 +8,7 @@ locals {
   pipeline_files = fileset(local.pipeline_files_directory_path, "*.yaml")
   pipeline_template_files = fileset(local.pipeline_template_files_directory_path, "**/*.yaml")
 
-  cicd_file = { for pipeline_file in local.pipeline_files : ".pipelines/${pipeline_file}" =>
+  cicd_files = { for pipeline_file in local.pipeline_files : ".pipelines/${pipeline_file}" =>
     {
       content = templatefile("${local.pipeline_files_directory_path}/${pipeline_file}", {
         project_name              = var.azure_devops_project_name
@@ -39,6 +39,6 @@ locals {
       content = replace((file(value.path)), "# backend \"azurerm\" {}", "backend \"azurerm\" {\n    use_oidc         = true\n    use_azuread_auth = true\n  }")
     }
   }
-  repository_files = merge(local.cicd_file, local.module_files, var.use_separate_repository_for_pipeline_templates ? {} : local.cicd_template_files)
+  repository_files = merge(local.cicd_files, local.module_files, var.use_separate_repository_for_pipeline_templates ? {} : local.cicd_template_files)
   template_repository_files = var.use_separate_repository_for_pipeline_templates ? local.cicd_template_files : {}
 }

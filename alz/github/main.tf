@@ -10,9 +10,6 @@ module "resource_names" {
 module "files" {
   source                            = "../../modules/files"
   starter_module_folder_path        = local.starter_module_folder_path
-  pipeline_folder_path              = local.pipeline_folder_path
-  pipeline_files                    = var.pipeline_files
-  pipeline_template_files           = var.pipeline_template_files
   additional_files                  = var.additional_files
   configuration_file_path           = var.configuration_file_path
   built_in_configurartion_file_name = var.built_in_configurartion_file_name
@@ -62,8 +59,9 @@ module "github" {
   repository_name                              = local.resource_names.version_control_system_repository
   use_template_repository                      = var.use_separate_repository_for_workflow_templates
   repository_name_templates                    = local.resource_names.version_control_system_repository_templates
-  repository_files                             = module.files.files
-  pipeline_templates                           = var.pipeline_template_files
+  repository_files                             = local.repository_files
+  template_repository_files                    = local.template_repository_files
+  workflows                                    = local.workflows
   managed_identity_client_ids                  = module.azure.user_assigned_managed_identity_client_ids
   azure_tenant_id                              = data.azurerm_client_config.current.tenant_id
   azure_subscription_id                        = data.azurerm_client_config.current.subscription_id

@@ -45,12 +45,6 @@ variable "module_folder_path_relative" {
   default     = false
 }
 
-variable "pipeline_folder_path_relative" {
-  description = "Whether the pipeline folder path is relative to the bootstrap module"
-  type        = bool
-  default     = false
-}
-
 variable "resource_names" {
   type        = map(string)
   description = "Overrides for resource names"

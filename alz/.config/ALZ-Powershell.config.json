@@ -10,11 +10,6 @@
             "source": "powershell",
             "maps_to": [ "bootstrap" ]
         },
-        "pipeline_folder_path" :{
-            "type": "string",
-            "source": "powershell",
-            "maps_to": [ "bootstrap" ]
-        },
         "root_parent_management_group_id": {
             "type": "string",
             "default": "",

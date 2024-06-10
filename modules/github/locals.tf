@@ -26,12 +26,12 @@ locals {
   repository_name_templates = var.use_template_repository ? var.repository_name_templates : var.repository_name
   template_claim_structure  = "${var.organization_name}/${local.repository_name_templates}/%s@refs/heads/main"
 
-  oidc_subjects_flattened = flatten([for key, value in var.pipeline_templates : [
+  oidc_subjects_flattened = flatten([for key, value in var.workflows : [
     for environment_user_assigned_managed_identity_mapping in value.environment_user_assigned_managed_identity_mappings :
     {
       subject_key                        = "${key}-${environment_user_assigned_managed_identity_mapping.user_assigned_managed_identity_key}"
       user_assigned_managed_identity_key = environment_user_assigned_managed_identity_mapping.user_assigned_managed_identity_key
-      subject                            = "repo:${var.organization_name}/${var.repository_name}:environment:${var.environments[environment_user_assigned_managed_identity_mapping.environment_key]}:job_workflow_ref:${format(local.template_claim_structure, value.target_path)}"
+      subject                            = "repo:${var.organization_name}/${var.repository_name}:environment:${var.environments[environment_user_assigned_managed_identity_mapping.environment_key]}:job_workflow_ref:${format(local.template_claim_structure, value.workflow_file_name)}"
     }
     ]
   ])
