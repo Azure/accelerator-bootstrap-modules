@@ -36,7 +36,7 @@ steps:
         # Note: The backend is hardcoded to use oidc auth as we want to use a different auth type for the provider during plan and apply.
         $env:ARM_OIDC_TOKEN = $oidcToken
         $env:ARM_CLIENT_ID = $clientId
-        
+
         # Run terraform init
         $command = "terraform"
         Write-Host "Running: $command $arguments"
