@@ -7,7 +7,7 @@ resource "azuredevops_serviceendpoint_azurerm" "alz" {
 
   credentials {
     serviceprincipalid = var.managed_identity_client_ids[each.key]
-   }
+  }
 
   azurerm_spn_tenantid      = var.azure_tenant_id
   azurerm_subscription_id   = var.azure_subscription_id

@@ -8,7 +8,7 @@ locals {
 }
 
 locals {
-  authentication_scheme_workload_identity_federation    = "WorkloadIdentityFederation"
+  authentication_scheme_workload_identity_federation = "WorkloadIdentityFederation"
 }
 
 locals {

@@ -4,10 +4,10 @@ locals {
 }
 
 locals {
-  pipeline_files_directory_path = "${path.module}/actions/terraform"
+  pipeline_files_directory_path          = "${path.module}/actions/terraform"
   pipeline_template_files_directory_path = "${path.module}/actions/terraform/templates"
 
-  pipeline_files = fileset(local.pipeline_files_directory_path, "*.yaml")
+  pipeline_files          = fileset(local.pipeline_files_directory_path, "*.yaml")
   pipeline_template_files = fileset(local.pipeline_template_files_directory_path, "**/*.yaml")
 
   cicd_files = { for pipeline_file in local.pipeline_files : ".github/workflows/${pipeline_file}" =>
@@ -37,6 +37,6 @@ locals {
       content = replace((file(value.path)), "# backend \"azurerm\" {}", "backend \"azurerm\" {}")
     }
   }
-  repository_files = merge(local.cicd_files, local.module_files, var.use_separate_repository_for_workflow_templates ? {} : local.cicd_template_files)
+  repository_files          = merge(local.cicd_files, local.module_files, var.use_separate_repository_for_workflow_templates ? {} : local.cicd_template_files)
   template_repository_files = var.use_separate_repository_for_workflow_templates ? local.cicd_template_files : {}
 }

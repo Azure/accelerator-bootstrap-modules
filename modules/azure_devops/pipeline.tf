@@ -32,7 +32,7 @@ resource "azuredevops_pipeline_authorization" "alz_service_connection" {
 }
 
 resource "azuredevops_pipeline_authorization" "alz_agent_pool" {
-  for_each    = local.pipelines
+  for_each    = var.use_self_hosted_agents ? local.pipelines : {}
   project_id  = local.project_id
   resource_id = azuredevops_agent_queue.alz[0].id
   type        = "queue"

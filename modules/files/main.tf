@@ -8,7 +8,7 @@ locals {
     } if(!local.has_configuration_file || file != var.built_in_configurartion_file_name) && !strcontains(file, var.starter_module_folder_path_exclusion)
   }
 
-  final_additional_files    = concat(var.additional_files, local.has_configuration_file ? [var.configuration_file_path] : [])
+  final_additional_files = concat(var.additional_files, local.has_configuration_file ? [var.configuration_file_path] : [])
   additional_repo_files = { for file in local.final_additional_files : basename(file) => {
     path = file
     }
