@@ -3,21 +3,13 @@ output "organization_url" {
 }
 
 output "subjects" {
-  value = local.is_authentication_scheme_workload_identity_federation ? { for key, value in var.environments : key => azuredevops_serviceendpoint_azurerm.alz[key].workload_identity_federation_subject } : {}
+  value = { for key, value in var.environments : key => azuredevops_serviceendpoint_azurerm.alz[key].workload_identity_federation_subject }
 }
 
 output "issuers" {
-  value = local.is_authentication_scheme_workload_identity_federation ? { for key, value in var.environments : key => azuredevops_serviceendpoint_azurerm.alz[key].workload_identity_federation_issuer } : {}
+  value = { for key, value in var.environments : key => azuredevops_serviceendpoint_azurerm.alz[key].workload_identity_federation_issuer }
 }
 
-output "agent_pool_names" {
-  value = { for key, value in var.agent_pools : key => azuredevops_agent_pool.alz[key].name }
-}
-
-output "is_authentication_scheme_managed_identity" {
-  value = local.is_authentication_scheme_managed_identity
-}
-
-output "is_authentication_scheme_workload_identity_federation" {
-  value = local.is_authentication_scheme_workload_identity_federation
+output "agent_pool_name" {
+  value = var.use_self_hosted_agents ? azuredevops_agent_pool.alz[0].name : null
 }

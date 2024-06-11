@@ -8,11 +8,6 @@ variable "module_folder_path" {
   type        = string
 }
 
-variable "pipeline_folder_path" {
-  description = "The folder for the pipelines"
-  type        = string
-}
-
 variable "root_parent_management_group_id" {
   description = "The root parent management group ID. This will default to the Tenant Root Group ID if not supplied"
   type        = string

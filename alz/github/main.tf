@@ -10,9 +10,6 @@ module "resource_names" {
 module "files" {
   source                            = "../../modules/files"
   starter_module_folder_path        = local.starter_module_folder_path
-  pipeline_folder_path              = local.pipeline_folder_path
-  pipeline_files                    = var.pipeline_files
-  pipeline_template_files           = var.pipeline_template_files
   additional_files                  = var.additional_files
   configuration_file_path           = var.configuration_file_path
   built_in_configurartion_file_name = var.built_in_configurartion_file_name
@@ -36,6 +33,7 @@ module "azure" {
   agent_organization_url                                    = local.runner_organization_repository_url
   agent_token                                               = var.github_runners_personal_access_token
   agent_organization_environment_variable                   = var.runner_organization_environment_variable
+  agent_pool_name                                           = local.resource_names.version_control_system_runner_group
   agent_pool_environment_variable                           = var.runner_group_environment_variable
   agent_name_environment_variable                           = var.runner_name_environment_variable
   use_agent_pool_environment_variable                       = local.use_runner_group
@@ -61,8 +59,9 @@ module "github" {
   repository_name                              = local.resource_names.version_control_system_repository
   use_template_repository                      = var.use_separate_repository_for_workflow_templates
   repository_name_templates                    = local.resource_names.version_control_system_repository_templates
-  repository_files                             = module.files.files
-  pipeline_templates                           = var.pipeline_template_files
+  repository_files                             = local.repository_files
+  template_repository_files                    = local.template_repository_files
+  workflows                                    = local.workflows
   managed_identity_client_ids                  = module.azure.user_assigned_managed_identity_client_ids
   azure_tenant_id                              = data.azurerm_client_config.current.tenant_id
   azure_subscription_id                        = data.azurerm_client_config.current.subscription_id
@@ -71,7 +70,7 @@ module "github" {
   backend_azure_storage_account_container_name = local.resource_names.storage_container
   approvers                                    = var.apply_approvers
   team_name                                    = local.resource_names.version_control_system_team
-  runner_groups                                = local.runner_groups
+  runner_group_name                            = local.resource_names.version_control_system_runner_group
   use_runner_group                             = local.use_runner_group
   default_runner_group_name                    = var.default_runner_group_name
   use_self_hosted_runners                      = var.use_self_hosted_runners

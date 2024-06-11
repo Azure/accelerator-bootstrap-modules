@@ -9,7 +9,7 @@ resource "azuredevops_git_repository" "alz" {
 }
 
 resource "azuredevops_git_repository_file" "alz" {
-  for_each            = local.repository_files
+  for_each            = var.repository_files
   repository_id       = azuredevops_git_repository.alz.id
   file                = each.key
   content             = each.value.content

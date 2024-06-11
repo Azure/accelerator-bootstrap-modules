@@ -3,7 +3,6 @@ locals {
 }
 
 locals {
-  plan_key  = "plan"
   apply_key = "apply"
 }
 
@@ -13,8 +12,7 @@ locals {
 }
 
 locals {
-  use_runner_group = var.use_runner_group && data.github_organization.alz.plan == local.enterprise_plan
-  runner_groups    = local.use_runner_group ? var.runner_groups : {}
+  use_runner_group = var.use_runner_group && data.github_organization.alz.plan == local.enterprise_plan && var.use_self_hosted_runners
 }
 
 locals {
@@ -26,12 +24,12 @@ locals {
   repository_name_templates = var.use_template_repository ? var.repository_name_templates : var.repository_name
   template_claim_structure  = "${var.organization_name}/${local.repository_name_templates}/%s@refs/heads/main"
 
-  oidc_subjects_flattened = flatten([for key, value in var.pipeline_templates : [
+  oidc_subjects_flattened = flatten([for key, value in var.workflows : [
     for environment_user_assigned_managed_identity_mapping in value.environment_user_assigned_managed_identity_mappings :
     {
       subject_key                        = "${key}-${environment_user_assigned_managed_identity_mapping.user_assigned_managed_identity_key}"
       user_assigned_managed_identity_key = environment_user_assigned_managed_identity_mapping.user_assigned_managed_identity_key
-      subject                            = "repo:${var.organization_name}/${var.repository_name}:environment:${var.environments[environment_user_assigned_managed_identity_mapping.environment_key]}:job_workflow_ref:${format(local.template_claim_structure, value.target_path)}"
+      subject                            = "repo:${var.organization_name}/${var.repository_name}:environment:${var.environments[environment_user_assigned_managed_identity_mapping.environment_key]}:job_workflow_ref:${format(local.template_claim_structure, value.workflow_file_name)}"
     }
     ]
   ])
@@ -43,5 +41,5 @@ locals {
 }
 
 locals {
-  runner_group_name = (local.use_runner_group && length(var.runner_groups) > 0) ? github_actions_runner_group.alz[keys(var.runner_groups)[0]].name : var.default_runner_group_name
+  runner_group_name = local.use_runner_group ? github_actions_runner_group.alz[0].name : var.default_runner_group_name
 }

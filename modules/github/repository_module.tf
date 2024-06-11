@@ -1,15 +1,16 @@
 resource "github_repository" "alz" {
-  name                = var.repository_name
-  description         = var.repository_name
-  auto_init           = true
-  visibility          = data.github_organization.alz.plan == local.free_plan ? "public" : "private"
-  allow_update_branch = true
-  allow_merge_commit  = false
-  allow_rebase_merge  = false
+  name                 = var.repository_name
+  description          = var.repository_name
+  auto_init            = true
+  visibility           = data.github_organization.alz.plan == local.free_plan ? "public" : "private"
+  allow_update_branch  = true
+  allow_merge_commit   = false
+  allow_rebase_merge   = false
+  vulnerability_alerts = true
 }
 
 resource "github_repository_file" "alz" {
-  for_each            = local.repository_files
+  for_each            = var.repository_files
   repository          = github_repository.alz.name
   file                = each.key
   content             = each.value.content

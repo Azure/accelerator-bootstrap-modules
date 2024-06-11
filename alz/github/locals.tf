@@ -12,7 +12,7 @@ locals {
 }
 
 locals {
-  use_runner_group                   = var.use_runner_group && module.github.organization_plan == local.enterprise_plan
+  use_runner_group                   = var.use_runner_group && module.github.organization_plan == local.enterprise_plan && var.use_self_hosted_runners
   runner_organization_repository_url = local.use_runner_group ? module.github.organization_url : "${module.github.organization_url}/${module.github.repository_names.module}"
 }
 
@@ -22,7 +22,8 @@ locals {
 }
 
 locals {
-  general_agent_pool_key = "general"
+  ci_file_name = "ci.yaml"
+  cd_file_name = "cd.yaml"
 }
 
 locals {
@@ -55,7 +56,6 @@ locals {
     agent_01 = {
       container_instance_name = local.resource_names.container_instance_01
       agent_name              = local.resource_names.runner_01
-      agent_pool_name         = module.github.runner_group_names[local.general_agent_pool_key]
       cpu                     = var.runner_container_cpu
       memory                  = var.runner_container_memory
       cpu_max                 = var.runner_container_cpu_max
@@ -65,7 +65,6 @@ locals {
     agent_02 = {
       container_instance_name = local.resource_names.container_instance_02
       agent_name              = local.resource_names.runner_02
-      agent_pool_name         = module.github.runner_group_names[local.general_agent_pool_key]
       cpu                     = var.runner_container_cpu
       memory                  = var.runner_container_memory
       cpu_max                 = var.runner_container_cpu_max
@@ -73,13 +72,8 @@ locals {
       zones                   = ["2"]
     }
   } : {}
-
-  runner_groups = var.use_self_hosted_runners ? {
-    (local.general_agent_pool_key) = local.resource_names.version_control_system_runner_group
-  } : {}
 }
 
 locals {
   starter_module_folder_path = var.module_folder_path_relative ? ("${path.module}/${var.module_folder_path}") : var.module_folder_path
-  pipeline_folder_path       = var.pipeline_folder_path_relative ? ("${path.module}/${var.pipeline_folder_path}") : var.pipeline_folder_path
 }

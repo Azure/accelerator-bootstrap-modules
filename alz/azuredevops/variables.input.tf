@@ -61,16 +61,6 @@ variable "azure_devops_project_name" {
   type        = string
 }
 
-variable "azure_devops_authentication_scheme" {
-  type        = string
-  description = "The authentication scheme to use for the Azure DevOps Pipelines|13|auth_scheme"
-  validation {
-    condition     = can(regex("^(ManagedServiceIdentity|WorkloadIdentityFederation)$", var.azure_devops_authentication_scheme))
-    error_message = "azure_devops_authentication_scheme must be either ManagedServiceIdentity or WorkloadIdentityFederation"
-  }
-  default = "WorkloadIdentityFederation"
-}
-
 variable "use_self_hosted_agents" {
   description = "Controls whether to use self-hosted agents for the pipelines|14"
   type        = bool

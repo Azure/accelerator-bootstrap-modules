@@ -29,37 +29,3 @@ resource_names = {
   subnet_storage                                              = "subnet-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-sto"
   private_endpoint                                            = "pe-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}"
 }
-
-# Version Control System Variables
-pipeline_files = {
-  ci = {
-    file_path   = "github/ci.yaml"
-    target_path = ".github/workflows/ci.yaml"
-  }
-  cd = {
-    file_path   = "github/cd.yaml"
-    target_path = ".github/workflows/cd.yaml"
-  }
-}
-pipeline_template_files = {
-  ci = {
-    file_path   = "github/templates/ci.yaml"
-    target_path = ".github/workflows/ci_template.yaml"
-    environment_user_assigned_managed_identity_mappings = [{
-      environment_key                    = "plan"
-      user_assigned_managed_identity_key = "plan"
-    }]
-  }
-  cd = {
-    file_path   = "github/templates/cd.yaml"
-    target_path = ".github/workflows/cd_template.yaml"
-    environment_user_assigned_managed_identity_mappings = [{
-      environment_key                    = "plan"
-      user_assigned_managed_identity_key = "plan"
-      },
-      {
-        environment_key                    = "apply"
-        user_assigned_managed_identity_key = "apply"
-    }]
-  }
-}

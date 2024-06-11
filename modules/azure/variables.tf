@@ -55,9 +55,6 @@ variable "agent_container_instances" {
   type = map(object({
     container_instance_name = string
     agent_name              = string
-    attach_managed_identity = optional(bool, false)
-    managed_identity_key    = optional(string, null)
-    agent_pool_name         = string
     cpu                     = optional(number, 4)
     memory                  = optional(number, 16)
     cpu_max                 = optional(number, 4)
@@ -84,6 +81,11 @@ variable "agent_token" {
 }
 
 variable "agent_name_environment_variable" {
+  type    = string
+  default = ""
+}
+
+variable "agent_pool_name" {
   type    = string
   default = ""
 }
