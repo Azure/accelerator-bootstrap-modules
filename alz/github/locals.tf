@@ -12,6 +12,10 @@ locals {
 }
 
 locals {
+  iac_terraform = "terraform"
+}
+
+locals {
   use_runner_group                   = var.use_runner_group && module.github.organization_plan == local.enterprise_plan && var.use_self_hosted_runners
   runner_organization_repository_url = local.use_runner_group ? module.github.organization_url : "${module.github.organization_url}/${module.github.repository_names.module}"
 }

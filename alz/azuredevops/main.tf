@@ -21,6 +21,7 @@ module "azure" {
   resource_group_agents_name                                = local.resource_names.resource_group_agents
   resource_group_network_name                               = local.resource_names.resource_group_network
   resource_group_state_name                                 = local.resource_names.resource_group_state
+  create_storage_account                                    = var.iac_type == local.iac_terraform
   storage_account_name                                      = local.resource_names.storage_account
   storage_container_name                                    = local.resource_names.storage_container
   azure_location                                            = var.bootstrap_location

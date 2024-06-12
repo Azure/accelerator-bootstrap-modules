@@ -1,4 +1,5 @@
 resource "azurerm_resource_group" "state" {
+  count    = var.create_storage_account ? 1 : 0
   name     = var.resource_group_state_name
   location = var.azure_location
 }
