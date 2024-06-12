@@ -1,0 +1,32 @@
+---
+steps:
+  - pwsh: |
+      $installDir = Join-Path -Path $TOOLS_PATH -ChildPath "bicep"
+
+      $toolFileName = "bicep"
+      $toolFilePath = Join-Path -Path $installDir -ChildPath $toolFileName
+     
+      if(!(Test-Path $TOOLS_PATH)) {
+        New-Item -ItemType Directory -Path $TOOLS_PATH | Out-String | Write-Verbose
+      }
+
+      $url = https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
+
+      Invoke-WebRequest -Uri $url -OutFile "$toolFilePath" | Out-String | Write-Verbose
+
+      $isExecutable = $(test -x $toolFilePath; 0 -eq $LASTEXITCODE)
+        if(!($isExecutable)) {
+          chmod +x $toolFilePath
+      }
+
+      $env:PATH = "$($unzipdir):$env:PATH"
+      
+      Write-Host "##vso[task.setvariable variable=PATH]$env:PATH"
+
+      bicep --help
+
+      Write-Host "Installed Latest Bicep Version"
+
+    displayName: Install Bicep
+    env:
+      TOOLS_PATH: $(Agent.ToolsDirectory)

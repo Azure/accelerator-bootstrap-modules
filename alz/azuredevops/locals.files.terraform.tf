@@ -2,8 +2,8 @@ locals {
   agent_pool_configuration  = var.use_self_hosted_agents ? "name: ${local.resource_names.version_control_system_agent_pool}" : "vmImage: ubuntu-latest"
   repository_name_templates = var.use_separate_repository_for_pipeline_templates ? local.resource_names.version_control_system_repository_templates : local.resource_names.version_control_system_repository
 
-  pipeline_files_directory_path          = "${path.module}/pipelines/terraform"
-  pipeline_template_files_directory_path = "${path.module}/pipelines/terraform/templates"
+  pipeline_files_directory_path          = "${path.module}/pipelines/${var.iac_type}"
+  pipeline_template_files_directory_path = "${path.module}/pipelines/${var.iac_type}/templates"
 
   pipeline_files          = fileset(local.pipeline_files_directory_path, "*.yaml")
   pipeline_template_files = fileset(local.pipeline_template_files_directory_path, "**/*.yaml")

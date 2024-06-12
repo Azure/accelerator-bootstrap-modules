@@ -1,0 +1,18 @@
+---
+parameters:
+  - name: serviceConnection
+  - name: scriptFiles
+    type: object
+    default: []
+
+steps:
+  - $${{ each scriptFile in parameters.scriptFiles }} :
+    - task: AzurePowerShell@5
+      displayName: $${{ scriptFile.displayName }}
+      inputs:
+        azureSubscription: $${{ parameters.serviceConnection }}
+        azurePowerShellVersion: "LatestVersion"
+        pwsh: true
+        ScriptType: "InlineScript"
+        Inline: |
+          $${{ scriptFile.path }}
