@@ -8,6 +8,10 @@ locals {
 }
 
 locals {
+  iac_terraform = "terraform"
+}
+
+locals {
   plan_key  = "plan"
   apply_key = "apply"
 }

@@ -34,6 +34,11 @@ variable "resource_group_state_name" {
   type = string
 }
 
+variable "create_storage_account" {
+  type    = bool
+  default = true
+}
+
 variable "storage_account_name" {
   type = string
 }
