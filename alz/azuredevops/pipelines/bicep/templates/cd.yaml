@@ -6,8 +6,6 @@ stages:
       - group: ${variable_group_name}
       - name: ENV_FILE
         value: .env
-      - name: IS_PULL_REQUEST
-        value: $[eq(variables['Build.Reason'], 'PullRequest')]
 
     jobs:
       - deployment: deploy
@@ -38,31 +36,8 @@ stages:
                     }
                   displayName: Import Environment Variables from File
 
-                - template: helpers/bicep-deploy.yaml
+                - template: helpers/bicep-templates.yaml
                   parameters:
                     serviceConnection: '${service_connection_name_apply}'
-                    scriptFiles:
-                      - displayName: Management Groups Deployment
-                        path: .\pipeline-scripts\Deploy-ALZManagementGroups.ps1
-                      - displayName: Logging and Sentinel Resource Group Deployment
-                        path: .\pipeline-scripts\Deploy-ALZLoggingAndSentinelResourceGroup.ps1
-                      - displayName: Logging and Sentinel Deployment
-                        path: .\pipeline-scripts\Deploy-ALZLoggingAndSentinel.ps1
-                      - displayName: Custom Policy Definitions Deployment
-                        path: .\pipeline-scripts\Deploy-ALZCustomPolicyDefinitions.ps1
-                      - displayName: Custom Role Definitions Deployment
-                        path: .\pipeline-scripts\Deploy-ALZCustomRoleDefinitions.ps1
-                      - displayName: Custom Management Group Diagnostic Settings
-                        path: .\pipeline-scripts\Deploy-ALZMGDiagnosticSettings.ps1
-                      - displayName: CBuilt-in and Custom Policy Assignments Deployment
-                        path: .\pipeline-scripts\Deploy-ALZPolicyAssignments.ps1
-                      - displayName: Deploy Subscription Placement
-                        path: .\pipeline-scripts\Deploy-ALZSubscriptionPlacement.ps1
-                      - displayName: Connectivity Resource Group Deployment
-                        path: .\pipeline-scripts\Deploy-ALZConnectivityResourceGroup.ps1`
-                      - $${{ if eq(variables['networking'], 'hubSpoke') }} :
-                        - displayName: Hub (Hub-and-Spoke) Deployment
-                          path: .\pipeline-scripts\Deploy-ALZHub-HubAndSpoke.ps1
-                      - $${{ if eq(variables['networking'], 'vwan') }} :
-                        - displayName: Hub (VWAN) Deployment
-                          path: .\pipeline-scripts\Deploy-ALZHub-VWAN.ps1
+                    whatIfEnabled: false
+                    networkingType: '${networking_type}'

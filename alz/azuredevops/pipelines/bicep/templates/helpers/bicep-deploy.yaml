@@ -1,9 +1,20 @@
 ---
 parameters:
   - name: serviceConnection
+    type: string
+  - name: whatIfEnabled
+    type: boolean
+    default: true
   - name: scriptFiles
     type: object
-    default: []
+    default: 
+      - displayName: "Example Deployment"
+        templateFilePath: ".\pipeline-scripts\Example.ps1"
+        templateParametersFilePath: ".\pipeline-scripts\Example.parameters.all.json"
+        managementGroupId: "00000000-0000-0000-0000-000000000000"
+        subscriptionId: "00000000-0000-0000-0000-000000000000"
+        location: "uksouth"
+        deploymentType: "subscription" # tenant | managementGroup | subscription | resourceGroup
 
 steps:
   - $${{ each scriptFile in parameters.scriptFiles }} :
@@ -15,4 +26,32 @@ steps:
         pwsh: true
         ScriptType: "InlineScript"
         Inline: |
-          $${{ scriptFile.path }}
+          $deploymentType = "$${{ scriptFile.deploymentType }}"
+
+          $inputObject = @{
+            DeploymentName        = '$${{ scriptFile.displayName }}-{0}' -f ( -join (Get-Date -Format 'yyyyMMddTHHMMssffffZ')[0..63])
+            Location              = "$${{ scriptFile.location }}"
+            TemplateFile          = "$${{ scriptFile.templateFilePath }}"
+            TemplateParameterFile = "$${{ scriptFile.templateParametersFilePath }}"
+            WhatIf                = [System.Convert]::ToBoolean("$${{ parameters.whatIfEnabled }}")
+            Verbose               = $true
+          }
+
+          if ($deploymentType -eq "tenant") {
+            New-AzTenantDeployment @inputObject
+          }
+
+          if ($deploymentType -eq "managementGroup") {
+            $inputObject.ManagementGroupId = "$${{ scriptFile.managementGroupId }}"
+            New-AzManagementGroupDeployment @inputObject
+          }
+
+          if ($deploymentType -eq "subscription") {
+            Select-AzSubscription -SubscriptionId "$${{ scriptFile.subscriptionId }}"
+            New-AzSubscriptionDeployment @inputObject
+          }
+
+          if ($deploymentType -eq "resourceGroup") {
+            Select-AzSubscription -SubscriptionId "$${{ scriptFile.subscriptionId }}"
+            New-AzResourceGroupDeployment @inputObject
+          }
