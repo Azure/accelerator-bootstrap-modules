@@ -8,6 +8,30 @@ stages:
         value: parameters.json
 
     jobs:
+      - deployment: whatif
+        displayName: What If with Bicep
+        pool:
+          ${agent_pool_configuration}
+        environment: ${environment_name_plan}
+        timeoutInMinutes: 0
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                  displayName: Checkout Bicep Module
+
+                - template: helpers/bicep-installer.yaml
+
+                - template: helpers/bicep-variables.yaml
+                  parameters:
+                    parametersFileName: $(parametersFileName)
+
+                - template: helpers/bicep-templates.yaml
+                  parameters:
+                    serviceConnection: '${service_connection_name_plan}'
+                    whatIfEnabled: true
+
       - deployment: deploy
         displayName: Deploy with Bicep
         pool:
