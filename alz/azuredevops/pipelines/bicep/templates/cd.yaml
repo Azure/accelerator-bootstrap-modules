@@ -40,4 +40,4 @@ stages:
                   parameters:
                     serviceConnection: '${service_connection_name_apply}'
                     whatIfEnabled: false
-                    networkingType: '${networking_type}'
+                    

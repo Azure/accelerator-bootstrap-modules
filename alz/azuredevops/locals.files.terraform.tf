@@ -10,6 +10,10 @@ locals {
 
   target_folder_name = ".pipelines"
 
+  script_files_all = var.iac_type == "bicep" ? jsondecode(file("${var.module_folder_path}/accelerator/.config/ALZ-Powershell.config.json")).deployment_files : []
+  networking_type  = var.iac_type == "bicep" ? jsondecode(file("${var.module_folder_path}/parameters.json")).NETWORK_TYPE : ""
+  script_files = var.iac_type == "bicep" ? { for script_file in local.script_files_all : format("%03d", script_file.order) => script_file if try(script_file.networkType, "") == "" || try(script_file.networkType, "") == local.networking_type } : {}
+
   cicd_files = { for pipeline_file in local.pipeline_files : "${local.target_folder_name}/${pipeline_file}" =>
     {
       content = templatefile("${local.pipeline_files_directory_path}/${pipeline_file}", {
@@ -33,15 +37,16 @@ locals {
         service_connection_name_plan  = local.resource_names.version_control_system_service_connection_plan
         service_connection_name_apply = local.resource_names.version_control_system_service_connection_apply
         self_hosted_agent             = var.use_self_hosted_agents
+        script_files                  = local.script_files
       })
     }
   }
 
-  module_files = { for key, value in module.files.files : key =>
+  module_files = var.iac_type == "terrafomr" ? { for key, value in module.files.files : key =>
     {
       content = replace((file(value.path)), "# backend \"azurerm\" {}", "backend \"azurerm\" {}")
     }
-  }
+  } : {}
   repository_files          = merge(local.cicd_files, local.module_files, var.use_separate_repository_for_pipeline_templates ? {} : local.cicd_template_files)
   template_repository_files = var.use_separate_repository_for_pipeline_templates ? local.cicd_template_files : {}
 }

@@ -13,6 +13,7 @@ parameters:
         templateParametersFilePath: ".\pipeline-scripts\Example.parameters.all.json"
         managementGroupId: "00000000-0000-0000-0000-000000000000"
         subscriptionId: "00000000-0000-0000-0000-000000000000"
+        resourceGroupName: "example-rg"
         location: "uksouth"
         deploymentType: "subscription" # tenant | managementGroup | subscription | resourceGroup
 
@@ -52,6 +53,7 @@ steps:
           }
 
           if ($deploymentType -eq "resourceGroup") {
+            $inputObject.ResourceGroupName = "$${{ scriptFile.resourceGroupName }}"
             Select-AzSubscription -SubscriptionId "$${{ scriptFile.subscriptionId }}"
             New-AzResourceGroupDeployment @inputObject
           }
