@@ -9,8 +9,8 @@ parameters:
     type: object
     default: 
       - displayName: "Example Deployment"
-        templateFilePath: ".\pipeline-scripts\Example.ps1"
-        templateParametersFilePath: ".\pipeline-scripts\Example.parameters.all.json"
+        templateFilePath: "./pipeline-scripts/Example.ps1"
+        templateParametersFilePath: "./pipeline-scripts/Example.parameters.all.json"
         managementGroupId: "00000000-0000-0000-0000-000000000000"
         subscriptionId: "00000000-0000-0000-0000-000000000000"
         resourceGroupName: "example-rg"
@@ -23,7 +23,6 @@ steps:
       displayName: $${{ scriptFile.displayName }}
       inputs:
         azureSubscription: $${{ parameters.serviceConnection }}
-        azurePowerShellVersion: "LatestVersion"
         pwsh: true
         ScriptType: "InlineScript"
         Inline: |
