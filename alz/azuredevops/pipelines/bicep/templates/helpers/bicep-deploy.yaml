@@ -29,8 +29,14 @@ steps:
         Inline: |
           $deploymentType = "$${{ scriptFile.deploymentType }}"
 
-          $deploymentName = '$${{ scriptFile.displayName }}-{0}' -f ( -join (Get-Date -Format 'yyyyMMddTHHMMssffffZ')[0..63])
-          $deploymentName = $deploymentName.Replace(" ", "-")
+          $deploymentTimeStamp = Get-Date -Format 'yyyyMMddTHHMMssffffZ'
+          $deploymentName = "$${{ scriptFile.displayName }}".Replace(" ", "-")
+          
+          if($deploymentName.Length -gt 43) {
+            $deploymentName = $deploymentName.Substring(0, 42)
+          }
+
+          $deploymentName = "$deploymentName-$deploymentTimeStamp"
 
           $inputObject = @{
             DeploymentName        = $deploymentName
@@ -47,6 +53,9 @@ steps:
 
           if ($deploymentType -eq "managementGroup") {
             $inputObject.ManagementGroupId = "$${{ scriptFile.managementGroupId }}"
+            if ($inputObject.ManagementGroupId -eq "") {
+              $inputObject.ManagementGroupId = (Get-AzContext).Tenant.TenantId
+            }
             New-AzManagementGroupDeployment @inputObject
           }
 

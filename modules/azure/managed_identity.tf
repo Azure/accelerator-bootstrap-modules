@@ -15,6 +15,44 @@ resource "azurerm_federated_identity_credential" "alz" {
   subject             = each.value.federated_credential_subject
 }
 
+resource "azurerm_role_definition" "alz_contributor" {
+  name        = "Azure Landing Zones Management Group Contributor"
+  scope       = data.azurerm_management_group.alz.id
+  description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing the Management Group Structure."
+
+  permissions {
+    actions     = [
+      "Microsoft.Management/managementGroups/delete",
+      "Microsoft.Management/managementGroups/read",
+      "Microsoft.Management/managementGroups/subscriptions/delete",
+      "Microsoft.Management/managementGroups/subscriptions/write",
+      "Microsoft.Management/managementGroups/write",
+      "Microsoft.Management/managementGroups/subscriptions/read",
+      "Microsoft.Authorization/*/read",
+      "Microsoft.Resources/deployments/whatIf/action",
+      "Microsoft.Resources/deployments/write"
+    ]
+    not_actions = []
+  }
+}
+
+resource "azurerm_role_definition" "alz_reader" {
+  name        = "Azure Landing Zones Management Group Reader"
+  scope       = data.azurerm_management_group.alz.id
+  description = "This is a custom role created by the Azure Landing Zones Accelerator for Reading the Management Group Structure."
+
+  permissions {
+    actions     = [
+      "Microsoft.Management/managementGroups/read",
+      "Microsoft.Management/managementGroups/subscriptions/read",
+      "Microsoft.Authorization/*/read",
+      "Microsoft.Resources/deployments/whatIf/action",
+      "Microsoft.Resources/deployments/write"
+    ]
+    not_actions = []
+  }
+}
+
 locals {
   subscription_plan_role_assignments = {
     for subscription_id, subscription in data.azurerm_subscription.alz : "plan_${subscription_id}" => {
@@ -33,12 +71,12 @@ locals {
   role_assignments = merge(local.subscription_plan_role_assignments, local.subscription_apply_role_assignments, {
     plan_management_group = {
       scope                = data.azurerm_management_group.alz.id
-      role_definition_name = "Management Group Reader"
+      role_definition_name = azurerm_role_definition.alz_reader.name
       principal_id         = azurerm_user_assigned_identity.alz[local.plan_key].principal_id
     }
     apply_management_group = {
       scope                = data.azurerm_management_group.alz.id
-      role_definition_name = "Management Group Contributor"
+      role_definition_name = azurerm_role_definition.alz_contributor.name
       principal_id         = azurerm_user_assigned_identity.alz[local.apply_key].principal_id
     }
   })
