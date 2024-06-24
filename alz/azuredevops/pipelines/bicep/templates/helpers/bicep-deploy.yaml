@@ -9,8 +9,8 @@ parameters:
     type: object
     default: 
       - displayName: "Example Deployment"
-        templateFilePath: "./pipeline-scripts/Example.ps1"
-        templateParametersFilePath: "./pipeline-scripts/Example.parameters.all.json"
+        templateFilePath: "./infra-as-code/bicep/modules/example/example.bicep"
+        templateParametersFilePath: "./config/custom-parameters/example.parameters.all.json"
         managementGroupId: "00000000-0000-0000-0000-000000000000"
         subscriptionId: "00000000-0000-0000-0000-000000000000"
         resourceGroupName: "example-rg"
@@ -24,12 +24,16 @@ steps:
       inputs:
         azureSubscription: $${{ parameters.serviceConnection }}
         pwsh: true
+        azurePowerShellVersion: LatestVersion
         ScriptType: "InlineScript"
         Inline: |
           $deploymentType = "$${{ scriptFile.deploymentType }}"
 
+          $deploymentName = '$${{ scriptFile.displayName }}-{0}' -f ( -join (Get-Date -Format 'yyyyMMddTHHMMssffffZ')[0..63])
+          $deploymentName = $deploymentName.Replace(" ", "-")
+
           $inputObject = @{
-            DeploymentName        = '$${{ scriptFile.displayName }}-{0}' -f ( -join (Get-Date -Format 'yyyyMMddTHHMMssffffZ')[0..63])
+            DeploymentName        = $deploymentName
             Location              = "$${{ scriptFile.location }}"
             TemplateFile          = "$${{ scriptFile.templateFilePath }}"
             TemplateParameterFile = "$${{ scriptFile.templateParametersFilePath }}"
