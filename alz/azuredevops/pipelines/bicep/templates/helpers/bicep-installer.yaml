@@ -1,16 +1,17 @@
 ---
 steps:
   - pwsh: |
+      $TOOLS_PATH = $env:TOOLS_PATH
       $installDir = Join-Path -Path $TOOLS_PATH -ChildPath "bicep"
 
       $toolFileName = "bicep"
       $toolFilePath = Join-Path -Path $installDir -ChildPath $toolFileName
      
-      if(!(Test-Path $TOOLS_PATH)) {
-        New-Item -ItemType Directory -Path $TOOLS_PATH | Out-String | Write-Verbose
+      if(!(Test-Path $installDir)) {
+        New-Item -ItemType Directory -Path $installDir | Out-String | Write-Verbose
       }
 
-      $url = https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
+      $url = "https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64"
 
       Invoke-WebRequest -Uri $url -OutFile "$toolFilePath" | Out-String | Write-Verbose
 
@@ -19,7 +20,7 @@ steps:
           chmod +x $toolFilePath
       }
 
-      $env:PATH = "$($unzipdir):$env:PATH"
+      $env:PATH = "$($installDir):$env:PATH"
       
       Write-Host "##vso[task.setvariable variable=PATH]$env:PATH"
 

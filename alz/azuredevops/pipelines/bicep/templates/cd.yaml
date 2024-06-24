@@ -4,8 +4,8 @@ stages:
     displayName: Deploy
     variables:
       - group: ${variable_group_name}
-      - name: ENV_FILE
-        value: .env
+      - name: parametersFileName
+        value: parameters.json
 
     jobs:
       - deployment: deploy
@@ -23,21 +23,11 @@ stages:
 
                 - template: helpers/bicep-installer.yaml
 
-                - pwsh: |
-                    (Get-Content -Path $env:ENV_FILE -Encoding UTF8) | ForEach-Object {$_ -replace '"',''} | Out-File -FilePath $env:ENV_FILE -Encoding UTF8
-                  displayName: Remove Quotation Marks from Environment File
-
-                - pwsh: |
-                    Write-Host $env:ENV_FILE
-                    Get-Content -Path $env:ENV_FILE -Encoding UTF8 | ForEach-Object {
-                      $envVarName, $envVarValue = ($_ -replace '"','').split('=')
-                      echo "##vso[task.setvariable variable=$envVarName;]$envVarValue"
-                      echo "Set $envVarName to $envVarValue]"
-                    }
-                  displayName: Import Environment Variables from File
+                - template: helpers/bicep-variables.yaml
+                  parameters:
+                    parametersFileName: $(parametersFileName)
 
                 - template: helpers/bicep-templates.yaml
                   parameters:
                     serviceConnection: '${service_connection_name_apply}'
                     whatIfEnabled: false
-                    

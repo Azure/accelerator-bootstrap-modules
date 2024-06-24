@@ -7,11 +7,11 @@ parameters:
     default: true
 
 steps:
-  - template: helpers/bicep-deploy.yaml
+  - template: bicep-deploy.yaml
     parameters:
       serviceConnection: $${{ parameters.serviceConnection }}
       whatIfEnabled: $${{ parameters.whatIfEnabled }}
-      script_files:
+      scriptFiles:
 %{ for script_file in script_files ~}
         - displayName: "${script_file.displayName}"
           templateFilePath: "${script_file.templateFilePath}"
