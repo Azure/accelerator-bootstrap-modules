@@ -5,93 +5,21 @@ parameters:
   - name: whatIfEnabled
     type: boolean
     default: true
-  - name: networkingType
-    type: string
-    default: hubSpoke # hubSpoke | vwan
 
 steps:
   - template: helpers/bicep-deploy.yaml
     parameters:
       serviceConnection: $${{ parameters.serviceConnection }}
       whatIfEnabled: $${{ parameters.whatIfEnabled }}
-      scriptFiles:
-        - displayName: Management Groups Deployment
-          templateFilePath: .\infra-as-code\bicep\modules\managementGroups\managementGroupsScopeEscape.bicep
-          templateParametersFilePath: .\config\custom-parameters\managementGroups.parameters.all.json
-          managementGroupId: $(root_parent_management_group_id)
-          location: $(location)
-          deploymentType: "managementGroup"
+      script_files:
+%{ for script_file in script_files ~}
+        - displayName: "${script_file.displayName}"
+          templateFilePath: "${script_file.templateFilePath}"
+          templateParametersFilePath: "${script_file.templateParametersFilePath}"
+          managementGroupId: "${try("$(${script_file.managementGroupId})", "")}"
+          subscriptionId: "${try("$(${script_file.subscriptionId})", "")}"
+          resourceGroupName: "${try("$(${script_file.resourceGroupName})", "")}"
+          location: "$(LOCATION)"
+          deploymentType: "${script_file.deploymentType}"
 
-        - displayName: Logging and Sentinel Resource Group Deployment
-          templateFilePath: .\infra-as-code\bicep\modules\resourceGroup\resourceGroup.bicep
-          templateParametersFilePath: .\config\custom-parameters\resourceGroupLoggingAndSentinel.parameters.all.json
-          subscriptionId: $(subscription_id_management)
-          location: $(location)
-          deploymentType: "subscription"
-
-        - displayName: Logging and Sentinel Deployment
-          templateFilePath: .\infra-as-code\bicep\modules\logging\logging.bicep
-          templateParametersFilePath: .\config\custom-parameters\logging.parameters.all.json
-          subscriptionId: $(subscription_id_management)
-          location: $(location)
-          deploymentType: "subscription"
-
-        - displayName: Custom Policy Definitions Deployment
-          templateFilePath: .\infra-as-code\bicep\modules\policy\definitions\customPolicyDefinitions.bicep
-          templateParametersFilePath: .\config\custom-parameters\customPolicyDefinitions.parameters.all.json
-          subscriptionId: $(root_parent_management_group_id)
-          location: $(location)
-          deploymentType: "managementGroup"
-
-        - displayName: Custom Role Definitions Deployment
-          templateFilePath: .\infra-as-code\bicep\modules\customRoleDefinitions\customRoleDefinitions.bicep
-          templateParametersFilePath: .\config\custom-parameters\customRoleDefinitions.parameters.all.json
-          subscriptionId: $(root_parent_management_group_id)
-          location: $(location)
-          deploymentType: "managementGroup"
-
-        - displayName: Custom Management Group Diagnostic Settings
-          templateFilePath: .\infra-as-code\bicep\orchestration\mgDiagSettingsAll\mgDiagSettingsAll.bicep
-          templateParametersFilePath: .\config\custom-parameters\mgDiagSettingsAll.parameters.all.json
-          subscriptionId: $(root_parent_management_group_id)
-          location: $(location)
-          deploymentType: "managementGroup"
-
-        - displayName: Built-in and Custom Policy Assignments Deployment
-          templateFilePath: .\infra-as-code\bicep\modules\policy\assignments\alzDefaults\alzDefaultPolicyAssignments.bicep
-          templateParametersFilePath: .\config\custom-parameters\alzDefaultPolicyAssignments.parameters.all.json
-          subscriptionId: $(root_parent_management_group_id)
-          location: $(location)
-          deploymentType: "managementGroup"
-
-        - displayName: Deploy Subscription Placement
-          templateFilePath: .\infra-as-code\bicep\orchestration\subPlacementAll\subPlacementAll.bicep
-          templateParametersFilePath: .\config\custom-parameters\subPlacementAll.parameters.all.json
-          subscriptionId: $(root_parent_management_group_id)
-          location: $(location)
-          deploymentType: "managementGroup"
-
-        - displayName: Connectivity Resource Group Deployment
-          templateFilePath: .\infra-as-code\bicep\modules\resourceGroup\resourceGroup.bicep
-          templateParametersFilePath: .\config\custom-parameters\resourceGroupConnectivity.parameters.all.json
-          subscriptionId: $(subscription_id_connectivity)
-          location: $(location)
-          deploymentType: "subscription"
-
-        - $${{ if eq(parameters['networking'], 'hubSpoke') }} :
-          - displayName: Hub (Hub-and-Spoke) Deployment
-            templateFilePath: .\infra-as-code\bicep\modules\hubNetworking\hubNetworking.bicep
-            templateParametersFilePath: .\config\custom-parameters\hubNetworking.parameters.all.json
-            subscriptionId: $(subscription_id_connectivity)
-            resourceGroupName: $(resource_group_name_connectivity)
-            location: $(location)
-            deploymentType: "resourceGroup"
-
-        - $${{ if eq(parameters['networking'], 'vwan') }} :
-          - displayName: Hub (VWAN) Deployment
-            templateFilePath: .\infra-as-code\bicep\modules\hubNetworking\vwanConnectivity.bicep
-            templateParametersFilePath: .\config\custom-parameters\vwanConnectivity.parameters.all.json
-            subscriptionId: $(subscription_id_connectivity)
-            resourceGroupName: $(resource_group_name_connectivity)
-            location: $(location)
-            deploymentType: "resourceGroup"
+%{ endfor ~}

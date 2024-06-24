@@ -109,4 +109,3 @@ stages:
                   parameters:
                     serviceConnection: '${service_connection_name_apply}'
                     whatIfEnabled: true
-                    networkingType: '${networking_type}'

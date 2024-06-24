@@ -16,6 +16,7 @@
             "required": true,
             "source": "input",
             "maps_to": [ "bootstrap", "starter" ],
+            "bicep_alias": "RootParentManagementGroupId",
             "display_order": 2,
             "description": "The identifier of the parent management group for your hierarchy, if left blank will use the tenant id (Tenant Root Group)."
         },
@@ -24,6 +25,7 @@
             "required": true,
             "source": "input",
             "maps_to": [ "bootstrap", "starter" ],
+            "bicep_alias": "ConnectivitySubscriptionId",
             "validation": "azure_subscription_id",
             "display_order": 3,
             "description": "The identifier of the Connectivity Subscription."
@@ -33,6 +35,7 @@
             "required": true,
             "source": "input",
             "maps_to": [ "bootstrap", "starter" ],
+            "bicep_alias": "IdentitySubscriptionId",
             "validation": "azure_subscription_id",
             "display_order": 4,
             "description": "The identifier of the Identity Subscription."
@@ -42,6 +45,7 @@
             "required": true,
             "source": "input",
             "maps_to": [ "bootstrap", "starter" ],
+            "bicep_alias": "ManagementSubscriptionId",
             "validation": "azure_subscription_id",
             "display_order": 5,
             "description": "The identifier of the Management Subscription."
