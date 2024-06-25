@@ -30,7 +30,7 @@ steps:
       Inline: |
         $managementGroupId = $env:MANAGEMENT_GROUP_ID
         $managementGroups = Get-AzManagementGroup
-        $managementGroup = $managementGroups | Where-Object { $_.Id -eq $managementGroupId }
+        $managementGroup = $managementGroups | Where-Object { $_.Name -eq $managementGroupId }
 
         $firstDeployment = $true
 
@@ -113,6 +113,11 @@ steps:
             $inputObject.ResourceGroupName = "$${{ scriptFile.resourceGroupName }}"
             Select-AzSubscription -SubscriptionId "$${{ scriptFile.subscriptionId }}"
             $result = New-AzResourceGroupDeployment @inputObject
+          }
+
+          if ($whatIf) {
+            $result | Format-List | Out-Host
+            exit 0
           }
 
           $resultId = ""
