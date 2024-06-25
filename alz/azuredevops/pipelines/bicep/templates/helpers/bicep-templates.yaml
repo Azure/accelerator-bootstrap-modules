@@ -21,5 +21,6 @@ steps:
           resourceGroupName: "${try("$(${script_file.resourceGroupName})", "")}"
           location: "$(LOCATION)"
           deploymentType: "${script_file.deploymentType}"
+          firstRunWhatIf: ${script_file.firstRunWhatIf}
 
 %{ endfor ~}

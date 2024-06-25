@@ -260,3 +260,23 @@ variable "allow_storage_access_from_my_ip" {
   type    = bool
   default = false
 }
+
+variable "custom_role_definitions" {
+  description = "Custom role definitions to create"
+  type        = map(object({
+    name        = string
+    description = string
+    permissions = object({
+      actions     = list(string)
+      not_actions = list(string)
+    })
+  }))
+}
+
+variable "role_assignments" {
+  type = map(object({
+    custom_role_definition_key = string
+    user_assigned_managed_identity_key = string
+    scope                = string
+  }))
+}

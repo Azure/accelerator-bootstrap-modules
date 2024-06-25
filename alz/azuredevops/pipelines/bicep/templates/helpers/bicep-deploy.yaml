@@ -16,8 +16,33 @@ parameters:
         resourceGroupName: "example-rg"
         location: "uksouth"
         deploymentType: "subscription" # tenant | managementGroup | subscription | resourceGroup
+        firstRunWhatIf: true
 
 steps:
+  - task: AzurePowerShell@5
+    displayName: Check for First Deployment
+    condition: eq($${{ parameters.whatIfEnabled }}, true)
+    inputs:
+      azureSubscription: $${{ parameters.serviceConnection }}
+      pwsh: true
+      azurePowerShellVersion: LatestVersion
+      ScriptType: "InlineScript"
+      Inline: |
+        $managementGroupId = $env:MANAGEMENT_GROUP_ID
+        $managementGroups = Get-AzManagementGroup
+        $managementGroup = $managementGroups | Where-Object { $_.Id -eq $managementGroupId }
+
+        $firstDeployment = $true
+
+        if($managementGroup -eq $null) {
+          Write-Warning "Cannot find the $managementGroupId Management Group, so assuming this is the first deployment. We must skip checking some deployments since their dependent resources do not exist yet."
+        } else {
+          Write-Host "Found the $managementGroupId Management Group, so assuming this is not the first deployment."
+          $firstDeployment = $false
+        }
+
+        Write-Host "##vso[task.setvariable variable=FIRST_DEPLOYMENT;]$firstDeployment"
+
   - $${{ each scriptFile in parameters.scriptFiles }} :
     - task: AzurePowerShell@5
       displayName: $${{ scriptFile.displayName }}
@@ -27,11 +52,27 @@ steps:
         azurePowerShellVersion: LatestVersion
         ScriptType: "InlineScript"
         Inline: |
-          $deploymentType = "$${{ scriptFile.deploymentType }}"
+          $whatIf = [System.Convert]::ToBoolean("$${{ parameters.whatIfEnabled }}")
+          
+          $firstDeploymentString = $env:FIRST_DEPLOYMENT
+          $firstDeployment = $true
+          if($firstDeploymentString -eq "") {
+            $firstDeployment = $false
+          } else {
+            $firstDeployment = [System.Convert]::ToBoolean($firstDeploymentString)
+          }
 
+          $firstRunWhatIf = [System.Convert]::ToBoolean("$${{ scriptFile.firstRunWhatIf }}")
+
+          if($whatIf -and $firstDeployment -and !$firstRunWhatIf) {
+            Write-Warning "Skipping the WhatIf check as the deployment is dependent on resources that do not exist yet..."
+            exit 0
+          }
+
+          $deploymentType = "$${{ scriptFile.deploymentType }}"
           $deploymentTimeStamp = Get-Date -Format 'yyyyMMddTHHMMssffffZ'
           $deploymentName = "$${{ scriptFile.displayName }}".Replace(" ", "-")
-          
+
           if($deploymentName.Length -gt 43) {
             $deploymentName = $deploymentName.Substring(0, 42)
           }
@@ -40,18 +81,19 @@ steps:
 
           $inputObject = @{
             DeploymentName        = $deploymentName
-            Location              = "$${{ scriptFile.location }}"
             TemplateFile          = "$${{ scriptFile.templateFilePath }}"
             TemplateParameterFile = "$${{ scriptFile.templateParametersFilePath }}"
-            WhatIf                = [System.Convert]::ToBoolean("$${{ parameters.whatIfEnabled }}")
+            WhatIf                = $whatIf
             Verbose               = $true
           }
 
           if ($deploymentType -eq "tenant") {
+            $inputObject.Location = "$${{ scriptFile.location }}"
             New-AzTenantDeployment @inputObject
           }
 
           if ($deploymentType -eq "managementGroup") {
+            $inputObject.Location = "$${{ scriptFile.location }}"
             $inputObject.ManagementGroupId = "$${{ scriptFile.managementGroupId }}"
             if ($inputObject.ManagementGroupId -eq "") {
               $inputObject.ManagementGroupId = (Get-AzContext).Tenant.TenantId
@@ -60,6 +102,7 @@ steps:
           }
 
           if ($deploymentType -eq "subscription") {
+            $inputObject.Location = "$${{ scriptFile.location }}"
             Select-AzSubscription -SubscriptionId "$${{ scriptFile.subscriptionId }}"
             New-AzSubscriptionDeployment @inputObject
           }

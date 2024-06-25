@@ -50,6 +50,8 @@ module "azure" {
   storage_account_replication_type                          = var.storage_account_replication_type
   public_ip_name                                            = local.resource_names.public_ip
   nat_gateway_name                                          = local.resource_names.nat_gateway
+  custom_role_definitions                                   = var.iac_type == "terraform" ? var.custom_role_definitions_terraform : var.custom_role_definitions_bicep
+  role_assignments                                          = var.iac_type == "terraform" ? var.role_assignments_terraform : var.role_assignments_bicep
 }
 
 module "azure_devops" {
