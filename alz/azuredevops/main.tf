@@ -57,6 +57,8 @@ module "azure" {
   container_registry_image_tag                              = var.agent_container_image_tag
   container_registry_dockerfile_name                        = var.agent_container_image_dockerfile
   container_registry_dockerfile_repository_folder_url       = local.agent_container_instance_dockerfile_url
+  custom_role_definitions                                   = var.iac_type == "terraform" ? var.custom_role_definitions_terraform : var.custom_role_definitions_bicep
+  role_assignments                                          = var.iac_type == "terraform" ? var.role_assignments_terraform : var.role_assignments_bicep
 }
 
 module "azure_devops" {

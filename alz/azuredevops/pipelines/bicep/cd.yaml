@@ -4,6 +4,12 @@ trigger:
     include:
       - main
 
+parameters:
+  - name: skipWhatIf
+    displayName: Skip What If Check?
+    type: boolean
+    default: false
+
 resources:
   repositories:
     - repository: templates
@@ -14,3 +20,5 @@ lockBehavior: sequential
 
 extends:
   template: ${cd_template_path}@templates
+  parameters:
+    skipWhatIf: $${{ parameters.skipWhatIf }}

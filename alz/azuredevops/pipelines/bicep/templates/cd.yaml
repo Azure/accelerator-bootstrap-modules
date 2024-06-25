@@ -1,7 +1,13 @@
 ---
+parameters:
+  - name: skipWhatIf
+    type: boolean
+    default: false
+
 stages:
-  - stage: deploy
-    displayName: Deploy
+  - stage: whatif
+    displayName: What If
+    condition: eq($${{ parameters.skipWhatIf }}, false)
     variables:
       - group: ${variable_group_name}
       - name: parametersFileName
@@ -32,6 +38,16 @@ stages:
                     serviceConnection: '${service_connection_name_plan}'
                     whatIfEnabled: true
 
+  - stage: deploy
+    displayName: Deploy
+    dependsOn: whatif
+    condition: not(or(failed(), canceled()))
+    variables:
+      - group: ${variable_group_name}
+      - name: parametersFileName
+        value: parameters.json
+
+    jobs:
       - deployment: deploy
         displayName: Deploy with Bicep
         pool:
