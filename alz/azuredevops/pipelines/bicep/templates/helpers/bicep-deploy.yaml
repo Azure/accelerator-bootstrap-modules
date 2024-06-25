@@ -87,9 +87,11 @@ steps:
             Verbose               = $true
           }
 
+          $result = $null
+
           if ($deploymentType -eq "tenant") {
             $inputObject.Location = "$${{ scriptFile.location }}"
-            New-AzTenantDeployment @inputObject
+            $result = New-AzTenantDeployment @inputObject
           }
 
           if ($deploymentType -eq "managementGroup") {
@@ -98,17 +100,38 @@ steps:
             if ($inputObject.ManagementGroupId -eq "") {
               $inputObject.ManagementGroupId = (Get-AzContext).Tenant.TenantId
             }
-            New-AzManagementGroupDeployment @inputObject
+            $result = New-AzManagementGroupDeployment @inputObject
           }
 
           if ($deploymentType -eq "subscription") {
             $inputObject.Location = "$${{ scriptFile.location }}"
             Select-AzSubscription -SubscriptionId "$${{ scriptFile.subscriptionId }}"
-            New-AzSubscriptionDeployment @inputObject
+            $result = New-AzSubscriptionDeployment @inputObject
           }
 
           if ($deploymentType -eq "resourceGroup") {
             $inputObject.ResourceGroupName = "$${{ scriptFile.resourceGroupName }}"
             Select-AzSubscription -SubscriptionId "$${{ scriptFile.subscriptionId }}"
-            New-AzResourceGroupDeployment @inputObject
+            $result = New-AzResourceGroupDeployment @inputObject
+          }
+
+          $resultId = ""
+
+          if($deploymentType -eq "resourceGroup") {
+            $resultId = "/subscriptions/$${{ scriptFile.subscriptionId }}/resourceGroups/$${{ scriptFile.resourceGroupName }}/providers/Microsoft.Resources/deployments/$deploymentName"
+          } else {
+            $resultId = $result.Id
+          }    
+
+          $resultIdEscaped = $resultId.Replace("/", "%2F")
+          $resultUrl = "https://portal.azure.com/#view/HubsExtension/DeploymentDetailsBlade/~/overview/id/$resultIdEscaped"
+          
+          Write-Host "Deployment Name: $deploymentName"
+          Write-Host "Deployment ID: $resultId"
+          Write-Host "Deployment Url: $resultUrl"
+          $result | Format-List | Out-Host
+
+          if($result.ProvisioningState -ne "Succeeded") {
+            Write-Error "Deployment failed"
+            exit 1
           }

@@ -205,10 +205,15 @@ variable "custom_role_definitions_bicep"  {
           "Microsoft.Management/managementGroups/subscriptions/write",
           "Microsoft.Management/managementGroups/write",
           "Microsoft.Management/managementGroups/subscriptions/read",
+          "Microsoft.Authorization/policyDefinitions/write",
+          "Microsoft.Authorization/policySetDefinitions/write",
+          "Microsoft.Authorization/roleDefinitions/write",
           "Microsoft.Authorization/*/read",
           "Microsoft.Resources/deployments/whatIf/action",
           "Microsoft.Resources/deployments/write",
-          "Microsoft.Resources/deployments/validate/action"
+          "Microsoft.Resources/deployments/validate/action",
+          "Microsoft.Resources/deployments/read",
+          "Microsoft.Resources/deployments/operationStatuses/read"
         ]
         not_actions = []
       }
