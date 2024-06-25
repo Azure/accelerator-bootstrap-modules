@@ -214,6 +214,9 @@ variable "custom_role_definitions_bicep"  {
           "Microsoft.Authorization/policyDefinitions/write",
           "Microsoft.Authorization/policySetDefinitions/write",
           "Microsoft.Authorization/roleDefinitions/write",
+          "Microsoft.Authorization/policyAssignments/write",
+          "Microsoft.Insights/diagnosticSettings/write",
+          "Microsoft.Insights/diagnosticSettings/read",
           "Microsoft.Resources/deployments/whatIf/action",
           "Microsoft.Resources/deployments/write"
         ]
@@ -239,6 +242,14 @@ variable "custom_role_definitions_bicep"  {
         actions     = [
           "*/read",
           "Microsoft.Resources/subscriptions/resourceGroups/write",
+          "Microsoft.ManagedIdentity/userAssignedIdentities/write",
+          "Microsoft.Automation/automationAccounts/write",
+          "Microsoft.OperationalInsights/workspaces/write",
+          "Microsoft.OperationalInsights/workspaces/linkedServices/write",
+          "Microsoft.OperationsManagement/solutions/write",
+          "Microsoft.Insights/dataCollectionRules/write",
+          "Microsoft.Authorization/locks/write",
+          "Microsoft.Network/*/write",
           "Microsoft.Resources/deployments/whatIf/action",
           "Microsoft.Resources/deployments/write"
         ]
