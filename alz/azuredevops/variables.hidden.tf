@@ -117,6 +117,16 @@ variable "storage_account_replication_type" {
   }
 }
 
+variable "bicep_config_file_path" {
+  type = string
+  default = "./accelerator/.config/ALZ-Powershell-Auto.config.json"
+}
+
+variable "bicep_parameters_file_path" {
+  type = string
+  default = "./parameters.json"
+}
+
 variable "custom_role_definitions_terraform"  {
   description = "Custom role definitions to create for Terraform"
   type        = map(object({
