@@ -27,6 +27,6 @@ steps:
           location: "$(LOCATION)"
           deploymentType: "${script_file.deploymentType}"
           firstRunWhatIf: ${script_file.firstRunWhatIf}
-          runStep: $${{ parameters.${script_file.displayName} }}
+          runStep: $${{ parameters.${script_file.name} }}
 
 %{ endfor ~}
