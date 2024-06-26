@@ -79,5 +79,5 @@ stages:
                     serviceConnection: '${service_connection_name_apply}'
                     whatIfEnabled: false
 %{ for script_file in script_files ~}
-                    ${script_file.displayName}: $${{ parameters.${script_file.displayName} }}
+                    ${script_file.name}: $${{ parameters.${script_file.name} }}
 %{ endfor ~}
