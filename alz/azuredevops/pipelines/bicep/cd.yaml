@@ -9,6 +9,12 @@ parameters:
     displayName: Skip What If Check?
     type: boolean
     default: false
+%{ for script_file in script_files ~}
+  - name: ${script_file.name}
+    displayName: 'Run Step: ${script_file.displayName}'
+    type: boolean
+    default: true
+%{ endfor ~}
 
 resources:
   repositories:
@@ -22,3 +28,6 @@ extends:
   template: ${cd_template_path}@templates
   parameters:
     skipWhatIf: $${{ parameters.skipWhatIf }}
+%{ for script_file in script_files ~}
+    ${script_file.name}: $${{ parameters.${script_file.name} }}
+%{ endfor ~}

@@ -10,6 +10,11 @@
             "source": "powershell",
             "maps_to": [ "bootstrap" ]
         },
+        "starter_module_name" :{
+            "type": "string",
+            "source": "powershell",
+            "maps_to": [ "bootstrap" ]
+        },
         "root_parent_management_group_id": {
             "type": "string",
             "default": "",

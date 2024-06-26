@@ -119,12 +119,12 @@ variable "storage_account_replication_type" {
 
 variable "bicep_config_file_path" {
   type = string
-  default = "./accelerator/.config/ALZ-Powershell-Auto.config.json"
+  default = "accelerator/.config/ALZ-Powershell-Auto.config.json"
 }
 
 variable "bicep_parameters_file_path" {
   type = string
-  default = "./parameters.json"
+  default = "parameters.json"
 }
 
 variable "custom_role_definitions_terraform"  {
@@ -139,7 +139,7 @@ variable "custom_role_definitions_terraform"  {
   }))
   default = {
     alz_managment_group_contributor = {
-      name        = "Azure Landing Zones Management Group Contributor"
+      name        = "Azure Landing Zones Management Group Contributor ({{service_name}}-{{environment_name}})"
       description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing the Management Group Structure."
       permissions = {
         actions     = [
@@ -156,7 +156,7 @@ variable "custom_role_definitions_terraform"  {
       }
     }
     alz_managment_group_reader = {
-      name        = "Azure Landing Zones Management Group Reader"
+      name        = "Azure Landing Zones Management Group Reader ({{service_name}}-{{environment_name}})"
       description = "This is a custom role created by the Azure Landing Zones Accelerator for Reading the Management Group Structure."
       permissions = {
         actions     = [
@@ -169,7 +169,7 @@ variable "custom_role_definitions_terraform"  {
       }
     }
     alz_subscription_owner = {
-      name        = "Azure Landing Zones Subscription Owner"
+      name        = "Azure Landing Zones Subscription Owner ({{service_name}}-{{environment_name}})"
       description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing in platfrom subscriptions."
       permissions = {
         actions     = [
@@ -180,7 +180,7 @@ variable "custom_role_definitions_terraform"  {
       }
     }
     alz_subscription_reader = {
-      name        = "Azure Landing Zones Subscription Reader"
+      name        = "Azure Landing Zones Subscription Reader ({{service_name}}-{{environment_name}})"
       description = "This is a custom role created by the Azure Landing Zones Accelerator for Reading the platform subscriptions."
       permissions = {
         actions     = [
@@ -205,7 +205,7 @@ variable "custom_role_definitions_bicep"  {
   }))
   default = {
     alz_managment_group_contributor = {
-      name        = "Azure Landing Zones Management Group Contributor"
+      name        = "Azure Landing Zones Management Group Contributor ({{service_name}}-{{environment_name}})"
       description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing the Management Group Structure."
       permissions = {
         actions     = [
@@ -229,7 +229,7 @@ variable "custom_role_definitions_bicep"  {
       }
     }
     alz_managment_group_reader = {
-      name        = "Azure Landing Zones Management Group What If"
+      name        = "Azure Landing Zones Management Group What If ({{service_name}}-{{environment_name}})"
       description = "This is a custom role created by the Azure Landing Zones Accelerator for running Bicep What If for the Management Group Structure."
       permissions = {
         actions     = [
@@ -249,7 +249,7 @@ variable "custom_role_definitions_bicep"  {
       }
     }
     alz_subscription_owner = {
-      name        = "Azure Landing Zones Subscription Owner"
+      name        = "Azure Landing Zones Subscription Owner ({{service_name}}-{{environment_name}})"
       description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing in platfrom subscriptions."
       permissions = {
         actions     = [
@@ -261,7 +261,7 @@ variable "custom_role_definitions_bicep"  {
       }
     }
     alz_subscription_reader = {
-      name        = "Azure Landing Zones Subscription What If"
+      name        = "Azure Landing Zones Subscription What If ({{service_name}}-{{environment_name}})"
       description = "This is a custom role created by the Azure Landing Zones Accelerator for running Bicep What If for the platform subscriptions."
       permissions = {
         actions     = [

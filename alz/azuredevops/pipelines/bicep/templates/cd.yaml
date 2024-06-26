@@ -3,6 +3,11 @@ parameters:
   - name: skipWhatIf
     type: boolean
     default: false
+%{ for script_file in script_files ~}
+  - name: ${script_file.name}
+    type: boolean
+    default: true
+%{ endfor ~}
 
 stages:
   - stage: whatif
@@ -36,7 +41,9 @@ stages:
                 - template: helpers/bicep-templates.yaml
                   parameters:
                     serviceConnection: '${service_connection_name_plan}'
-                    whatIfEnabled: true
+%{ for script_file in script_files ~}
+                    ${script_file.name}: $${{ parameters.${script_file.name} }}
+%{ endfor ~}
 
   - stage: deploy
     displayName: Deploy
@@ -71,3 +78,6 @@ stages:
                   parameters:
                     serviceConnection: '${service_connection_name_apply}'
                     whatIfEnabled: false
+%{ for script_file in script_files ~}
+                    ${script_file.displayName}: $${{ parameters.${script_file.displayName} }}
+%{ endfor ~}

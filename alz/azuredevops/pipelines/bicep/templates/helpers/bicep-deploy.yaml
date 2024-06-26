@@ -17,6 +17,7 @@ parameters:
         location: "uksouth"
         deploymentType: "subscription" # tenant | managementGroup | subscription | resourceGroup
         firstRunWhatIf: true
+        runStep: true
 
 steps:
   - task: AzurePowerShell@5
@@ -46,6 +47,7 @@ steps:
   - $${{ each scriptFile in parameters.scriptFiles }} :
     - task: AzurePowerShell@5
       displayName: $${{ scriptFile.displayName }}
+      condition: and(success(), eq($${{ parameters.runStep }}, true))
       inputs:
         azureSubscription: $${{ parameters.serviceConnection }}
         pwsh: true
