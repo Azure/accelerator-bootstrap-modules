@@ -13,15 +13,15 @@ locals {
   script_files_all = var.iac_type == "bicep" ? jsondecode(file("${var.module_folder_path}/${var.bicep_config_file_path}")).starter_modules[var.starter_module_name].deployment_files : []
   networking_type  = var.iac_type == "bicep" ? jsondecode(file("${var.module_folder_path}/${var.bicep_parameters_file_path}")).NETWORK_TYPE : ""
   script_files = var.iac_type == "bicep" ? { for script_file in local.script_files_all : format("%03d", script_file.order) => {
-    name = lower(replace(replace(replace(replace(script_file.displayName, " ", "_"), "(",""), ")", ""), "-", "_"))
-    displayName = script_file.displayName
-    templateFilePath = script_file.templateFilePath
+    name                       = lower(replace(replace(replace(replace(script_file.displayName, " ", "_"), "(", ""), ")", ""), "-", "_"))
+    displayName                = script_file.displayName
+    templateFilePath           = script_file.templateFilePath
     templateParametersFilePath = script_file.templateParametersFilePath
-    managementGroupIdVariable = try("$(${script_file.managementGroupId})", "")
-    subscriptionIdVariable = try("$(${script_file.subscriptionId})", "")
-    resourceGroupNameVariable = try("$(${script_file.resourceGroupName})", "")
-    deploymentType = script_file.deploymentType
-    firstRunWhatIf = script_file.firstRunWhatIf
+    managementGroupIdVariable  = try("$(${script_file.managementGroupId})", "")
+    subscriptionIdVariable     = try("$(${script_file.subscriptionId})", "")
+    resourceGroupNameVariable  = try("$(${script_file.resourceGroupName})", "")
+    deploymentType             = script_file.deploymentType
+    firstRunWhatIf             = script_file.firstRunWhatIf
   } if try(script_file.networkType, "") == "" || try(script_file.networkType, "") == local.networking_type } : {}
 
   cicd_files = { for pipeline_file in local.pipeline_files : "${local.target_folder_name}/${pipeline_file}" =>
@@ -58,7 +58,7 @@ locals {
       content = try(replace((file(value.path)), "# backend \"azurerm\" {}", "backend \"azurerm\" {}"), "unsupported_file_type")
     }
   }
-  module_files_supported = { for key, value in local.module_files : key => value if value.content != "unsupported_file_type" && !endswith(key, "-cache.json") }
+  module_files_supported    = { for key, value in local.module_files : key => value if value.content != "unsupported_file_type" && !endswith(key, "-cache.json") }
   repository_files          = merge(local.cicd_files, local.module_files_supported, var.use_separate_repository_for_pipeline_templates ? {} : local.cicd_template_files)
   template_repository_files = var.use_separate_repository_for_pipeline_templates ? local.cicd_template_files : {}
 }

@@ -303,7 +303,7 @@ variable "agent_container_instance_managed_identity_name" {
 
 variable "custom_role_definitions" {
   description = "Custom role definitions to create"
-  type        = map(object({
+  type = map(object({
     name        = string
     description = string
     permissions = object({
@@ -315,8 +315,8 @@ variable "custom_role_definitions" {
 
 variable "role_assignments" {
   type = map(object({
-    custom_role_definition_key = string
+    custom_role_definition_key         = string
     user_assigned_managed_identity_key = string
-    scope                = string
+    scope                              = string
   }))
 }

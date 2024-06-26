@@ -118,18 +118,18 @@ variable "storage_account_replication_type" {
 }
 
 variable "bicep_config_file_path" {
-  type = string
+  type    = string
   default = "accelerator/.config/ALZ-Powershell-Auto.config.json"
 }
 
 variable "bicep_parameters_file_path" {
-  type = string
+  type    = string
   default = "parameters.json"
 }
 
-variable "custom_role_definitions_terraform"  {
+variable "custom_role_definitions_terraform" {
   description = "Custom role definitions to create for Terraform"
-  type        = map(object({
+  type = map(object({
     name        = string
     description = string
     permissions = object({
@@ -142,7 +142,7 @@ variable "custom_role_definitions_terraform"  {
       name        = "Azure Landing Zones Management Group Contributor ({{service_name}}-{{environment_name}})"
       description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing the Management Group Structure."
       permissions = {
-        actions     = [
+        actions = [
           "Microsoft.Management/managementGroups/delete",
           "Microsoft.Management/managementGroups/read",
           "Microsoft.Management/managementGroups/subscriptions/delete",
@@ -159,7 +159,7 @@ variable "custom_role_definitions_terraform"  {
       name        = "Azure Landing Zones Management Group Reader ({{service_name}}-{{environment_name}})"
       description = "This is a custom role created by the Azure Landing Zones Accelerator for Reading the Management Group Structure."
       permissions = {
-        actions     = [
+        actions = [
           "Microsoft.Management/managementGroups/read",
           "Microsoft.Management/managementGroups/subscriptions/read",
           "Microsoft.Authorization/*/read",
@@ -172,7 +172,7 @@ variable "custom_role_definitions_terraform"  {
       name        = "Azure Landing Zones Subscription Owner ({{service_name}}-{{environment_name}})"
       description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing in platfrom subscriptions."
       permissions = {
-        actions     = [
+        actions = [
           "*",
           "Microsoft.Resources/deployments/write"
         ]
@@ -183,7 +183,7 @@ variable "custom_role_definitions_terraform"  {
       name        = "Azure Landing Zones Subscription Reader ({{service_name}}-{{environment_name}})"
       description = "This is a custom role created by the Azure Landing Zones Accelerator for Reading the platform subscriptions."
       permissions = {
-        actions     = [
+        actions = [
           "*/read",
           "Microsoft.Resources/deployments/write"
         ]
@@ -193,9 +193,9 @@ variable "custom_role_definitions_terraform"  {
   }
 }
 
-variable "custom_role_definitions_bicep"  {
+variable "custom_role_definitions_bicep" {
   description = "Custom role definitions to create for Bicep"
-  type        = map(object({
+  type = map(object({
     name        = string
     description = string
     permissions = object({
@@ -208,7 +208,7 @@ variable "custom_role_definitions_bicep"  {
       name        = "Azure Landing Zones Management Group Contributor ({{service_name}}-{{environment_name}})"
       description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing the Management Group Structure."
       permissions = {
-        actions     = [
+        actions = [
           "Microsoft.Management/managementGroups/delete",
           "Microsoft.Management/managementGroups/read",
           "Microsoft.Management/managementGroups/subscriptions/delete",
@@ -232,7 +232,7 @@ variable "custom_role_definitions_bicep"  {
       name        = "Azure Landing Zones Management Group What If ({{service_name}}-{{environment_name}})"
       description = "This is a custom role created by the Azure Landing Zones Accelerator for running Bicep What If for the Management Group Structure."
       permissions = {
-        actions     = [
+        actions = [
           "Microsoft.Management/managementGroups/read",
           "Microsoft.Management/managementGroups/subscriptions/read",
           "Microsoft.Authorization/*/read",
@@ -252,7 +252,7 @@ variable "custom_role_definitions_bicep"  {
       name        = "Azure Landing Zones Subscription Owner ({{service_name}}-{{environment_name}})"
       description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing in platfrom subscriptions."
       permissions = {
-        actions     = [
+        actions = [
           "*",
           "Microsoft.Resources/deployments/whatIf/action",
           "Microsoft.Resources/deployments/write"
@@ -264,7 +264,7 @@ variable "custom_role_definitions_bicep"  {
       name        = "Azure Landing Zones Subscription What If ({{service_name}}-{{environment_name}})"
       description = "This is a custom role created by the Azure Landing Zones Accelerator for running Bicep What If for the platform subscriptions."
       permissions = {
-        actions     = [
+        actions = [
           "*/read",
           "Microsoft.Resources/subscriptions/resourceGroups/write",
           "Microsoft.ManagedIdentity/userAssignedIdentities/write",
@@ -287,30 +287,30 @@ variable "custom_role_definitions_bicep"  {
 variable "role_assignments_terraform" {
   description = "Role assignments to create for Terraform"
   type = map(object({
-    custom_role_definition_key = string
+    custom_role_definition_key         = string
     user_assigned_managed_identity_key = string
-    scope                = string
+    scope                              = string
   }))
   default = {
     plan_management_group = {
-      custom_role_definition_key = "alz_managment_group_reader"
+      custom_role_definition_key         = "alz_managment_group_reader"
       user_assigned_managed_identity_key = "plan"
-      scope = "management_group"
+      scope                              = "management_group"
     }
     apply_management_group = {
-      custom_role_definition_key = "alz_managment_group_contributor"
+      custom_role_definition_key         = "alz_managment_group_contributor"
       user_assigned_managed_identity_key = "apply"
-      scope = "management_group"
+      scope                              = "management_group"
     }
     plan_subscription = {
-      custom_role_definition_key = "alz_subscription_reader"
+      custom_role_definition_key         = "alz_subscription_reader"
       user_assigned_managed_identity_key = "plan"
-      scope = "subscription"
+      scope                              = "subscription"
     }
     apply_subscription = {
-      custom_role_definition_key = "alz_subscription_owner"
+      custom_role_definition_key         = "alz_subscription_owner"
       user_assigned_managed_identity_key = "apply"
-      scope = "subscription"
+      scope                              = "subscription"
     }
   }
 }
@@ -318,30 +318,30 @@ variable "role_assignments_terraform" {
 variable "role_assignments_bicep" {
   description = "Role assignments to create for Bicep"
   type = map(object({
-    custom_role_definition_key = string
+    custom_role_definition_key         = string
     user_assigned_managed_identity_key = string
-    scope                = string
+    scope                              = string
   }))
   default = {
     plan_management_group = {
-      custom_role_definition_key = "alz_managment_group_reader"
+      custom_role_definition_key         = "alz_managment_group_reader"
       user_assigned_managed_identity_key = "plan"
-      scope = "management_group"
+      scope                              = "management_group"
     }
     apply_management_group = {
-      custom_role_definition_key = "alz_managment_group_contributor"
+      custom_role_definition_key         = "alz_managment_group_contributor"
       user_assigned_managed_identity_key = "apply"
-      scope = "management_group"
+      scope                              = "management_group"
     }
     plan_subscription = {
-      custom_role_definition_key = "alz_subscription_reader"
+      custom_role_definition_key         = "alz_subscription_reader"
       user_assigned_managed_identity_key = "plan"
-      scope = "subscription"
+      scope                              = "subscription"
     }
     apply_subscription = {
-      custom_role_definition_key = "alz_subscription_owner"
+      custom_role_definition_key         = "alz_subscription_owner"
       user_assigned_managed_identity_key = "apply"
-      scope = "subscription"
+      scope                              = "subscription"
     }
   }
 }
