@@ -11,8 +11,8 @@ locals {
   target_folder_name = ".pipelines"
 
   #TODO FIX THE NEXT LINE!!!
-  script_files_all = var.iac_type == "bicep" ? jsondecode(file("${var.module_folder_path}/accelerator/.config/ALZ-Powershell-Auto.config.json")).starter_modules.complete.deployment_files : []
-  networking_type  = var.iac_type == "bicep" ? jsondecode(file("${var.module_folder_path}/parameters.json")).NETWORK_TYPE : ""
+  script_files_all = var.iac_type == "bicep" ? jsondecode(file("${var.module_folder_path}/${var.bicep_config_file_path}")).starter_modules[var.starter_module_name].deployment_files : []
+  networking_type  = var.iac_type == "bicep" ? jsondecode(file("${var.module_folder_path}/${var.bicep_parameters_file_path}")).NETWORK_TYPE : ""
   script_files = var.iac_type == "bicep" ? { for script_file in local.script_files_all : format("%03d", script_file.order) => script_file if try(script_file.networkType, "") == "" || try(script_file.networkType, "") == local.networking_type } : {}
 
   cicd_files = { for pipeline_file in local.pipeline_files : "${local.target_folder_name}/${pipeline_file}" =>
