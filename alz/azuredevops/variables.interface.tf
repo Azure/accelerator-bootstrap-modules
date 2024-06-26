@@ -38,5 +38,5 @@ variable "configuration_file_path" {
 variable "starter_module_name" {
   description = "The name of the starter module"
   type        = string
-  default = ""
+  default     = ""
 }
