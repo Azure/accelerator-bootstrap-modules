@@ -3,6 +3,9 @@ parameters:
   - name: skipWhatIf
     type: boolean
     default: false
+  - name: destroy
+    type: boolean
+    default: false
 %{ for script_file in script_files ~}
   - name: ${script_file.name}
     type: boolean
@@ -29,21 +32,27 @@ stages:
           runOnce:
             deploy:
               steps:
-                - checkout: self
-                  displayName: Checkout Bicep Module
+                - $${{ if eq(parameters.destroy, false) }}:
+                  - checkout: self
+                    displayName: Checkout Bicep Module
 
-                - template: helpers/bicep-installer.yaml
+                  - template: helpers/bicep-installer.yaml
 
-                - template: helpers/bicep-variables.yaml
-                  parameters:
-                    parametersFileName: $(parametersFileName)
+                  - template: helpers/bicep-variables.yaml
+                    parameters:
+                      parametersFileName: $(parametersFileName)
 
-                - template: helpers/bicep-templates.yaml
-                  parameters:
-                    serviceConnection: '${service_connection_name_plan}'
+                  - template: helpers/bicep-templates.yaml
+                    parameters:
+                      serviceConnection: '${service_connection_name_plan}'
 %{ for script_file in script_files ~}
-                    ${script_file.name}: $${{ parameters.${script_file.name} }}
+                      ${script_file.name}: $${{ parameters.${script_file.name} }}
 %{ endfor ~}
+                - $${{ if eq(parameters.destroy, true) }}:
+                  - template: helpers/bicep-destroy.yaml
+                    parameters:
+                      serviceConnection: '${service_connection_name_plan}'
+
 
   - stage: deploy
     displayName: Deploy
@@ -68,16 +77,22 @@ stages:
                 - checkout: self
                   displayName: Checkout Bicep Module
 
-                - template: helpers/bicep-installer.yaml
-
                 - template: helpers/bicep-variables.yaml
                   parameters:
                     parametersFileName: $(parametersFileName)
 
-                - template: helpers/bicep-templates.yaml
-                  parameters:
-                    serviceConnection: '${service_connection_name_apply}'
-                    whatIfEnabled: false
+                - $${{ if eq(parameters.destroy, false) }}:
+                  - template: helpers/bicep-installer.yaml
+
+                  - template: helpers/bicep-templates.yaml
+                    parameters:
+                      serviceConnection: '${service_connection_name_apply}'
+                      whatIfEnabled: false
 %{ for script_file in script_files ~}
-                    ${script_file.name}: $${{ parameters.${script_file.name} }}
+                      ${script_file.name}: $${{ parameters.${script_file.name} }}
 %{ endfor ~}
+                - $${{ if eq(parameters.destroy, true) }}:
+                  - template: helpers/bicep-destroy.yaml
+                    parameters:
+                      serviceConnection: '${service_connection_name_apply}'
+                      whatIfEnabled: false

@@ -15,6 +15,10 @@ parameters:
     type: boolean
     default: true
 %{ endfor ~}
+  - name: destroy
+    displayName: "[DANGER!] Destroy? [DANGER!]"
+    type: boolean
+    default: false
 
 resources:
   repositories:
@@ -28,6 +32,7 @@ extends:
   template: ${cd_template_path}@templates
   parameters:
     skipWhatIf: $${{ parameters.skipWhatIf }}
+    destroy: $${{ parameters.destroy }}
 %{ for script_file in script_files ~}
     ${script_file.name}: $${{ parameters.${script_file.name} }}
 %{ endfor ~}
