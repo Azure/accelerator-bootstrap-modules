@@ -13,7 +13,6 @@ locals {
   starter_module_config = var.iac_type == "bicep" ? jsondecode(file("${var.module_folder_path}/${var.bicep_config_file_path}")).starter_modules[var.starter_module_name] : null
   script_files_all = var.iac_type == "bicep" ? local.starter_module_config.deployment_files : []
   destroy_script_path = var.iac_type == "bicep" ? local.starter_module_config.destroy_script_path : ""
-  destroy_script = replace(file("${var.module_folder_path}/${local.destroy_script_path}"), "\n" , "\n        ")
 
   networking_type  = var.iac_type == "bicep" ? jsondecode(file("${var.module_folder_path}/${var.bicep_parameters_file_path}")).NETWORK_TYPE : ""
   script_files = var.iac_type == "bicep" ? { for script_file in local.script_files_all : format("%03d", script_file.order) => {
@@ -53,7 +52,7 @@ locals {
         service_connection_name_apply = local.resource_names.version_control_system_service_connection_apply
         self_hosted_agent             = var.use_self_hosted_agents
         script_files                  = local.script_files
-        destroy_script                = local.destroy_script
+        destroy_script_path           = local.destroy_script_path
       })
     }
   }

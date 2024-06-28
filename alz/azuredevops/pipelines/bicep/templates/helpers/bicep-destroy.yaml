@@ -13,6 +13,5 @@ steps:
       azureSubscription: $${{ parameters.serviceConnection }}
       pwsh: true
       azurePowerShellVersion: LatestVersion
-      ScriptType: "InlineScript"
-      Inline: |
-        ${destroy_script}
+      ScriptType: "FilePath"
+      ScriptPath: "${destroy_script_path}"
