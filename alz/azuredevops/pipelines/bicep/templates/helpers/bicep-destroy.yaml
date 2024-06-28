@@ -15,3 +15,4 @@ steps:
       azurePowerShellVersion: LatestVersion
       ScriptType: "FilePath"
       ScriptPath: "${destroy_script_path}"
+      ScriptArguments: "-WhatIfEnabled $$${{ parameters.whatIfEnabled }}"
