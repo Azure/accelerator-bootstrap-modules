@@ -13,9 +13,11 @@ locals {
   formatted_postfix_number_plus_3 = format("%03d", var.postfix_number + 3)
   random_string                   = random_string.alz.result
   resource_names = {
-    for key, value in var.resource_names : key => replace(replace(replace(replace(replace(replace(replace(replace(replace(value,
+    for key, value in var.resource_names : key => replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(value,
       "{{service_name}}", var.service_name),
+      "{{service_name_short}}", substr(var.service_name, 0, 3)),
       "{{environment_name}}", var.environment_name),
+      "{{environment_name_short}}", substr(var.environment_name, 0, 3)),
       "{{azure_location}}", var.azure_location),
       "{{azure_location_short}}", substr(var.azure_location, 0, 3)),
       "{{postfix_number}}", local.formatted_postfix_number),
