@@ -4,7 +4,7 @@ module "resource_names" {
   environment_name = var.environment_name
   service_name     = var.service_name
   postfix_number   = var.postfix_number
-  resource_names   = var.resource_names
+  resource_names   = merge(var.resource_names, local.custom_role_definitions_bicep_names, local.custom_role_definitions_terraform_names)
 }
 
 module "files" {

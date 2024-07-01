@@ -1,14 +1,16 @@
 ---
-trigger:
-  - none
+name: 01 Azure Landing Zones Continuous Integration
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
-resources:
-  repositories:
-    - repository: templates
-      type: git
-      name: ${project_name}/${repository_name_templates}
-
-lockBehavior: sequential
-
-extends:
-  template: ${ci_template_path}@templates
+jobs:
+  validate_and_plan:
+    uses: ${organization_name}/${repository_name_templates}/${ci_template_path}@main
+    name: 'CI'
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
