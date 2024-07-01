@@ -4,7 +4,7 @@ module "resource_names" {
   environment_name = var.environment_name
   service_name     = var.service_name
   postfix_number   = var.postfix_number
-  resource_names   = var.resource_names
+  resource_names   = merge(var.resource_names, local.custom_role_definitions_bicep_names, local.custom_role_definitions_terraform_names)
 }
 
 module "files" {
@@ -23,6 +23,7 @@ module "azure" {
   resource_group_state_name                                 = local.resource_names.resource_group_state
   resource_group_agents_name                                = local.resource_names.resource_group_agents
   resource_group_network_name                               = local.resource_names.resource_group_network
+  create_storage_account                                    = var.iac_type == local.iac_terraform
   storage_account_name                                      = local.resource_names.storage_account
   storage_container_name                                    = local.resource_names.storage_container
   azure_location                                            = var.bootstrap_location
@@ -50,6 +51,8 @@ module "azure" {
   storage_account_replication_type                          = var.storage_account_replication_type
   public_ip_name                                            = local.resource_names.public_ip
   nat_gateway_name                                          = local.resource_names.nat_gateway
+  custom_role_definitions                                   = var.iac_type == "terraform" ? local.custom_role_definitions_terraform : local.custom_role_definitions_bicep
+  role_assignments                                          = var.iac_type == "terraform" ? var.role_assignments_terraform : var.role_assignments_bicep
 }
 
 module "github" {

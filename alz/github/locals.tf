@@ -12,6 +12,10 @@ locals {
 }
 
 locals {
+  iac_terraform = "terraform"
+}
+
+locals {
   use_runner_group                   = var.use_runner_group && module.github.organization_plan == local.enterprise_plan && var.use_self_hosted_runners
   runner_organization_repository_url = local.use_runner_group ? module.github.organization_url : "${module.github.organization_url}/${module.github.repository_names.module}"
 }
@@ -76,4 +80,25 @@ locals {
 
 locals {
   starter_module_folder_path = var.module_folder_path_relative ? ("${path.module}/${var.module_folder_path}") : var.module_folder_path
+}
+
+locals {
+  custom_role_definitions_bicep_names     = { for key, value in var.custom_role_definitions_bicep : "custom_role_definition_bicep_${key}" => value.name }
+  custom_role_definitions_terraform_names = { for key, value in var.custom_role_definitions_terraform : "custom_role_definition_terraform_${key}" => value.name }
+
+  custom_role_definitions_bicep = {
+    for key, value in var.custom_role_definitions_bicep : key => {
+      name        = local.resource_names["custom_role_definition_bicep_${key}"]
+      description = value.description
+      permissions = value.permissions
+    }
+  }
+
+  custom_role_definitions_terraform = {
+    for key, value in var.custom_role_definitions_terraform : key => {
+      name        = local.resource_names["custom_role_definition_terraform_${key}"]
+      description = value.description
+      permissions = value.permissions
+    }
+  }
 }

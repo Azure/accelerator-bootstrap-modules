@@ -52,7 +52,7 @@ resource "azurerm_subnet_nat_gateway_association" "container_instances" {
 }
 
 resource "azurerm_subnet" "storage" {
-  count                             = local.use_private_networking ? 1 : 0
+  count                             = var.create_storage_account && local.use_private_networking ? 1 : 0
   name                              = var.virtual_network_subnet_name_storage
   resource_group_name               = azurerm_resource_group.network[0].name
   virtual_network_name              = azurerm_virtual_network.alz[0].name
@@ -61,13 +61,13 @@ resource "azurerm_subnet" "storage" {
 }
 
 resource "azurerm_private_dns_zone" "alz" {
-  count               = local.use_private_networking ? 1 : 0
+  count               = var.create_storage_account && local.use_private_networking ? 1 : 0
   name                = "privatelink.blob.core.windows.net"
   resource_group_name = azurerm_resource_group.network[0].name
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "alz" {
-  count                 = local.use_private_networking ? 1 : 0
+  count                 = var.create_storage_account && local.use_private_networking ? 1 : 0
   name                  = var.private_endpoint_name
   resource_group_name   = azurerm_resource_group.network[0].name
   private_dns_zone_name = azurerm_private_dns_zone.alz[0].name
@@ -75,7 +75,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "alz" {
 }
 
 resource "azurerm_private_endpoint" "alz" {
-  count               = local.use_private_networking ? 1 : 0
+  count               = var.create_storage_account && local.use_private_networking ? 1 : 0
   name                = var.private_endpoint_name
   location            = var.azure_location
   resource_group_name = azurerm_resource_group.network[0].name
@@ -83,7 +83,7 @@ resource "azurerm_private_endpoint" "alz" {
 
   private_service_connection {
     name                           = var.private_endpoint_name
-    private_connection_resource_id = azurerm_storage_account.alz.id
+    private_connection_resource_id = azurerm_storage_account.alz[0].id
     subresource_names              = ["blob"]
     is_manual_connection           = false
   }
