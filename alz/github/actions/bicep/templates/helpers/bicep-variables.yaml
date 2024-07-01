@@ -1,0 +1,18 @@
+---
+parameters:
+  - name: parametersFileName
+    type: string
+
+steps:
+  - pwsh: |
+      $fileName = "$${{ parameters.parametersFileName }}"
+      Write-Host "Getting variables from $fileName"
+      $json = Get-Content -Path $fileName | ConvertFrom-Json
+
+      foreach ($key in $json.PSObject.Properties) {
+        $envVarName = $key.Name
+        $envVarValue = $key.Value
+        echo "##vso[task.setvariable variable=$envVarName;]$envVarValue"
+        echo "Set $envVarName to $envVarValue"
+      }
+    displayName: Import Variables from File

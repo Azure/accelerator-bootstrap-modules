@@ -1,0 +1,144 @@
+---
+parameters:
+  - name: serviceConnection
+    type: string
+  - name: whatIfEnabled
+    type: boolean
+    default: true
+  - name: scriptFiles
+    type: object
+    default: 
+      - displayName: "Example Deployment"
+        templateFilePath: "./infra-as-code/bicep/modules/example/example.bicep"
+        templateParametersFilePath: "./config/custom-parameters/example.parameters.all.json"
+        managementGroupId: "00000000-0000-0000-0000-000000000000"
+        subscriptionId: "00000000-0000-0000-0000-000000000000"
+        resourceGroupName: "example-rg"
+        location: "uksouth"
+        deploymentType: "subscription" # tenant | managementGroup | subscription | resourceGroup
+        firstRunWhatIf: true
+        runStep: true
+
+steps:
+  - task: AzurePowerShell@5
+    displayName: Check for First Deployment
+    condition: eq($${{ parameters.whatIfEnabled }}, true)
+    inputs:
+      azureSubscription: $${{ parameters.serviceConnection }}
+      pwsh: true
+      azurePowerShellVersion: LatestVersion
+      ScriptType: "InlineScript"
+      Inline: |
+        $managementGroupId = $env:MANAGEMENT_GROUP_ID
+        $managementGroups = Get-AzManagementGroup
+        $managementGroup = $managementGroups | Where-Object { $_.Name -eq $managementGroupId }
+
+        $firstDeployment = $true
+
+        if($managementGroup -eq $null) {
+          Write-Warning "Cannot find the $managementGroupId Management Group, so assuming this is the first deployment. We must skip checking some deployments since their dependent resources do not exist yet."
+        } else {
+          Write-Host "Found the $managementGroupId Management Group, so assuming this is not the first deployment."
+          $firstDeployment = $false
+        }
+
+        Write-Host "##vso[task.setvariable variable=FIRST_DEPLOYMENT;]$firstDeployment"
+
+  - $${{ each scriptFile in parameters.scriptFiles }} :
+    - task: AzurePowerShell@5
+      displayName: $${{ scriptFile.displayName }}
+      condition: and(succeeded(), eq($${{ scriptFile.runStep }}, true))
+      inputs:
+        azureSubscription: $${{ parameters.serviceConnection }}
+        pwsh: true
+        azurePowerShellVersion: LatestVersion
+        ScriptType: "InlineScript"
+        Inline: |
+          $whatIf = [System.Convert]::ToBoolean("$${{ parameters.whatIfEnabled }}")
+          
+          $firstDeploymentString = $env:FIRST_DEPLOYMENT
+          $firstDeployment = $true
+          if($firstDeploymentString -eq "") {
+            $firstDeployment = $false
+          } else {
+            $firstDeployment = [System.Convert]::ToBoolean($firstDeploymentString)
+          }
+
+          $firstRunWhatIf = [System.Convert]::ToBoolean("$${{ scriptFile.firstRunWhatIf }}")
+
+          if($whatIf -and $firstDeployment -and !$firstRunWhatIf) {
+            Write-Warning "Skipping the WhatIf check as the deployment is dependent on resources that do not exist yet..."
+            exit 0
+          }
+
+          $deploymentType = "$${{ scriptFile.deploymentType }}"
+          $deploymentTimeStamp = Get-Date -Format 'yyyyMMddTHHMMssffffZ'
+          $deploymentName = "$${{ scriptFile.displayName }}".Replace(" ", "-")
+
+          if($deploymentName.Length -gt 43) {
+            $deploymentName = $deploymentName.Substring(0, 42)
+          }
+
+          $deploymentName = "$deploymentName-$deploymentTimeStamp"
+
+          $inputObject = @{
+            DeploymentName        = $deploymentName
+            TemplateFile          = "$${{ scriptFile.templateFilePath }}"
+            TemplateParameterFile = "$${{ scriptFile.templateParametersFilePath }}"
+            WhatIf                = $whatIf
+            Verbose               = $true
+          }
+
+          $result = $null
+
+          if ($deploymentType -eq "tenant") {
+            $inputObject.Location = "$${{ scriptFile.location }}"
+            $result = New-AzTenantDeployment @inputObject
+          }
+
+          if ($deploymentType -eq "managementGroup") {
+            $inputObject.Location = "$${{ scriptFile.location }}"
+            $inputObject.ManagementGroupId = "$${{ scriptFile.managementGroupId }}"
+            if ($inputObject.ManagementGroupId -eq "") {
+              $inputObject.ManagementGroupId = (Get-AzContext).Tenant.TenantId
+            }
+            $result = New-AzManagementGroupDeployment @inputObject
+          }
+
+          if ($deploymentType -eq "subscription") {
+            $inputObject.Location = "$${{ scriptFile.location }}"
+            Select-AzSubscription -SubscriptionId "$${{ scriptFile.subscriptionId }}"
+            $result = New-AzSubscriptionDeployment @inputObject
+          }
+
+          if ($deploymentType -eq "resourceGroup") {
+            $inputObject.ResourceGroupName = "$${{ scriptFile.resourceGroupName }}"
+            Select-AzSubscription -SubscriptionId "$${{ scriptFile.subscriptionId }}"
+            $result = New-AzResourceGroupDeployment @inputObject
+          }
+
+          if ($whatIf) {
+            $result | Format-List | Out-Host
+            exit 0
+          }
+
+          $resultId = ""
+
+          if($deploymentType -eq "resourceGroup") {
+            $resultId = "/subscriptions/$${{ scriptFile.subscriptionId }}/resourceGroups/$${{ scriptFile.resourceGroupName }}/providers/Microsoft.Resources/deployments/$deploymentName"
+          } else {
+            $resultId = $result.Id
+          }    
+
+          $resultIdEscaped = $resultId.Replace("/", "%2F")
+          $resultUrl = "https://portal.azure.com/#view/HubsExtension/DeploymentDetailsBlade/~/overview/id/$resultIdEscaped"
+          
+          Write-Host "Deployment Name: $deploymentName"
+          Write-Host "Deployment ID: $resultId"
+          Write-Host "Deployment Url: $resultUrl"
+          $result | Format-List | Out-Host
+
+          if($result.ProvisioningState -ne "Succeeded") {
+            Write-Error "Deployment failed"
+            exit 1
+          }
