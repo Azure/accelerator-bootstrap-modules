@@ -2,6 +2,6 @@
 steps:
   # This hack allows MSI to be tried for authentication. As setting the CLIENT_ID causes AzAPI to check MSI auth prior to CLI auth and it fails on Microsoft Hosted agents.
   # This only works on Linux based runners
-  - name: iptables block MSI endpoint
+  - pwsh: |
+      sudo iptables -I OUTPUT --destination 169.254.169.254 -j REJECT
     displayName: Block MSI endpoint
-    run: sudo iptables -I OUTPUT --destination 169.254.169.254 -j REJECT
