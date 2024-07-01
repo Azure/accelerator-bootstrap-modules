@@ -32,6 +32,7 @@ locals {
         repository_name_templates     = local.repository_name_templates
         service_connection_name_plan  = local.resource_names.version_control_system_service_connection_plan
         service_connection_name_apply = local.resource_names.version_control_system_service_connection_apply
+        self_hosted_agent             = var.use_self_hosted_agents
       })
     }
   }
