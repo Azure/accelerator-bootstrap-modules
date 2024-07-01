@@ -1,38 +1,39 @@
 ---
-trigger:
-  branches:
-    include:
+name: 02 Azure Landing Zones Continuous Delivery
+on:
+  push:
+    branches:
       - main
-
-parameters:
-  - name: skipWhatIf
-    displayName: Skip What If Check?
-    type: boolean
-    default: false
+  workflow_dispatch:
+    inputs:
+      skip_what_if:
+        description: 'Skip What If Check?'
+        required: true
+        default: false
+        type: boolean
 %{ for script_file in script_files ~}
-  - name: ${script_file.name}
-    displayName: 'Run Step: ${script_file.displayName}'
-    type: boolean
-    default: true
+      ${script_file.name}:
+        description: 'Run Step: ${script_file.displayName}'
+        required: true
+        type: boolean
+        default: true
 %{ endfor ~}
-  - name: destroy
-    displayName: "[DANGER!] Destroy? [DANGER!]"
-    type: boolean
-    default: false
+      destroy:
+        description: '[DANGER!] Destroy? [DANGER!]'
+        required: true
+        default: false
+        type: boolean
 
-resources:
-  repositories:
-    - repository: templates
-      type: git
-      name: ${project_name}/${repository_name_templates}
-
-lockBehavior: sequential
-
-extends:
-  template: ${cd_template_path}@templates
-  parameters:
-    skipWhatIf: $${{ parameters.skipWhatIf }}
-    destroy: $${{ parameters.destroy }}
+jobs:
+  plan_and_apply:
+    uses: ${organization_name}/${repository_name_templates}/${cd_template_path}@main
+    name: 'CD'
+    permissions:
+      id-token: write
+      contents: read
+    with:
+      skip_what_if: $${{ github.event.inputs.skip_what_if }}
+      destroy: $${{ github.event.inputs.destroy }}
 %{ for script_file in script_files ~}
-    ${script_file.name}: $${{ parameters.${script_file.name} }}
+      ${script_file.name}: $${{ github.event.inputs.${script_file.name} }}
 %{ endfor ~}

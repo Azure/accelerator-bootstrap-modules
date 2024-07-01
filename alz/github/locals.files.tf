@@ -44,12 +44,14 @@ locals {
   cicd_template_files = { for pipeline_template_file in local.pipeline_template_files : "${local.target_folder_name}/${pipeline_template_file}" =>
     {
       content = templatefile("${local.pipeline_template_files_directory_path}/${pipeline_template_file}", {
+        organization_name                            = var.github_organization_name
+        repository_name_templates                    = local.resource_names.version_control_system_repository_templates
         runner_name                                  = local.runner_name
         environment_name_plan                        = local.resource_names.version_control_system_environment_plan
         environment_name_apply                       = local.resource_names.version_control_system_environment_apply
         backend_azure_storage_account_container_name = local.resource_names.storage_container
-        script_files                  = local.script_files
-        destroy_script_path           = local.destroy_script_path
+        script_files                                 = local.script_files
+        destroy_script_path                          = local.destroy_script_path
       })
     }
   }
