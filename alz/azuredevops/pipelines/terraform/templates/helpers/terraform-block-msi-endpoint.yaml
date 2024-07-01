@@ -5,4 +5,4 @@ steps:
   - pwsh: |
       sudo iptables -I OUTPUT --destination 169.254.169.254 -j REJECT
     displayName: Block MSI endpoint
-    condition: and(successful(), eq(variables['selfHostedAgent'], 'false'))
+    condition: and(succeeded(), eq(variables['selfHostedAgent'], 'false'))
