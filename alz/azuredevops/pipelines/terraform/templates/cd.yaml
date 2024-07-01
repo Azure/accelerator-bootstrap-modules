@@ -21,6 +21,7 @@ stages:
               steps:
                 - checkout: self
                   displayName: Checkout Terraform Module
+                - template: helpers/terraform-block-msi-endpoint.yaml
                 - template: helpers/terraform-installer.yaml
                   parameters:
                     terraformVersion: 'latest'
@@ -77,6 +78,7 @@ stages:
                     buildType: 'current'
                     artifactName: 'module'
                     targetPath: '$(Build.SourcesDirectory)'
+                - template: helpers/terraform-block-msi-endpoint.yaml
                 - template: helpers/terraform-installer.yaml
                   parameters:
                     terraformVersion: 'latest'
