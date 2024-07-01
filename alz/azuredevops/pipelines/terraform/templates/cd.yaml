@@ -8,6 +8,8 @@ stages:
     displayName: Plan
     variables:
       - group: ${variable_group_name}
+      - name: 'selfHostedAgent'
+        value: '${self_hosted_agent}'
     jobs:
       - deployment: plan
         displayName: Plan with Terraform
@@ -60,6 +62,8 @@ stages:
     dependsOn: plan
     variables:
       - group: ${variable_group_name}
+      - name: 'selfHostedAgent'
+        value: '${self_hosted_agent}'
     jobs:
       - deployment: apply
         displayName: Apply with Terraform
