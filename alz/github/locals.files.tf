@@ -22,9 +22,9 @@ locals {
     displayName                = script_file.displayName
     templateFilePath           = script_file.templateFilePath
     templateParametersFilePath = script_file.templateParametersFilePath
-    managementGroupIdVariable  = try("$(${script_file.managementGroupId})", "")
-    subscriptionIdVariable     = try("$(${script_file.subscriptionId})", "")
-    resourceGroupNameVariable  = try("$(${script_file.resourceGroupName})", "")
+    managementGroupIdVariable  = try("$${{ env.${script_file.managementGroupId} }}", "")
+    subscriptionIdVariable     = try("$${{ ${script_file.subscriptionId} }}", "")
+    resourceGroupNameVariable  = try("$${{ ${script_file.resourceGroupName} }}", "")
     deploymentType             = script_file.deploymentType
     firstRunWhatIf             = script_file.firstRunWhatIf
     group                      = script_file.group

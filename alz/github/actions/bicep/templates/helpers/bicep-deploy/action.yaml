@@ -32,9 +32,6 @@ inputs:
   firstRunWhatIf:
     description: 'Run a what-if on the first run'
     required: true
-  runStep:
-    description: 'Whether to Run this step'
-    required: true
   firstDeployment:
     description: 'Is this the first deployment?'
     required: true
@@ -44,7 +41,6 @@ runs:
   steps:
     - name: Run Bicep Deploy
       uses: azure/powershell@v2
-      if: $${{ inputs.runStep == 'true' }}
       with:
         azPSVersion: 'latest'
         inlineScript: |
@@ -147,6 +143,5 @@ runs:
           LOCATION: $${{ inputs.location }}
           DEPLOYMENT_TYPE: $${{ inputs.deploymentType }}
           FIRST_RUN_WHAT_IF: $${{ inputs.firstRunWhatIf }}
-          RUN_STEP: $${{ inputs.runStep }}
           FIRST_DEPLOYMENT: $${{ parameters.firstDeployment }}
           WHAT_IF_ENABLED: $${{ parameters.whatIfEnabled }}

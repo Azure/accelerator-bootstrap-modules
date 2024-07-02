@@ -64,17 +64,17 @@ jobs:
 %{ for script_file in script_files ~}
       - name: '${script_file.displayName}'
         uses: ./composite-actions/.github/workflows/helpers/bicep-deploy
+        if: $${{ github.event.inputs.${script_file.name} == 'true' }}
         with:
           displayName: '${script_file.displayName}'
           templateFilePath: '${script_file.templateFilePath}'
           templateParametersFilePath: '${script_file.templateParametersFilePath}'
-          managementGroupId: '${script_file.managementGroupId}'
-          subscriptionId: '${script_file.subscriptionId}'
-          resourceGroupName: '${script_file.resourceGroupName}'
-          location: '${script_file.location}'
+          managementGroupId: ${script_file.managementGroupIdVariable}
+          subscriptionId: ${script_file.subscriptionIdVariable}
+          resourceGroupName: ${script_file.resourceGroupNameVariable}
+          location: $${{ env.LOCATION }}
           deploymentType: '${script_file.deploymentType}'
           firstRunWhatIf: '${script_file.firstRunWhatIf}'
-          runStep: $${{ github.event.inputs.${script_file.name} == 'true' }}
           firstDeployment: $${{ steps.firstDeploymentCheck.outputs.firstDeployment }}
           whatIfEnabled: 'true'
 %{ endfor ~}
