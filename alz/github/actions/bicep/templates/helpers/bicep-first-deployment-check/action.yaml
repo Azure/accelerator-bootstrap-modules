@@ -33,7 +33,7 @@ runs:
           }
 
           echo "firstDeployment=$firstDeployment" >> $GITHUB_OUTPUT
-        shell: pwsh
-        env: 
-          MANAGEMENT_GROUP_ID: $${{ inputs.managementGroupId }}
+      shell: pwsh
+      env: 
+        MANAGEMENT_GROUP_ID: $${{ inputs.managementGroupId }}
 

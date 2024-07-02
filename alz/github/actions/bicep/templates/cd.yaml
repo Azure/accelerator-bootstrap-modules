@@ -72,7 +72,7 @@ jobs:
           managementGroupId: '${script_file.managementGroupIdVariable}'
           subscriptionId: '${script_file.subscriptionIdVariable}'
           resourceGroupName: '${script_file.resourceGroupNameVariable}'
-          location: '$${{ env.LOCATION }}''
+          location: '$${{ env.LOCATION }}'
           deploymentType: '${script_file.deploymentType}'
           firstRunWhatIf: '${script_file.firstRunWhatIf}'
           firstDeployment: '$${{ steps.firstDeploymentCheck.outputs.firstDeployment }}'
