@@ -132,7 +132,6 @@ runs:
             Write-Error "Deployment failed"
             exit 1
           }
-      shell: pwsh
       env: 
         DISPLAY_NAME: $${{ inputs.displayName }}
         TEMPLATE_FILE_PATH: $${{ inputs.templateFilePath }}
