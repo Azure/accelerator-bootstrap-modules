@@ -69,12 +69,12 @@ jobs:
           displayName: '${script_file.displayName}'
           templateFilePath: '${script_file.templateFilePath}'
           templateParametersFilePath: '${script_file.templateParametersFilePath}'
-          managementGroupId: ${script_file.managementGroupIdVariable}
-          subscriptionId: ${script_file.subscriptionIdVariable}
-          resourceGroupName: ${script_file.resourceGroupNameVariable}
-          location: $${{ env.LOCATION }}
+          managementGroupId: '${script_file.managementGroupIdVariable}'
+          subscriptionId: '${script_file.subscriptionIdVariable}'
+          resourceGroupName: '${script_file.resourceGroupNameVariable}'
+          location: '$${{ env.LOCATION }}''
           deploymentType: '${script_file.deploymentType}'
           firstRunWhatIf: '${script_file.firstRunWhatIf}'
-          firstDeployment: $${{ steps.firstDeploymentCheck.outputs.firstDeployment }}
+          firstDeployment: '$${{ steps.firstDeploymentCheck.outputs.firstDeployment }}'
           whatIfEnabled: 'true'
 %{ endfor ~}
