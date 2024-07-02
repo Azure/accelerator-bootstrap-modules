@@ -4,17 +4,14 @@ on:
   workflow_call:
     inputs:
       skip_what_if:
-        required: true
         default: false
         type: boolean
 %{ for script_file in script_files ~}
       ${script_file.name}:
-        required: true
         type: boolean
         default: true
 %{ endfor ~}
       destroy:
-        required: true
         default: false
         type: boolean
 
@@ -28,7 +25,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    if: $${{ github.event.inputs.skip_what_if == false)
+    if: $${{ github.event.inputs.skip_what_if == 'false' }}
     env:
       PARAMETERS_FILE_NAME: parameters.json
 
@@ -36,7 +33,48 @@ jobs:
       - name: Checkout Bicep Module
         uses: actions/checkout@v4
 
-      - name: 
-        uses: ${organization_name}/${repository_name_templates}/.github/workflows/helpers/bicep-variables.yaml@main
+      - name: Checkout Composite Actions
+        uses: actions/checkout@v4
+        with:
+          repository: ${organization_name}/${repository_name_templates}
+          path: composite-actions
+
+      - name: Get Bicep Variables
+        uses: ./composite-actions/.github/workflows/helpers/bicep-variables
         with:
           parameters_file_name: $${{ env.PARAMETERS_FILE_NAME }}
+
+      - name: Install Bicep
+        uses: ./composite-actions/.github/workflows/helpers/bicep-installer
+
+      - name: OIDC Login to Tenant
+        uses: azure/login@v2
+        with:
+          client-id: $${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: $${{ vars.AZURE_TENANT_ID }}
+          subscription-id: $${{ vars.AZURE_SUBSCRIPTION_ID }}
+          enable-AzPSSession: true
+
+      - name: First Deployment Check
+        id: firstDeploymentCheck
+        uses: ./composite-actions/.github/workflows/helpers/bicep-first-deployment-check
+        with:
+          managementGroupId: $${{ env.MANAGEMENT_GROUP_ID }}
+
+%{ for script_file in script_files ~}
+      - name: '${script_file.displayName}'
+        uses: ./composite-actions/.github/workflows/helpers/bicep-deploy
+        with:
+          displayName: '${script_file.displayName}'
+          templateFilePath: '${script_file.templateFilePath}'
+          templateParametersFilePath: '${script_file.templateParametersFilePath}'
+          managementGroupId: '${script_file.managementGroupId}'
+          subscriptionId: '${script_file.subscriptionId}'
+          resourceGroupName: '${script_file.resourceGroupName}'
+          location: '${script_file.location}'
+          deploymentType: '${script_file.deploymentType}'
+          firstRunWhatIf: '${script_file.firstRunWhatIf}'
+          runStep: $${{ github.event.inputs.${script_file.name} == 'true' }}
+          firstDeployment: $${{ steps.firstDeploymentCheck.outputs.firstDeployment }}
+          whatIfEnabled: 'true'
+%{ endfor ~}

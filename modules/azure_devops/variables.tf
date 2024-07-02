@@ -102,3 +102,7 @@ variable "agent_pool_name" {
 variable "use_self_hosted_agents" {
   type = bool
 }
+
+variable "create_branch_policies" {
+  type = bool
+}

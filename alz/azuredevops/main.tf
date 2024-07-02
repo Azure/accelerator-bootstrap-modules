@@ -86,4 +86,5 @@ module "azure_devops" {
   group_name                                   = local.resource_names.version_control_system_group
   agent_pool_name                              = local.resource_names.version_control_system_agent_pool
   use_self_hosted_agents                       = var.use_self_hosted_agents
+  create_branch_policies                       = var.create_branch_policies
 }

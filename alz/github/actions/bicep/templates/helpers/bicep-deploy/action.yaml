@@ -1,0 +1,152 @@
+---
+name: Run Bicep Deploy
+description: Run Bicep Deployment
+inputs:
+  whatIfEnabled:
+    description: 'Is the WhatIf flag enabled?'
+    required: true
+  displayName:
+    description: 'Display Name'
+    required: true
+  templateFilePath:
+    description: 'The path to the Bicep file'
+    required: true
+  templateParametersFilePath:
+    description: 'The path to the parameters file'
+    required: true
+  managementGroupId:
+    description: 'The management group id'
+    required: true
+  subscriptionId:
+    description: 'The subscription id'
+    required: true
+  resourceGroupName:
+    description: 'The resource group name'
+    required: true
+  location:
+    description: 'The location'
+    required: true
+  deploymentType:
+    description: 'The deployment type'
+    required: true
+  firstRunWhatIf:
+    description: 'Run a what-if on the first run'
+    required: true
+  runStep:
+    description: 'Whether to Run this step'
+    required: true
+  firstDeployment:
+    description: 'Is this the first deployment?'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Bicep Deploy
+      uses: azure/powershell@v2
+      if: $${{ inputs.runStep == 'true' }}
+      with:
+        azPSVersion: 'latest'
+        inlineScript: |
+          $whatIf = [System.Convert]::ToBoolean($env:WHAT_IF_ENABLED)
+          
+          $firstDeploymentString = $env:FIRST_DEPLOYMENT
+          $firstDeployment = $true
+          if($firstDeploymentString -eq "") {
+            $firstDeployment = $false
+          } else {
+            $firstDeployment = [System.Convert]::ToBoolean($firstDeploymentString)
+          }
+
+          $firstRunWhatIf = [System.Convert]::ToBoolean($env:WHAT_IF_ENABLED)
+
+          if($whatIf -and $firstDeployment -and !$firstRunWhatIf) {
+            Write-Warning "Skipping the WhatIf check as the deployment is dependent on resources that do not exist yet..."
+            exit 0
+          }
+
+          $deploymentType = $env:DEPLOYMENT_TYPE
+          $deploymentTimeStamp = Get-Date -Format 'yyyyMMddTHHMMssffffZ'
+          $deploymentName = $env:DISPLAY_NAME.Replace(" ", "-")
+
+          if($deploymentName.Length -gt 43) {
+            $deploymentName = $deploymentName.Substring(0, 42)
+          }
+
+          $deploymentName = "$deploymentName-$deploymentTimeStamp"
+
+          $inputObject = @{
+            DeploymentName        = $deploymentName
+            TemplateFile          = $env:TEMPLATE_FILE_PATH
+            TemplateParameterFile = $env:TEMPLATE_PARAMETERS_FILE_PATH
+            WhatIf                = $whatIf
+            Verbose               = $true
+          }
+
+          $result = $null
+
+          if ($deploymentType -eq "tenant") {
+            $inputObject.Location = $env:LOCATION
+            $result = New-AzTenantDeployment @inputObject
+          }
+
+          if ($deploymentType -eq "managementGroup") {
+            $inputObject.Location = $env:LOCATION
+            $inputObject.ManagementGroupId = $env:MANAGEMENT_GROUP_ID
+            if ($inputObject.ManagementGroupId -eq "") {
+              $inputObject.ManagementGroupId = (Get-AzContext).Tenant.TenantId
+            }
+            $result = New-AzManagementGroupDeployment @inputObject
+          }
+
+          if ($deploymentType -eq "subscription") {
+            $inputObject.Location = $env:LOCATION
+            Select-AzSubscription -SubscriptionId $env:SUBSCRIPTION_ID
+            $result = New-AzSubscriptionDeployment @inputObject
+          }
+
+          if ($deploymentType -eq "resourceGroup") {
+            $inputObject.ResourceGroupName = $env:RESOURCE_GROUP_NAME
+            Select-AzSubscription -SubscriptionId $env:SUBSCRIPTION_ID
+            $result = New-AzResourceGroupDeployment @inputObject
+          }
+
+          if ($whatIf) {
+            $result | Format-List | Out-Host
+            exit 0
+          }
+
+          $resultId = ""
+
+          if($deploymentType -eq "resourceGroup") {
+            $resultId = "/subscriptions/$($env:SUBSCRIPTION_ID)/resourceGroups/$($env:RESOURCE_GROUP_NAME)/providers/Microsoft.Resources/deployments/$deploymentName"
+          } else {
+            $resultId = $result.Id
+          }    
+
+          $resultIdEscaped = $resultId.Replace("/", "%2F")
+          $resultUrl = "https://portal.azure.com/#view/HubsExtension/DeploymentDetailsBlade/~/overview/id/$resultIdEscaped"
+          
+          Write-Host "Deployment Name: $deploymentName"
+          Write-Host "Deployment ID: $resultId"
+          Write-Host "Deployment Url: $resultUrl"
+          $result | Format-List | Out-Host
+
+          if($result.ProvisioningState -ne "Succeeded") {
+            Write-Error "Deployment failed"
+            exit 1
+          }
+        shell: pwsh
+        env: 
+          DISPLAY_NAME: $${{ inputs.displayName }}
+          TEMPLATE_FILE_PATH: $${{ inputs.templateFilePath }}
+          TEMPLATE_PARAMETERS_FILE_PATH: $${{ inputs.templateParametersFilePath }}
+          MANAGEMENT_GROUP_ID: $${{ inputs.managementGroupId }}
+          SUBSCRIPTION_ID: $${{ inputs.subscriptionId }}
+          RESOURCE_GROUP_NAME: $${{ inputs.resourceGroupName }}
+          LOCATION: $${{ inputs.location }}
+          DEPLOYMENT_TYPE: $${{ inputs.deploymentType }}
+          FIRST_RUN_WHAT_IF: $${{ inputs.firstRunWhatIf }}
+          RUN_STEP: $${{ inputs.runStep }}
+          FIRST_DEPLOYMENT: $${{ parameters.firstDeployment }}
+          WHAT_IF_ENABLED: $${{ parameters.whatIfEnabled }}

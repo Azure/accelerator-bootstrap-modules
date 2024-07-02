@@ -23,7 +23,7 @@ resource "azuredevops_branch_policy_min_reviewers" "alz_templates" {
   depends_on = [azuredevops_git_repository_file.alz_templates]
   project_id = local.project_id
 
-  enabled  = length(var.approvers) > 1
+  enabled  = length(var.approvers) > 1 && var.create_branch_policies
   blocking = true
 
   settings {
@@ -46,7 +46,7 @@ resource "azuredevops_branch_policy_merge_types" "alz_templates" {
   depends_on = [azuredevops_git_repository_file.alz_templates]
   project_id = local.project_id
 
-  enabled  = true
+  enabled  = var.create_branch_policies
   blocking = true
 
   settings {

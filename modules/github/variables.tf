@@ -87,3 +87,7 @@ variable "use_runner_group" {
 variable "use_self_hosted_runners" {
   type = bool
 }
+
+variable "create_branch_policies" {
+  type = bool
+}

@@ -92,4 +92,8 @@ variable "apply_approvers" {
   default     = []
 }
 
-
+variable "create_branch_policies" {
+  description = "Controls whether to create branch policies for the repositories|19"
+  type        = bool
+  default     = true
+}

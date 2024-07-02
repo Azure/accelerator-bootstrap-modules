@@ -80,3 +80,9 @@ variable "apply_approvers" {
   type        = list(string)
   default     = []
 }
+
+variable "create_branch_policies" {
+  description = "Controls whether to create branch policies for the repositories|15"
+  type        = bool
+  default     = true
+}
