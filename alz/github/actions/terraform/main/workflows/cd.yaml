@@ -23,4 +23,4 @@ jobs:
       id-token: write
       contents: read
     with:
-      terraform_action: $${{ github.event.inputs.terraform_action }}
+      terraform_action: $${{ inputs.terraform_action }}

@@ -25,7 +25,7 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    if: $${{ github.event.inputs.skip_what_if == 'false' }}
+    if: $${{ !inputs.skip_what_if }}
     env:
       PARAMETERS_FILE_NAME: parameters.json
 
@@ -33,19 +33,13 @@ jobs:
       - name: Checkout Bicep Module
         uses: actions/checkout@v4
 
-      - name: Checkout Composite Actions
-        uses: actions/checkout@v4
-        with:
-          repository: ${organization_name}/${repository_name_templates}
-          path: composite-actions
-
       - name: Get Bicep Variables
-        uses: ./composite-actions/.github/workflows/helpers/bicep-variables
+        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-variables@main
         with:
           parameters_file_name: $${{ env.PARAMETERS_FILE_NAME }}
 
-      - name: Install Bicep
-        uses: ./composite-actions/.github/workflows/helpers/bicep-installer
+      - name: Install Bicep and Update Az Module
+        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-installer@main
 
       - name: OIDC Login to Tenant
         uses: azure/login@v2
@@ -57,14 +51,14 @@ jobs:
 
       - name: First Deployment Check
         id: firstDeploymentCheck
-        uses: ./composite-actions/.github/workflows/helpers/bicep-first-deployment-check
+        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-first-deployment-check@main
         with:
           managementGroupId: $${{ env.MANAGEMENT_GROUP_ID }}
 
 %{ for script_file in script_files ~}
       - name: '${script_file.displayName}'
-        uses: ./composite-actions/.github/workflows/helpers/bicep-deploy
-        if: $${{ github.event.inputs.${script_file.name} == 'true' }}
+        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-deploy@main
+        if: $${{ inputs.${script_file.name} }}
         with:
           displayName: '${script_file.displayName}'
           templateFilePath: '${script_file.templateFilePath}'
@@ -75,6 +69,6 @@ jobs:
           location: '$${{ env.LOCATION }}'
           deploymentType: '${script_file.deploymentType}'
           firstRunWhatIf: '${script_file.firstRunWhatIf}'
-          firstDeployment: '$${{ steps.firstDeploymentCheck.outputs.firstDeployment }}'
+          firstDeployment: '$${{ env.firstDeployment }}'
           whatIfEnabled: 'true'
 %{ endfor ~}

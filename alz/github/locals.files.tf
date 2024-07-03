@@ -4,13 +4,13 @@ locals {
 }
 
 locals {
-  pipeline_files_directory_path          = "${path.module}/actions/${var.iac_type}"
+  pipeline_files_directory_path          = "${path.module}/actions/${var.iac_type}/main"
   pipeline_template_files_directory_path = "${path.module}/actions/${var.iac_type}/templates"
 
-  pipeline_files          = fileset(local.pipeline_files_directory_path, "*.yaml")
+  pipeline_files          = fileset(local.pipeline_files_directory_path, "**/*.yaml")
   pipeline_template_files = fileset(local.pipeline_template_files_directory_path, "**/*.yaml")
 
-  target_folder_name = ".github/workflows"
+  target_folder_name = ".github"
 
   starter_module_config = var.iac_type == "bicep" ? jsondecode(file("${var.module_folder_path}/${var.bicep_config_file_path}")).starter_modules[var.starter_module_name] : null
   script_files_all = var.iac_type == "bicep" ? local.starter_module_config.deployment_files : []
@@ -45,8 +45,8 @@ locals {
       content = templatefile("${local.pipeline_files_directory_path}/${pipeline_file}", {
         organization_name         = var.github_organization_name
         repository_name_templates = local.resource_names.version_control_system_repository_templates
-        ci_template_path          = "${local.target_folder_name}/${local.ci_file_name}"
-        cd_template_path          = "${local.target_folder_name}/${local.cd_file_name}"
+        ci_template_path          = "${local.target_folder_name}/${local.ci_template_file_name}"
+        cd_template_path          = "${local.target_folder_name}/${local.cd_template_file_name}"
         script_files              = local.script_files
         script_file_groups        = local.script_file_groups
       })

@@ -54,7 +54,7 @@ runs:
             $firstDeployment = [System.Convert]::ToBoolean($firstDeploymentString)
           }
 
-          $firstRunWhatIf = [System.Convert]::ToBoolean($env:WHAT_IF_ENABLED)
+          $firstRunWhatIf = [System.Convert]::ToBoolean($env:FIRST_RUN_WHAT_IF)
 
           if($whatIf -and $firstDeployment -and !$firstRunWhatIf) {
             Write-Warning "Skipping the WhatIf check as the deployment is dependent on resources that do not exist yet..."
@@ -142,5 +142,5 @@ runs:
         LOCATION: $${{ inputs.location }}
         DEPLOYMENT_TYPE: $${{ inputs.deploymentType }}
         FIRST_RUN_WHAT_IF: $${{ inputs.firstRunWhatIf }}
-        FIRST_DEPLOYMENT: $${{ parameters.firstDeployment }}
-        WHAT_IF_ENABLED: $${{ parameters.whatIfEnabled }}
+        FIRST_DEPLOYMENT: $${{ inputs.firstDeployment }}
+        WHAT_IF_ENABLED: $${{ inputs.whatIfEnabled }}

@@ -2,10 +2,10 @@ locals {
   agent_pool_configuration  = var.use_self_hosted_agents ? "name: ${local.resource_names.version_control_system_agent_pool}" : "vmImage: ubuntu-latest"
   repository_name_templates = var.use_separate_repository_for_pipeline_templates ? local.resource_names.version_control_system_repository_templates : local.resource_names.version_control_system_repository
 
-  pipeline_files_directory_path          = "${path.module}/pipelines/${var.iac_type}"
+  pipeline_files_directory_path          = "${path.module}/pipelines/${var.iac_type}/main"
   pipeline_template_files_directory_path = "${path.module}/pipelines/${var.iac_type}/templates"
 
-  pipeline_files          = fileset(local.pipeline_files_directory_path, "*.yaml")
+  pipeline_files          = fileset(local.pipeline_files_directory_path, "**/*.yaml")
   pipeline_template_files = fileset(local.pipeline_template_files_directory_path, "**/*.yaml")
 
   target_folder_name = ".pipelines"
@@ -44,15 +44,15 @@ locals {
       content = templatefile("${local.pipeline_files_directory_path}/${pipeline_file}", {
         project_name              = var.azure_devops_project_name
         repository_name_templates = local.repository_name_templates
-        ci_template_path          = local.ci_file_name
-        cd_template_path          = local.cd_file_name
+        ci_template_path          = "${local.target_folder_name}/${local.ci_template_file_name}"
+        cd_template_path          = "${local.target_folder_name}/${local.cd_template_file_name}"
         script_files              = local.script_files
         script_file_groups        = local.script_file_groups
       })
     }
   }
 
-  cicd_template_files = { for pipeline_template_file in local.pipeline_template_files : pipeline_template_file =>
+  cicd_template_files = { for pipeline_template_file in local.pipeline_template_files : "${local.target_folder_name}/${pipeline_template_file}" =>
     {
       content = templatefile("${local.pipeline_template_files_directory_path}/${pipeline_template_file}", {
         agent_pool_configuration      = local.agent_pool_configuration

@@ -1,6 +1,21 @@
 ---
 steps:
   - pwsh: |
+      $installedVersion = (Get-InstalledModule AZ).Version
+      $latestVersion = (Find-Module AZ).Version
+      Write-Host "Latest AZ PowerShell Version: $latestVersion"
+      Write-Host "Installed AZ PowerShell Version: $installedVersion"
+
+      if($installedVersion -ne $latestVersion) {
+        Write-Host "Upgrading Az PowerShell from $installedVersion to $latestVersion"
+        Install-Module -Name AZ -Force -SkipPublisherCheck -AllowClobber
+
+        $installedVersion = (Get-InstalledModule AZ).Version
+        Write-Host "Installed AZ PowerShell Version is now: $installedVersion"
+      }
+    displayName: Get Latest AZ PowerShell Release Version
+
+  - pwsh: |
       $TOOLS_PATH = $env:TOOLS_PATH
       $installDir = Join-Path -Path $TOOLS_PATH -ChildPath "bicep"
 
@@ -24,7 +39,7 @@ steps:
       
       Write-Host "##vso[task.setvariable variable=PATH]$env:PATH"
 
-      bicep --help
+      bicep --version
 
       Write-Host "Installed Latest Bicep Version"
 

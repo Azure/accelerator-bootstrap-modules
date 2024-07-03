@@ -5,10 +5,6 @@ inputs:
   managementGroupId:
     description: 'The management group id'
     required: true
-outputs:
-  firstDeployment:
-    description: 'Is this the first deployment?'
-    value: $${{ steps.firstDeployment.outputs.firstDeployment }}
 
 runs:
   using: "composite"
@@ -31,8 +27,7 @@ runs:
             Write-Host "Found the $managementGroupId Management Group, so assuming this is not the first deployment."
             $firstDeployment = $false
           }
-
-          echo "firstDeployment=$firstDeployment" >> $GITHUB_OUTPUT
+          echo "firstDeployment=$firstDeployment" >> $env:GITHUB_ENV
       env: 
         MANAGEMENT_GROUP_ID: $${{ inputs.managementGroupId }}
 
