@@ -1,5 +1,5 @@
 resource "azurerm_container_group" "alz" {
-  for_each            = var.agent_container_instances
+  for_each            = var.use_self_hosted_agents ? var.agent_container_instances : {}
   name                = each.value.container_instance_name
   location            = var.azure_location
   resource_group_name = azurerm_resource_group.agents[0].name
@@ -51,6 +51,6 @@ resource "azurerm_container_group" "alz" {
 resource "azurerm_user_assigned_identity" "container_instances" {
   count               = var.use_self_hosted_agents ? 1 : 0
   location            = var.azure_location
-  name                = var.container_instance_managed_identity_name
+  name                = var.agent_container_instance_managed_identity_name
   resource_group_name = azurerm_resource_group.agents[0].name
 }

@@ -9,13 +9,13 @@ resource "azurerm_resource_group" "identity" {
 }
 
 resource "azurerm_resource_group" "agents" {
-  count    = local.has_agent_container_instances ? 1 : 0
+  count    = var.use_self_hosted_agents ? 1 : 0
   name     = var.resource_group_agents_name
   location = var.azure_location
 }
 
 resource "azurerm_resource_group" "network" {
-  count    = local.use_private_networking ? 1 : 0
+  count    = var.use_private_networking ? 1 : 0
   name     = var.resource_group_network_name
   location = var.azure_location
 }

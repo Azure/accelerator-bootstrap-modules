@@ -1,5 +1,5 @@
 resource "azurerm_container_registry" "alz" {
-  count = var.use_self_hosted_agents ? 1 : 0  
+  count               = var.use_self_hosted_agents ? 1 : 0  
   name                = var.container_registry_name
   resource_group_name = azurerm_resource_group.agents[0].name
   location            = var.azure_location
@@ -10,7 +10,7 @@ resource "azurerm_container_registry" "alz" {
 }
 
 resource "azurerm_container_registry_task" "alz" {
-  count = var.use_self_hosted_agents ? 1 : 0 
+  count                 = var.use_self_hosted_agents ? 1 : 0 
   name                  = "image-build-task"
   container_registry_id = azurerm_container_registry.alz[0].id
   platform {
@@ -19,7 +19,7 @@ resource "azurerm_container_registry_task" "alz" {
   docker_step {
     dockerfile_path      = var.container_registry_dockerfile_name
     context_path         = var.container_registry_dockerfile_repository_folder_url
-    context_access_token = var.container_registry_dockerfile_repository_access_token
+    context_access_token = "a" # This is a dummy value becuase the context_access_token should not be required in the provider
     image_names          = ["${var.container_registry_image_name}:${var.container_registry_image_tag}"]
   }
 }
@@ -27,6 +27,9 @@ resource "azurerm_container_registry_task" "alz" {
 resource "azurerm_container_registry_task_schedule_run_now" "alz" {
   count = var.use_self_hosted_agents ? 1 : 0 
   container_registry_task_id = azurerm_container_registry_task.alz[0].id
+  lifecycle {
+    replace_triggered_by = [ azurerm_container_registry_task.alz ]
+  }
 }
 
 resource "azurerm_role_assignment" "container_registry" {

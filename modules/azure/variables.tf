@@ -64,11 +64,6 @@ variable "agent_container_instances" {
   default = {}
 }
 
-variable "agent_container_instance_image" {
-  type    = string
-  default = ""
-}
-
 variable "agent_organization_url" {
   type    = string
   default = ""
@@ -279,11 +274,6 @@ variable "container_registry_dockerfile_name" {
   default     = "dockerfile"
 }
 
-variable "container_registry_dockerfile_repository_access_token" {
-  type    = string
-  default = ""
-}
-
 variable "container_registry_image_name" {
   type        = string
   description = "The name of the image to build"
@@ -301,7 +291,7 @@ variable "use_self_hosted_agents" {
   default = true
 }
 
-variable "container_instance_managed_identity_name" {
+variable "agent_container_instance_managed_identity_name" {
   type    = string
   default = ""
 }

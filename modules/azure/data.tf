@@ -8,7 +8,7 @@ data "azurerm_management_group" "alz" {
 }
 
 data "http" "ip" {
-  count = local.use_private_networking && var.allow_storage_access_from_my_ip ? 1 : 0
+  count = var.use_private_networking && var.use_self_hosted_agents && var.allow_storage_access_from_my_ip ? 1 : 0
   url   = "https://api.ipify.org/"
   retry {
     attempts     = 5

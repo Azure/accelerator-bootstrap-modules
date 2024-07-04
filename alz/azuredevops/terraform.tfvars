@@ -1,5 +1,8 @@
 # Azure Variables
-agent_container_image = "microsoftavm/azure-devops-agent:1.1.0"
+agent_container_image_repository = "https://github.com/Azure/terraform-azurerm-avm-ptn-cicd-agents-and-runners"
+agent_container_image_tag        = "v0.0.1"
+agent_container_image_folder     = "container-images/azure-devops-agent"
+agent_container_image_dockerfile = "dockerfile"
 
 # Names
 resource_names = {
@@ -15,8 +18,7 @@ resource_names = {
   storage_container                                          = "{{environment_name}}-tfstate"
   container_instance_01                                      = "aci-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}"
   container_instance_02                                      = "aci-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number_plus_1}}"
-  container_instance_03                                      = "aci-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number_plus_2}}"
-  container_instance_04                                      = "aci-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number_plus_3}}"
+  container_instance_managed_identity                        = "id-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-aci"
   agent_01                                                   = "agent-{{service_name}}-{{environment_name}}-{{postfix_number}}"
   agent_02                                                   = "agent-{{service_name}}-{{environment_name}}-{{postfix_number_plus_1}}"
   agent_03                                                   = "agent-{{service_name}}-{{environment_name}}-{{postfix_number_plus_2}}"
@@ -37,5 +39,8 @@ resource_names = {
   nat_gateway                                                = "nat-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}"
   subnet_container_instances                                 = "subnet-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-aci"
   subnet_storage                                             = "subnet-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-sto"
-  private_endpoint                                           = "pe-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}"
+  storage_account_private_endpoint                           = "pe-{{service_name}}-{{environment_name}}-{{azure_location}}-sto-{{postfix_number}}"
+  container_registry                                         = "acr{{service_name}}{{environment_name}}{{azure_location_short}}{{postfix_number}}{{random_string}}"
+  container_registry_private_endpoint                        = "pe-{{service_name}}-{{environment_name}}-{{azure_location}}-acr-{{postfix_number}}"
+  container_image_name                                       = "azure-devops-agent"
 }
