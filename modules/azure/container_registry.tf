@@ -26,6 +26,12 @@ resource "azurerm_container_registry_task" "alz" {
     type         = "UserAssigned"
     identity_ids = [azurerm_user_assigned_identity.container_registry[0].id]
   }
+  registry_credential {
+    custom {
+      login_server = azurerm_container_registry.alz[0].login_server
+      identity     = azurerm_user_assigned_identity.container_registry[0].principal_id
+    }
+  }
 }
 
 resource "azurerm_container_registry_task_schedule_run_now" "alz" {
