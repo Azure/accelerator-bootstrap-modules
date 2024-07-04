@@ -6,7 +6,7 @@ resource "azurerm_container_registry" "alz" {
   sku                           = var.use_private_networking ? "Premium" : "Basic"
   public_network_access_enabled = !var.use_private_networking
   zone_redundancy_enabled       = var.use_private_networking
-
+  network_rule_bypass_option    = var.use_private_networking ? "AzureServices" : "None"
 }
 
 resource "azurerm_container_registry_task" "alz" {
