@@ -52,5 +52,5 @@ resource "azurerm_role_assignment" "container_registry_push_for_task" {
   count                = var.use_self_hosted_agents ? 1 : 0
   scope                = azurerm_container_registry.alz[0].id
   role_definition_name = "AcrPush"
-  principal_id         = azurerm_container_registry_task.alz[0].principal_id
+  principal_id         = azurerm_container_registry_task.alz[0].identity[0].principal_id
 }
