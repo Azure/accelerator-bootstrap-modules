@@ -23,7 +23,7 @@ resource "azurerm_container_registry_task" "alz" {
     image_names          = ["${var.container_registry_image_name}:${var.container_registry_image_tag}"]
   }
   identity {
-    type         = "SystemAssigned"
+    type         = "SystemAssigned" # Note this has to be a System Assigned Identity to work with private networking and `network_rule_bypass_option` set to `AzureServices`
   }
   registry_credential {
     custom {
