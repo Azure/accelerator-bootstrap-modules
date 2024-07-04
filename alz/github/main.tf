@@ -29,6 +29,7 @@ module "azure" {
   target_subscriptions                                      = local.target_subscriptions
   root_parent_management_group_id                           = local.root_parent_management_group_id
   agent_container_instances                                 = local.runner_container_instances
+  agent_container_instance_managed_identity_name            = local.resource_names.container_instance_managed_identity
   agent_organization_url                                    = local.runner_organization_repository_url
   agent_token                                               = var.github_runners_personal_access_token
   agent_organization_environment_variable                   = var.runner_organization_environment_variable
