@@ -1,6 +1,6 @@
 # Azure Variables
 agent_container_image_repository = "https://github.com/Azure/terraform-azurerm-avm-ptn-cicd-agents-and-runners"
-agent_container_image_tag        = "8ff4b85"
+agent_container_image_tag        = "8ff4b85" # NOTE: Container registry task does not support tag ref, so we are using the commit hash of the release instead
 agent_container_image_folder     = "container-images/azure-devops-agent"
 agent_container_image_dockerfile = "dockerfile"
 
@@ -21,8 +21,6 @@ resource_names = {
   container_instance_managed_identity                        = "id-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-aci"
   agent_01                                                   = "agent-{{service_name}}-{{environment_name}}-{{postfix_number}}"
   agent_02                                                   = "agent-{{service_name}}-{{environment_name}}-{{postfix_number_plus_1}}"
-  agent_03                                                   = "agent-{{service_name}}-{{environment_name}}-{{postfix_number_plus_2}}"
-  agent_04                                                   = "agent-{{service_name}}-{{environment_name}}-{{postfix_number_plus_3}}"
   version_control_system_repository                          = "{{service_name}}-{{environment_name}}"
   version_control_system_repository_templates                = "{{service_name}}-{{environment_name}}-templates"
   version_control_system_service_connection_plan             = "sc-{{service_name}}-{{environment_name}}-plan"

@@ -1,6 +1,6 @@
 # Azure Variables
 runner_container_image_repository = "https://github.com/Azure/terraform-azurerm-avm-ptn-cicd-agents-and-runners"
-runner_container_image_tag        = "8ff4b85"
+runner_container_image_tag        = "8ff4b85" # NOTE: Container registry task does not support tag ref, so we are using the commit hash of the release instead
 runner_container_image_folder     = "container-images/github-runner"
 runner_container_image_dockerfile = "dockerfile"
 
