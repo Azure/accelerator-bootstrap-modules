@@ -29,7 +29,7 @@ resource "azurerm_container_registry_task" "alz" {
   registry_credential {
     custom {
       login_server = azurerm_container_registry.alz[0].login_server
-      identity     = azurerm_user_assigned_identity.container_registry[0].principal_id
+      identity     = azurerm_user_assigned_identity.container_registry[0].client_id
     }
   }
 }
