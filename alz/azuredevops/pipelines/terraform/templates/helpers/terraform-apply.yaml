@@ -25,7 +25,7 @@ steps:
         $env:ARM_OIDC_TOKEN = $oidcToken
         $env:ARM_USE_OIDC = "true"
         $env:ARM_CLIENT_ID = $clientId
-        $env:ARM_USE_AZURE_AD = "true"
+        $env:ARM_USE_AZUREAD = "true"
 
         # Run Terraform Apply
         $command = "terraform"
