@@ -28,6 +28,8 @@ module "azure" {
   target_subscriptions             = local.target_subscriptions
   root_parent_management_group_id  = local.root_parent_management_group_id
   storage_account_replication_type = var.storage_account_replication_type
+  use_self_hosted_agents           = false
+  use_private_networking           = false
 }
 
 resource "local_file" "alz" {
