@@ -39,7 +39,7 @@ resource "azurerm_container_registry_task_schedule_run_now" "alz" {
   lifecycle {
     replace_triggered_by = [azurerm_container_registry_task.alz]
   }
-  depends_on = [ azurerm_role_assignment.container_registry_push_for_task ]
+  depends_on = [azurerm_role_assignment.container_registry_push_for_task]
 }
 
 resource "azurerm_role_assignment" "container_registry_pull_for_container_instance" {
