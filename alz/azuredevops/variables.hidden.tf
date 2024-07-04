@@ -101,7 +101,7 @@ variable "virtual_network_subnet_address_prefix_container_instances" {
   default     = "10.0.0.0/26"
 }
 
-variable "virtual_network_subnet_address_prefix_storage" {
+variable "virtual_network_subnet_address_prefix_private_endpoints" {
   type        = string
   description = "Address prefix for the virtual network subnet"
   default     = "10.0.0.64/26"

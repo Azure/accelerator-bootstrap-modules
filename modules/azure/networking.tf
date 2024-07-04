@@ -51,12 +51,12 @@ resource "azurerm_subnet_nat_gateway_association" "container_instances" {
   nat_gateway_id = azurerm_nat_gateway.alz[0].id
 }
 
-resource "azurerm_subnet" "storage" {
+resource "azurerm_subnet" "private_endpoints" {
   count                             = var.use_private_networking && var.use_self_hosted_agents ? 1 : 0
-  name                              = var.virtual_network_subnet_name_storage
+  name                              = var.virtual_network_subnet_name_private_endpoints
   resource_group_name               = azurerm_resource_group.network[0].name
   virtual_network_name              = azurerm_virtual_network.alz[0].name
-  address_prefixes                  = [var.virtual_network_subnet_address_prefix_storage]
+  address_prefixes                  = [var.virtual_network_subnet_address_prefix_private_endpoints]
   private_endpoint_network_policies = "Enabled"
 }
 
@@ -79,7 +79,7 @@ resource "azurerm_private_endpoint" "storage" {
   name                = var.storage_account_private_endpoint_name
   location            = var.azure_location
   resource_group_name = azurerm_resource_group.network[0].name
-  subnet_id           = azurerm_subnet.storage[0].id
+  subnet_id           = azurerm_subnet.private_endpoints[0].id
 
   private_service_connection {
     name                           = var.storage_account_private_endpoint_name
@@ -113,7 +113,7 @@ resource "azurerm_private_endpoint" "container_registry" {
   name                = var.container_registry_private_endpoint_name
   location            = var.azure_location
   resource_group_name = azurerm_resource_group.network[0].name
-  subnet_id           = azurerm_subnet.container_instances[0].id
+  subnet_id           = azurerm_subnet.private_endpoints[0].id
 
   private_service_connection {
     name                           = var.container_registry_private_endpoint_name
