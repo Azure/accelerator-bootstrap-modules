@@ -9,18 +9,18 @@ resource "azurerm_container_group" "alz" {
   zones               = each.value.zones
 
   identity {
-    type         = "UserAssigned" 
+    type         = "UserAssigned"
     identity_ids = [azurerm_user_assigned_identity.container_instances[0].id]
   }
 
   image_registry_credential {
-    server = azurerm_container_registry.alz[0].login_server
+    server                    = azurerm_container_registry.alz[0].login_server
     user_assigned_identity_id = azurerm_user_assigned_identity.container_instances[0].id
   }
 
   container {
-    name         = each.value.container_instance_name
-    image        = "${azurerm_container_registry.alz[0].login_server}/${var.container_registry_image_name}:${var.container_registry_image_tag}"
+    name  = each.value.container_instance_name
+    image = "${azurerm_container_registry.alz[0].login_server}/${var.container_registry_image_name}:${var.container_registry_image_tag}"
 
 
     cpu          = each.value.cpu
@@ -45,7 +45,7 @@ resource "azurerm_container_group" "alz" {
     }
   }
 
-  depends_on = [ azurerm_container_registry_task_schedule_run_now.alz]
+  depends_on = [azurerm_container_registry_task_schedule_run_now.alz]
 }
 
 resource "azurerm_user_assigned_identity" "container_instances" {
