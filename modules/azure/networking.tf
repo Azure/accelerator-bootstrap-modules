@@ -60,36 +60,36 @@ resource "azurerm_subnet" "storage" {
   private_endpoint_network_policies = "Enabled"
 }
 
-resource "azurerm_private_dns_zone" "alz" {
+resource "azurerm_private_dns_zone" "storage" {
   count               = local.use_private_networking ? 1 : 0
   name                = "privatelink.blob.core.windows.net"
   resource_group_name = azurerm_resource_group.network[0].name
 }
 
-resource "azurerm_private_dns_zone_virtual_network_link" "alz" {
+resource "azurerm_private_dns_zone_virtual_network_link" "storage" {
   count                 = local.use_private_networking ? 1 : 0
-  name                  = var.private_endpoint_name
+  name                  = var.storage_account_private_endpoint_name
   resource_group_name   = azurerm_resource_group.network[0].name
-  private_dns_zone_name = azurerm_private_dns_zone.alz[0].name
+  private_dns_zone_name = azurerm_private_dns_zone.storage[0].name
   virtual_network_id    = azurerm_virtual_network.alz[0].id
 }
 
-resource "azurerm_private_endpoint" "alz" {
+resource "azurerm_private_endpoint" "storage" {
   count               = local.use_private_networking ? 1 : 0
-  name                = var.private_endpoint_name
+  name                = var.storage_account_private_endpoint_name
   location            = var.azure_location
   resource_group_name = azurerm_resource_group.network[0].name
   subnet_id           = azurerm_subnet.storage[0].id
 
   private_service_connection {
-    name                           = var.private_endpoint_name
+    name                           = var.storage_account_private_endpoint_name
     private_connection_resource_id = azurerm_storage_account.alz.id
     subresource_names              = ["blob"]
     is_manual_connection           = false
   }
 
   private_dns_zone_group {
-    name                 = var.private_endpoint_name
-    private_dns_zone_ids = [azurerm_private_dns_zone.alz[0].id]
+    name                 = var.storage_account_private_endpoint_name
+    private_dns_zone_ids = [azurerm_private_dns_zone.storage[0].id]
   }
 }

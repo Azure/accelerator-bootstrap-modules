@@ -49,6 +49,7 @@ module "azure" {
   storage_account_replication_type                          = var.storage_account_replication_type
   public_ip_name                                            = local.resource_names.public_ip
   nat_gateway_name                                          = local.resource_names.nat_gateway
+  
 }
 
 module "azure_devops" {
