@@ -33,6 +33,7 @@ resource_names = {
   subnet_private_endpoints                                    = "subnet-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-pe"
   storage_account_private_endpoint                            = "pe-{{service_name}}-{{environment_name}}-{{azure_location}}-sto-{{postfix_number}}"
   container_registry                                          = "acr{{service_name}}{{environment_name}}{{azure_location_short}}{{postfix_number}}{{random_string}}"
+  container_registry_managed_identity                         = "id-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-acr"
   container_registry_private_endpoint                         = "pe-{{service_name}}-{{environment_name}}-{{azure_location}}-acr-{{postfix_number}}"
   container_image_name                                        = "github-runner"
 }

@@ -40,5 +40,6 @@ resource_names = {
   storage_account_private_endpoint                           = "pe-{{service_name}}-{{environment_name}}-{{azure_location}}-sto-{{postfix_number}}"
   container_registry                                         = "acr{{service_name}}{{environment_name}}{{azure_location_short}}{{postfix_number}}{{random_string}}"
   container_registry_private_endpoint                        = "pe-{{service_name}}-{{environment_name}}-{{azure_location}}-acr-{{postfix_number}}"
+  container_registry_managed_identity                        = "id-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-acr"
   container_image_name                                       = "azure-devops-agent"
 }

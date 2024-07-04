@@ -295,3 +295,8 @@ variable "agent_container_instance_managed_identity_name" {
   type    = string
   default = ""
 }
+
+variable "container_registry_managed_identity_name" {
+  type    = string
+  default = ""
+}

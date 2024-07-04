@@ -52,6 +52,7 @@ module "azure" {
   use_self_hosted_agents                                    = var.use_self_hosted_agents
   container_registry_name                                   = local.resource_names.container_registry
   container_registry_private_endpoint_name                  = local.resource_names.container_registry_private_endpoint
+  container_registry_managed_identity_name                  = local.resource_names.container_registry_managed_identity
   container_registry_image_name                             = local.resource_names.container_image_name
   container_registry_image_tag                              = var.agent_container_image_tag
   container_registry_dockerfile_name                        = var.agent_container_image_dockerfile

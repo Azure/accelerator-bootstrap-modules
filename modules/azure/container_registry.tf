@@ -22,6 +22,10 @@ resource "azurerm_container_registry_task" "alz" {
     context_access_token = "a" # This is a dummy value becuase the context_access_token should not be required in the provider
     image_names          = ["${var.container_registry_image_name}:${var.container_registry_image_tag}"]
   }
+  identity {
+    type = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.container_registry[0].id]
+  }
 }
 
 resource "azurerm_container_registry_task_schedule_run_now" "alz" {
@@ -32,9 +36,23 @@ resource "azurerm_container_registry_task_schedule_run_now" "alz" {
   }
 }
 
-resource "azurerm_role_assignment" "container_registry" {
+resource "azurerm_role_assignment" "container_registry_pull" {
   count                = var.use_self_hosted_agents ? 1 : 0
   scope                = azurerm_container_registry.alz[0].id
   role_definition_name = "AcrPull"
   principal_id         = azurerm_user_assigned_identity.container_instances[0].principal_id
+}
+
+resource "azurerm_user_assigned_identity" "container_registry" {
+  count               = var.use_self_hosted_agents ? 1 : 0
+  location            = var.azure_location
+  name                = var.container_registry_managed_identity_name
+  resource_group_name = azurerm_resource_group.agents[0].name
+}
+
+resource "azurerm_role_assignment" "container_registry_push" {
+  count                = var.use_self_hosted_agents ? 1 : 0
+  scope                = azurerm_container_registry.alz[0].id
+  role_definition_name = "AcrPush"
+  principal_id         = azurerm_user_assigned_identity.container_registry[0].principal_id
 }
