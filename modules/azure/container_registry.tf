@@ -23,7 +23,7 @@ resource "azurerm_container_registry_task" "alz" {
     image_names          = ["${var.container_registry_image_name}:${var.container_registry_image_tag}"]
   }
   identity {
-    type = "UserAssigned"
+    type         = "UserAssigned"
     identity_ids = [azurerm_user_assigned_identity.container_registry[0].id]
   }
 }
