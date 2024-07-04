@@ -23,13 +23,12 @@ resource "azurerm_container_registry_task" "alz" {
     image_names          = ["${var.container_registry_image_name}:${var.container_registry_image_tag}"]
   }
   identity {
-    type         = "UserAssigned"
-    identity_ids = [azurerm_user_assigned_identity.container_registry[0].id]
+    type         = "SystemAssigned"
   }
   registry_credential {
     custom {
       login_server = azurerm_container_registry.alz[0].login_server
-      identity     = azurerm_user_assigned_identity.container_registry[0].client_id
+      identity     = "[system]"
     }
   }
 }
@@ -42,23 +41,16 @@ resource "azurerm_container_registry_task_schedule_run_now" "alz" {
   }
 }
 
-resource "azurerm_role_assignment" "container_registry_pull" {
+resource "azurerm_role_assignment" "container_registry_pull_for_container_instance" {
   count                = var.use_self_hosted_agents ? 1 : 0
   scope                = azurerm_container_registry.alz[0].id
   role_definition_name = "AcrPull"
   principal_id         = azurerm_user_assigned_identity.container_instances[0].principal_id
 }
 
-resource "azurerm_user_assigned_identity" "container_registry" {
-  count               = var.use_self_hosted_agents ? 1 : 0
-  location            = var.azure_location
-  name                = var.container_registry_managed_identity_name
-  resource_group_name = azurerm_resource_group.agents[0].name
-}
-
-resource "azurerm_role_assignment" "container_registry_push" {
+resource "azurerm_role_assignment" "container_registry_push_for_task" {
   count                = var.use_self_hosted_agents ? 1 : 0
   scope                = azurerm_container_registry.alz[0].id
   role_definition_name = "AcrPush"
-  principal_id         = azurerm_user_assigned_identity.container_registry[0].principal_id
+  principal_id         = azurerm_container_registry_task.alz[0].principal_id
 }
