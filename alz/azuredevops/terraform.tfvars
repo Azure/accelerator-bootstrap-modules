@@ -1,6 +1,6 @@
 # Azure Variables
 agent_container_image_repository = "https://github.com/Azure/terraform-azurerm-avm-ptn-cicd-agents-and-runners"
-agent_container_image_tag        = "v0.0.1"
+agent_container_image_tag        = "8ff4b85"
 agent_container_image_folder     = "container-images/azure-devops-agent"
 agent_container_image_dockerfile = "dockerfile"
 
