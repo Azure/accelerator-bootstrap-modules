@@ -8,7 +8,7 @@ locals {
     }
     container_registry = {
       name         = var.container_registry_private_endpoint_name
-      resource_id  = azurerm_private_endpoint.container_registry[0].id
+      resource_id  = azurerm_container_registry.alz[0].id
       dns_record   = "privatelink.azurecr.io"
       sub_resource = "registry"
     }
