@@ -101,6 +101,8 @@ stages:
                   displayName: Checkout Bicep Module
 
                 - template: helpers/bicep-installer.yaml
+                  parameters:
+                    serviceConnection: '${service_connection_name_plan}'
 
                 - template: helpers/bicep-variables.yaml
                   parameters:

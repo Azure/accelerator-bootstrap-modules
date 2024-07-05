@@ -5,29 +5,30 @@ description: Install Bicep, Add to the Path and Update Az PowerShell to latest v
 runs:
   using: "composite"
   steps:
-    - name: Get Latest Az PowerShell Version
+    - name: Check Az PowerShell Version
       run: |
         $latestVersion = (Find-Module AZ).Version
         Write-Host "Latest AZ PowerShell Version: $latestVersion"
         echo "lastestPowerShellAzVersion=$latestVersion" >> $env:GITHUB_ENV
 
         $installedModule = Get-InstalledModule -Name AZ -ErrorAction SilentlyContinue
-        if($installedModule -eq $null) {
-            Write-Host "Can't find Az PowerShell Module. We must be on a Microsoft-Hosted Agent, so skipping the install..."
-            exit 0
-        }
-
         $installedVersion = $installedModule.Version
         Write-Host "Installed AZ PowerShell Version: $installedVersion"
 
+        $runPowerShellAzUpgrade = $true
+
         if($installedVersion -ne $latestVersion) {
-            Write-Host "Upgrading Az PowerShell from $installedVersion to $latestVersion"
-            Install-Module -Force -SkipPublisherCheck -AllowClobber
+            Write-Host "Az PowerShell is not at the latest version, running upgrade step..."
+        } else {
+            Write-Host "Az PowerShell is already at the latest version, skipping upgrade step..."
+            $runPowerShellAzUpgrade = $false
         }
+        echo "runPowerShellAzUpgrade=$runPowerShellAzUpgrade" >> $env:GITHUB_ENV
       shell: pwsh
 
     - name: Upgrade AZ PowerShell
       uses: azure/powershell@v2
+      if: $${{ env.runPowerShellAzUpgrade == 'true' }}
       with:
         azPSVersion: '$${{ env.lastestPowerShellAzVersion }}'
         inlineScript: | 

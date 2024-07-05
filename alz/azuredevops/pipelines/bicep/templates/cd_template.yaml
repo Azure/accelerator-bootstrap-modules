@@ -41,6 +41,8 @@ stages:
 
                 - $${{ if eq(parameters.destroy, false) }}:
                   - template: helpers/bicep-installer.yaml
+                    parameters:
+                      serviceConnection: '${service_connection_name_plan}'
 
                   - template: helpers/bicep-templates.yaml
                     parameters:
@@ -52,7 +54,6 @@ stages:
                   - template: helpers/bicep-destroy.yaml
                     parameters:
                       serviceConnection: '${service_connection_name_plan}'
-
 
   - stage: deploy
     displayName: Deploy
@@ -83,6 +84,8 @@ stages:
 
                 - $${{ if eq(parameters.destroy, false) }}:
                   - template: helpers/bicep-installer.yaml
+                    parameters:
+                      serviceConnection: '${service_connection_name_apply}'
 
                   - template: helpers/bicep-templates.yaml
                     parameters:
