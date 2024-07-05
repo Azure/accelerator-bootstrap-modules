@@ -13,10 +13,10 @@ locals {
   target_folder_name = ".github"
 
   starter_module_config = var.iac_type == "bicep" ? jsondecode(file("${var.module_folder_path}/${var.bicep_config_file_path}")).starter_modules[var.starter_module_name] : null
-  script_files_all = var.iac_type == "bicep" ? local.starter_module_config.deployment_files : []
-  destroy_script_path = var.iac_type == "bicep" ? local.starter_module_config.destroy_script_path : ""
+  script_files_all      = var.iac_type == "bicep" ? local.starter_module_config.deployment_files : []
+  destroy_script_path   = var.iac_type == "bicep" ? local.starter_module_config.destroy_script_path : ""
 
-  networking_type  = var.iac_type == "bicep" ? jsondecode(file("${var.module_folder_path}/${var.bicep_parameters_file_path}")).NETWORK_TYPE : ""
+  networking_type = var.iac_type == "bicep" ? jsondecode(file("${var.module_folder_path}/${var.bicep_parameters_file_path}")).NETWORK_TYPE : ""
   script_files = var.iac_type == "bicep" ? { for script_file in local.script_files_all : format("%03d", script_file.order) => {
     name                       = script_file.name
     displayName                = script_file.displayName
@@ -32,11 +32,11 @@ locals {
 
   script_file_groups_all = var.iac_type == "bicep" ? local.starter_module_config.deployment_file_groups : []
 
-  used_script_file_groups = distinct([ for script_file in local.script_files_all : script_file.group ])
+  used_script_file_groups = distinct([for script_file in local.script_files_all : script_file.group])
 
   script_file_groups = { for script_file_group in local.script_file_groups_all : format("%03d", script_file_group.order) => {
-      name = script_file_group.name
-      displayName = script_file_group.displayName
+    name        = script_file_group.name
+    displayName = script_file_group.displayName
     } if contains(local.used_script_file_groups, script_file_group.name)
   }
 

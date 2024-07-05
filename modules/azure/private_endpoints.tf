@@ -1,18 +1,19 @@
 locals {
-  private_endpoints = var.use_private_networking && var.use_self_hosted_agents ? merge({ 
-    storage_account = var.create_storage_account ? {
+  private_endpoints = var.use_private_networking && var.use_self_hosted_agents ? merge(var.create_storage_account ? {
+    storage_account = {
       name         = var.storage_account_private_endpoint_name
       resource_id  = azurerm_storage_account.alz[0].id
       dns_record   = "privatelink.blob.core.windows.net"
       sub_resource = "blob"
-    } : {}},
+    }
+    } : {},
     {
       container_registry = {
-      name         = var.container_registry_private_endpoint_name
-      resource_id  = azurerm_container_registry.alz[0].id
-      dns_record   = "privatelink.azurecr.io"
-      sub_resource = "registry"
-    }
+        name         = var.container_registry_private_endpoint_name
+        resource_id  = azurerm_container_registry.alz[0].id
+        dns_record   = "privatelink.azurecr.io"
+        sub_resource = "registry"
+      }
   }) : {}
 }
 
