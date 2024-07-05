@@ -6,11 +6,11 @@ resource "azurerm_storage_account" "alz" {
   account_replication_type        = var.storage_account_replication_type
   allow_nested_items_to_be_public = false
   shared_access_key_enabled       = false
-  public_network_access_enabled   = local.use_private_networking && !var.allow_storage_access_from_my_ip ? false : true
+  public_network_access_enabled   = var.use_private_networking && var.use_self_hosted_agents && !var.allow_storage_access_from_my_ip ? false : true
 }
 
 resource "azurerm_storage_account_network_rules" "alz" {
-  count              = local.use_private_networking ? 1 : 0
+  count              = var.use_private_networking ? 1 : 0
   storage_account_id = azurerm_storage_account.alz.id
   default_action     = "Deny"
   ip_rules           = var.allow_storage_access_from_my_ip ? [data.http.ip[0].response_body] : []

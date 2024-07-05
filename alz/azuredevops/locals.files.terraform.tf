@@ -39,7 +39,7 @@ locals {
 
   module_files = { for key, value in module.files.files : key =>
     {
-      content = replace((file(value.path)), "# backend \"azurerm\" {}", "backend \"azurerm\" {\n    use_oidc         = true\n    use_azuread_auth = true\n  }")
+      content = replace((file(value.path)), "# backend \"azurerm\" {}", "backend \"azurerm\" {}")
     }
   }
   repository_files          = merge(local.cicd_files, local.module_files, var.use_separate_repository_for_pipeline_templates ? {} : local.cicd_template_files)

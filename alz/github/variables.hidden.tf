@@ -15,8 +15,23 @@ variable "resource_names" {
   description = "Overrides for resource names"
 }
 
-variable "runner_container_image" {
-  description = "The container image to use for GitHub Runners"
+variable "runner_container_image_repository" {
+  description = "The container image repository to use for GitHub Runner"
+  type        = string
+}
+
+variable "runner_container_image_tag" {
+  description = "The container image tag to use for GitHub Runner"
+  type        = string
+}
+
+variable "runner_container_image_folder" {
+  description = "The folder containing the Dockerfile for the container image"
+  type        = string
+}
+
+variable "runner_container_image_dockerfile" {
+  description = "The Dockerfile to use for the container image"
   type        = string
 }
 
@@ -86,7 +101,7 @@ variable "virtual_network_subnet_address_prefix_container_instances" {
   default     = "10.0.0.0/26"
 }
 
-variable "virtual_network_subnet_address_prefix_storage" {
+variable "virtual_network_subnet_address_prefix_private_endpoints" {
   type        = string
   description = "Address prefix for the virtual network subnet"
   default     = "10.0.0.64/26"

@@ -1,5 +1,8 @@
 # Azure Variables
-runner_container_image = "microsoftavm/github-runner:1.0.1"
+runner_container_image_repository = "https://github.com/Azure/terraform-azurerm-avm-ptn-cicd-agents-and-runners"
+runner_container_image_tag        = "8ff4b85" # NOTE: Container registry task does not support tag ref, so we are using the commit hash of the release instead
+runner_container_image_folder     = "container-images/github-runner"
+runner_container_image_dockerfile = "dockerfile"
 
 # Naming
 resource_names = {
@@ -14,6 +17,7 @@ resource_names = {
   storage_container                                           = "{{environment_name}}-tfstate"
   container_instance_01                                       = "aci-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}"
   container_instance_02                                       = "aci-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number_plus_1}}"
+  container_instance_managed_identity                         = "id-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-aci"
   runner_01                                                   = "runner-{{service_name}}-{{environment_name}}-{{postfix_number}}"
   runner_02                                                   = "runner-{{service_name}}-{{environment_name}}-{{postfix_number_plus_1}}"
   version_control_system_repository                           = "{{service_name}}-{{environment_name}}"
@@ -26,6 +30,9 @@ resource_names = {
   public_ip                                                   = "pip-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}"
   nat_gateway                                                 = "nat-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}"
   subnet_container_instances                                  = "subnet-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-aci"
-  subnet_storage                                              = "subnet-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-sto"
-  private_endpoint                                            = "pe-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}"
+  subnet_private_endpoints                                    = "subnet-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-pe"
+  storage_account_private_endpoint                            = "pe-{{service_name}}-{{environment_name}}-{{azure_location}}-sto-{{postfix_number}}"
+  container_registry                                          = "acr{{service_name}}{{environment_name}}{{azure_location_short}}{{postfix_number}}{{random_string}}"
+  container_registry_private_endpoint                         = "pe-{{service_name}}-{{environment_name}}-{{azure_location}}-acr-{{postfix_number}}"
+  container_image_name                                        = "github-runner"
 }

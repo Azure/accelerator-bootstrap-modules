@@ -27,7 +27,7 @@ module "azure" {
   user_assigned_managed_identities                          = local.managed_identities
   federated_credentials                                     = local.federated_credentials
   agent_container_instances                                 = local.agent_container_instances
-  agent_container_instance_image                            = var.agent_container_image
+  agent_container_instance_managed_identity_name            = local.resource_names.container_instance_managed_identity
   agent_organization_url                                    = module.azure_devops.organization_url
   agent_token                                               = var.azure_devops_agents_personal_access_token
   agent_organization_environment_variable                   = var.agent_organization_environment_variable
@@ -39,16 +39,23 @@ module "azure" {
   root_parent_management_group_id                           = local.root_parent_management_group_id
   virtual_network_name                                      = local.resource_names.virtual_network
   virtual_network_subnet_name_container_instances           = local.resource_names.subnet_container_instances
-  virtual_network_subnet_name_storage                       = local.resource_names.subnet_storage
-  private_endpoint_name                                     = local.resource_names.private_endpoint
+  virtual_network_subnet_name_private_endpoints             = local.resource_names.subnet_private_endpoints
+  storage_account_private_endpoint_name                     = local.resource_names.storage_account_private_endpoint
   use_private_networking                                    = var.use_private_networking
   allow_storage_access_from_my_ip                           = var.allow_storage_access_from_my_ip
   virtual_network_address_space                             = var.virtual_network_address_space
   virtual_network_subnet_address_prefix_container_instances = var.virtual_network_subnet_address_prefix_container_instances
-  virtual_network_subnet_address_prefix_storage             = var.virtual_network_subnet_address_prefix_storage
+  virtual_network_subnet_address_prefix_private_endpoints   = var.virtual_network_subnet_address_prefix_private_endpoints
   storage_account_replication_type                          = var.storage_account_replication_type
   public_ip_name                                            = local.resource_names.public_ip
   nat_gateway_name                                          = local.resource_names.nat_gateway
+  use_self_hosted_agents                                    = var.use_self_hosted_agents
+  container_registry_name                                   = local.resource_names.container_registry
+  container_registry_private_endpoint_name                  = local.resource_names.container_registry_private_endpoint
+  container_registry_image_name                             = local.resource_names.container_image_name
+  container_registry_image_tag                              = var.agent_container_image_tag
+  container_registry_dockerfile_name                        = var.agent_container_image_dockerfile
+  container_registry_dockerfile_repository_folder_url       = local.agent_container_instance_dockerfile_url
 }
 
 module "azure_devops" {
