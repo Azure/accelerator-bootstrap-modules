@@ -45,7 +45,7 @@ runs:
         azPSVersion: 'latest'
         inlineScript: |
           $whatIf = [System.Convert]::ToBoolean($env:WHAT_IF_ENABLED)
-          
+
           $firstDeploymentString = $env:FIRST_DEPLOYMENT
           $firstDeployment = $true
           if($firstDeploymentString -eq "") {
@@ -130,11 +130,11 @@ runs:
               $resultId = "/subscriptions/$($env:SUBSCRIPTION_ID)/resourceGroups/$($env:RESOURCE_GROUP_NAME)/providers/Microsoft.Resources/deployments/$deploymentName"
             } else {
               $resultId = $result.Id
-            }    
+            }
 
             $resultIdEscaped = $resultId.Replace("/", "%2F")
             $resultUrl = "https://portal.azure.com/#view/HubsExtension/DeploymentDetailsBlade/~/overview/id/$resultIdEscaped"
-            
+
             Write-Host "Deployment Name: $deploymentName"
             Write-Host "Deployment ID: $resultId"
             Write-Host "Deployment Url: $resultUrl"
@@ -153,7 +153,7 @@ runs:
             Write-Error "Deployment failed after $retryMax attempts..."
             exit 1
           }
-      env: 
+      env:
         DISPLAY_NAME: $${{ inputs.displayName }}
         TEMPLATE_FILE_PATH: $${{ inputs.templateFilePath }}
         TEMPLATE_PARAMETERS_FILE_PATH: $${{ inputs.templateParametersFilePath }}

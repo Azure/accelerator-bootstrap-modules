@@ -31,7 +31,7 @@ runs:
       if: $${{ env.runPowerShellAzUpgrade == 'true' }}
       with:
         azPSVersion: '$${{ env.lastestPowerShellAzVersion }}'
-        inlineScript: | 
+        inlineScript: |
           Write-Host "Attempted Upgrade of AZ PowerShell to $${{ env.lastestPowerShellAzVersion }}"
 
     - name: Install Bicep
@@ -41,7 +41,7 @@ runs:
 
         $toolFileName = "bicep"
         $toolFilePath = Join-Path -Path $installDir -ChildPath $toolFileName
-        
+
         if(!(Test-Path $installDir)) {
           New-Item -ItemType Directory -Path $installDir | Out-String | Write-Verbose
         }

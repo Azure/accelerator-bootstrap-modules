@@ -96,7 +96,8 @@ jobs:
         with:
           managementGroupId: $${{ env.MANAGEMENT_GROUP_ID }}
 
-%{ for script_file in script_files ~}  # yamllint disable-line
+# yamllint disable-line
+%{ for script_file in script_files ~}
       - name: 'What If: ${script_file.displayName}'
         uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-deploy@main
         with:
