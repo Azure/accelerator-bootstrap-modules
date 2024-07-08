@@ -52,13 +52,14 @@ jobs:
       - name: First Deployment Check
         id: firstDeploymentCheck
         uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-first-deployment-check@main
+        if: $${{ !inputs.destroy }}
         with:
           managementGroupId: $${{ env.MANAGEMENT_GROUP_ID }}
 
 %{ for script_file in script_files ~}
       - name: 'What If: ${script_file.displayName}'
         uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-deploy@main
-        if: $${{ inputs.${script_file.name} }}
+        if: $${{ inputs.${script_file.name} && !inputs.destroy }}
         with:
           displayName: '${script_file.displayName}'
           templateFilePath: '${script_file.templateFilePath}'
@@ -72,6 +73,12 @@ jobs:
           firstDeployment: '$${{ env.firstDeployment }}'
           whatIfEnabled: 'true'
 %{ endfor ~}
+
+      - name: Run Bicep Destroy What If
+        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-destroy@main
+        if: $${{ inputs.destroy }}
+        with:
+          whatIfEnabled: 'true'
 
   deploy:
     name: Deploy
@@ -109,7 +116,7 @@ jobs:
 %{ for script_file in script_files ~}
       - name: 'Deploy: ${script_file.displayName}'
         uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-deploy@main
-        if: $${{ inputs.${script_file.name} }}
+        if: $${{ inputs.${script_file.name} && !inputs.destroy }}
         with:
           displayName: '${script_file.displayName}'
           templateFilePath: '${script_file.templateFilePath}'
@@ -122,3 +129,9 @@ jobs:
           firstRunWhatIf: '${script_file.firstRunWhatIf}'
           whatIfEnabled: 'false'
 %{ endfor ~}
+
+      - name: Run Bicep Destroy
+        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-destroy@main
+        if: $${{ inputs.destroy }}
+        with:
+          whatIfEnabled: 'false'

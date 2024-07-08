@@ -24,7 +24,7 @@ do {
         Write-Host "Runner IP Address: $myIp"
 
         Write-Host "Running Terraform Destroy"
-        Deploy-Accelerator -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "./$($env:SOURCE_CODE_FOLDER)" -autoApprove -destroy -ErrorAction Stop
+        Deploy-Accelerator -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "./$($env:SOURCE_CODE_FOLDER)" -starterModuleOverrideFolderPath "./$($env:SOURCE_CODE_FOLDER)/accelerator-starter-module" -autoApprove -destroy -ErrorAction Stop
         if ($LastExitCode -eq 0) {
             $success = $true
         } else {

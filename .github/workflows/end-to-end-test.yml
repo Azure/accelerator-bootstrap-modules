@@ -12,6 +12,14 @@ on:
         description: 'The branch to use for the powershell module'
         default: 'main'
         type: string
+      alz_bicep_branch:
+        description: 'The branch to use for the bicep module'
+        default: 'main'
+        type: string
+      alz_terraform_branch:
+        description: 'The branch to use for the terraform module'
+        default: 'main'
+        type: string
   schedule:
     - cron: '0 9 * * 1'
 
@@ -22,6 +30,8 @@ permissions:
 env:
   SOURCE_CODE_FOLDER: source-code
   ALZ_POWERSHELL_BRANCH: ${{ github.event.inputs.powershell_branch }}
+  ALZ_BICEP_BRANCH: ${{ github.event.inputs.alz_bicep_branch }}
+  ALZ_TERRAFORM_BRANCH: ${{ github.event.inputs.alz_terraform_branch }}
 jobs:
   e2e-test:
     name: "IAC: ${{ matrix.iac }}, OS: ${{ matrix.os }}, VCS: ${{ matrix.vcs }}, TF: ${{ matrix.tf }}, AG: ${{ matrix.ag }}"
@@ -38,12 +48,6 @@ jobs:
         exclude:
           - iac: bicep
             tf: 1.5.0
-          - iac: bicep
-            vcs: local
-          - iac: bicep
-            ag: public
-          - iac: bicep
-            ag: private
           - vcs: local
             ag: public
           - vcs: local
@@ -203,6 +207,13 @@ jobs:
           ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Install-AcceleratorModule.ps1 -ModuleBranch "${{ env.ALZ_POWERSHELL_BRANCH }}"
           Write-Host "Installed Accelerator Module"
 
+          # Download the Starter Module
+          $infrastructureAsCode = "${{ matrix.iac }}"
+          Write-Host "Downloading the Starter Module"
+          $starterModuleUrl = $infrastructureAsCode -eq "bicep" ? "https://github.com/Azure/ALZ-Bicep" : "https://github.com/Azure/alz-terraform-accelerator"
+          ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Download-StarterModule.ps1 -ModuleBranch "${{ env.ALZ_BICEP_BRANCH }} -ModuleUrl $starterModuleUrl"
+          Write-Host "Downloaded Starter Module"
+
           # Run the Module in a retry loop
           $retryCount = 0
           $maximumRetries = 10
@@ -213,7 +224,7 @@ jobs:
             $retryCount++
             try {
               Write-Host "Running the ALZ Module"
-              Deploy-Accelerator -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "./${{ env.SOURCE_CODE_FOLDER }}" -autoApprove -ErrorAction Stop -Verbose
+              Deploy-Accelerator -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "./${{ env.SOURCE_CODE_FOLDER }}" -starterModuleOverrideFolderPath "./${{ env.SOURCE_CODE_FOLDER }}/accelerator-starter-module" -autoApprove -ErrorAction Stop -Verbose
               if ($LastExitCode -eq 0) {
                 $success = $true
               } else {
@@ -313,6 +324,13 @@ jobs:
           Write-Host "Installing the Accelerator PowerShell Module"
           ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Install-AcceleratorModule.ps1 -ModuleBranch "${{ env.ALZ_POWERSHELL_BRANCH }}"
           Write-Host "Installed Accelerator Module"
+
+          # Download the Starter Module
+          $infrastructureAsCode = "${{ matrix.iac }}"
+          Write-Host "Downloading the Starter Module"
+          $starterModuleUrl = $infrastructureAsCode -eq "bicep" ? "https://github.com/Azure/ALZ-Bicep" : "https://github.com/Azure/alz-terraform-accelerator"
+          ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Download-StarterModule.ps1 -ModuleBranch "${{ env.ALZ_BICEP_BRANCH }} -ModuleUrl $starterModuleUrl"
+          Write-Host "Downloaded Starter Module"
 
           # Run destroy
           ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/destroy.ps1 -versionControlSystem $versionControlSystem

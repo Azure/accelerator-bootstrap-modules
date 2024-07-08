@@ -1,26 +1,16 @@
 ---
-name: Import Variables from File
-description: Import variables from a JSON file
+name: "[DANGER!] DESTROY! [DANGER!]"
+description: "Destroy all the resources"
 inputs:
-  parameters_file_name:
-    description: 'The name of the file containing the parameters'
+  whatIfEnabled:
+    description: 'Is the WhatIf flag enabled?'
     required: true
 
 runs:
   using: "composite"
   steps:
-    - name: Import Variables from File
-      run: |
-        $fileName = $env:PARAMETERS_FILE_NAME
-        Write-Host "Getting variables from $fileName"
-        $json = Get-Content -Path $fileName | ConvertFrom-Json
-
-        foreach ($key in $json.PSObject.Properties) {
-          $envVarName = $key.Name
-          $envVarValue = $key.Value
-          echo "$envVarName=$envVarValue" >> $env:GITHUB_ENV
-          echo "Set $envVarName to $envVarValue"
-        }
-      shell: pwsh
-      env: 
-        PARAMETERS_FILE_NAME: $${{ inputs.parameters_file_name }}
+    - name: Run Bicep Deploy
+      uses: azure/powershell@v2
+      with:
+        azPSVersion: 'latest'
+        inlineScript: ./${destroy_script_path} -WhatIfEnabled $$${{ inputs.whatIfEnabled }}
