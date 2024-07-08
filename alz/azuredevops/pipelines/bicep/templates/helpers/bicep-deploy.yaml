@@ -7,7 +7,7 @@ parameters:
     default: true
   - name: scriptFiles
     type: object
-    default: 
+    default:
       - displayName: "Example Deployment"
         templateFilePath: "./infra-as-code/bicep/modules/example/example.bicep"
         templateParametersFilePath: "./config/custom-parameters/example.parameters.all.json"
@@ -15,7 +15,7 @@ parameters:
         subscriptionId: "00000000-0000-0000-0000-000000000000"
         resourceGroupName: "example-rg"
         location: "uksouth"
-        deploymentType: "subscription" # tenant | managementGroup | subscription | resourceGroup
+        deploymentType: "subscription"  # tenant | managementGroup | subscription | resourceGroup
         firstRunWhatIf: true
         runStep: true
 
@@ -44,7 +44,7 @@ steps:
 
         Write-Host "##vso[task.setvariable variable=FIRST_DEPLOYMENT;]$firstDeployment"
 
-  - $${{ each scriptFile in parameters.scriptFiles }} :
+  - $${{ each scriptFile in parameters.scriptFiles }} :  # yamllint disable-line
     - task: AzurePowerShell@5
       displayName: $${{ scriptFile.displayName }}
       condition: and(succeeded(), eq($${{ scriptFile.runStep }}, true))
@@ -55,7 +55,7 @@ steps:
         ScriptType: "InlineScript"
         Inline: |
           $whatIf = [System.Convert]::ToBoolean("$${{ parameters.whatIfEnabled }}")
-          
+
           $firstDeploymentString = $env:FIRST_DEPLOYMENT
           $firstDeployment = $true
           if($firstDeploymentString -eq "") {
@@ -128,11 +128,11 @@ steps:
             $resultId = "/subscriptions/$${{ scriptFile.subscriptionId }}/resourceGroups/$${{ scriptFile.resourceGroupName }}/providers/Microsoft.Resources/deployments/$deploymentName"
           } else {
             $resultId = $result.Id
-          }    
+          }
 
           $resultIdEscaped = $resultId.Replace("/", "%2F")
           $resultUrl = "https://portal.azure.com/#view/HubsExtension/DeploymentDetailsBlade/~/overview/id/$resultIdEscaped"
-          
+
           Write-Host "Deployment Name: $deploymentName"
           Write-Host "Deployment ID: $resultId"
           Write-Host "Deployment Url: $resultUrl"

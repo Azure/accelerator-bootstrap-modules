@@ -41,7 +41,7 @@ steps:
 
       $toolFileName = "bicep"
       $toolFilePath = Join-Path -Path $installDir -ChildPath $toolFileName
-     
+
       if(!(Test-Path $installDir)) {
         New-Item -ItemType Directory -Path $installDir | Out-String | Write-Verbose
       }
@@ -56,7 +56,7 @@ steps:
       }
 
       $env:PATH = "$($installDir):$env:PATH"
-      
+
       Write-Host "##vso[task.setvariable variable=PATH]$env:PATH"
 
       bicep --version
