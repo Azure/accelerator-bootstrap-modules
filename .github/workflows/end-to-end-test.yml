@@ -207,8 +207,13 @@ jobs:
           # Download the Starter Module
           $infrastructureAsCode = "${{ matrix.iac }}"
           Write-Host "Downloading the Starter Module"
-          $starterModuleUrl = $infrastructureAsCode -eq "bicep" ? "https://github.com/Azure/ALZ-Bicep" : "https://github.com/Azure/alz-terraform-accelerator"
-          ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Install-StarterModule.ps1 -ModuleBranch "${{ env.ALZ_BICEP_BRANCH }} -ModuleUrl $starterModuleUrl"
+          if($infrastructureAsCode -eq "bicep") {
+            ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Install-StarterModule.ps1 -ModuleBranch "${{ env.ALZ_BICEP_BRANCH }}" -ModuleUrl "https://github.com/Azure/ALZ-Bicep"
+          }
+
+          if($infrastructureAsCode -eq "bicep") {
+            ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Install-StarterModule.ps1 -ModuleBranch "${{ env.ALZ_TERRAFORM_BRANCH }}" -ModuleUrl "https://github.com/Azure/alz-terraform-accelerator"
+          }
           Write-Host "Downloaded Starter Module"
 
           # Run the Module in a retry loop
@@ -329,8 +334,13 @@ jobs:
           # Download the Starter Module
           $infrastructureAsCode = "${{ matrix.iac }}"
           Write-Host "Downloading the Starter Module"
-          $starterModuleUrl = $infrastructureAsCode -eq "bicep" ? "https://github.com/Azure/ALZ-Bicep" : "https://github.com/Azure/alz-terraform-accelerator"
-          ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Install-StarterModule.ps1 -ModuleBranch "${{ env.ALZ_BICEP_BRANCH }} -ModuleUrl $starterModuleUrl"
+          if($infrastructureAsCode -eq "bicep") {
+            ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Install-StarterModule.ps1 -ModuleBranch "${{ env.ALZ_BICEP_BRANCH }}" -ModuleUrl "https://github.com/Azure/ALZ-Bicep"
+          }
+
+          if($infrastructureAsCode -eq "bicep") {
+            ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Install-StarterModule.ps1 -ModuleBranch "${{ env.ALZ_TERRAFORM_BRANCH }}" -ModuleUrl "https://github.com/Azure/alz-terraform-accelerator"
+          }
           Write-Host "Downloaded Starter Module"
 
           # Run destroy

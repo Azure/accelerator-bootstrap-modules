@@ -1,7 +1,7 @@
 param (
     [string]$ModuleUrl = "",
     [string]$ModuleBranch = "main",
-    [string]$ModulePath = "accelerator-starter-module"
+    [string]$ModulePath = "./accelerator-starter-module"
 )
 
 if($null -eq $ModuleBranch -or $ModuleBranch -eq "") {
