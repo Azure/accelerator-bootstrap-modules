@@ -22,5 +22,5 @@ runs:
           echo "Set $envVarName to $envVarValue"
         }
       shell: pwsh
-      env: 
+      env:
         PARAMETERS_FILE_NAME: $${{ inputs.parameters_file_name }}

@@ -6,6 +6,7 @@ on:
       skip_what_if:
         default: false
         type: boolean
+# yamllint disable-line
 %{ for script_file in script_files ~}
       ${script_file.name}:
         type: boolean

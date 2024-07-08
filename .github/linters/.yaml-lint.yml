@@ -2,11 +2,11 @@
 extends: default
 
 ignore: |
-  *.ci_template.yaml
-  *.cd_template.yaml
-  *.bicep-templates.yaml
-  *.cd.yaml
-  *.ci.yaml
+  *ci_template.yaml
+  *cd_template.yaml
+  *bicep-templates.yaml
+  *cd.yaml
+  *ci.yaml
 
 rules:
   # 500 chars should be enough, but don't fail if a line is longer
