@@ -33,3 +33,24 @@ locals {
 locals {
   target_directory = var.target_directory == "" ? ("${path.module}/${var.default_target_directory}") : var.target_directory
 }
+
+locals {
+  custom_role_definitions_bicep_names     = { for key, value in var.custom_role_definitions_bicep : "custom_role_definition_bicep_${key}" => value.name }
+  custom_role_definitions_terraform_names = { for key, value in var.custom_role_definitions_terraform : "custom_role_definition_terraform_${key}" => value.name }
+
+  custom_role_definitions_bicep = {
+    for key, value in var.custom_role_definitions_bicep : key => {
+      name        = local.resource_names["custom_role_definition_bicep_${key}"]
+      description = value.description
+      permissions = value.permissions
+    }
+  }
+
+  custom_role_definitions_terraform = {
+    for key, value in var.custom_role_definitions_terraform : key => {
+      name        = local.resource_names["custom_role_definition_terraform_${key}"]
+      description = value.description
+      permissions = value.permissions
+    }
+  }
+}

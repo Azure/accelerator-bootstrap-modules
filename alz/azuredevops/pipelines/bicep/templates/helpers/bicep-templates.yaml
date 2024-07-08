@@ -5,7 +5,7 @@ parameters:
   - name: whatIfEnabled
     type: boolean
     default: true
-%{ for script_file in script_files ~}
+%{ for script_file in script_files ~}  # yamllint disable-line
   - name: ${script_file.name}
     type: boolean
     default: true
@@ -17,7 +17,7 @@ steps:
       serviceConnection: $${{ parameters.serviceConnection }}
       whatIfEnabled: $${{ parameters.whatIfEnabled }}
       scriptFiles:
-%{ for script_file in script_files ~}
+%{ for script_file in script_files ~}  # yamllint disable-line
         - displayName: "${script_file.displayName}"
           templateFilePath: "${script_file.templateFilePath}"
           templateParametersFilePath: "${script_file.templateParametersFilePath}"
