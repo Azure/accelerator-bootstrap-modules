@@ -44,7 +44,7 @@ steps:
 
         Write-Host "##vso[task.setvariable variable=FIRST_DEPLOYMENT;]$firstDeployment"
 
-  - $${{ each scriptFile in parameters.scriptFiles }}:  
+  - $${{ each scriptFile in parameters.scriptFiles }}:
       - task: AzurePowerShell@5
         displayName: $${{ scriptFile.displayName }}
         condition: and(succeeded(), eq($${{ scriptFile.runStep }}, true))

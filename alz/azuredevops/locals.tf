@@ -19,8 +19,8 @@ locals {
 locals {
   ci_file_name          = "ci.yaml"
   cd_file_name          = "cd.yaml"
-  ci_template_file_name = "ci_template.yaml"
-  cd_template_file_name = "cd_template.yaml"
+  ci_template_file_name = "ci-template.yaml"
+  cd_template_file_name = "cd-template.yaml"
 }
 
 locals {
