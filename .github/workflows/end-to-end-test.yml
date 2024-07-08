@@ -180,12 +180,9 @@ jobs:
           $Inputs["resource_group_location"] = "uksouth"
 
           if($infrastructureAsCode -eq "bicep") {
-            $Inputs["Prefix"] = "alz"
+            $Inputs["Prefix"] = $uniqueId
             $Inputs["Location"] = "uksouth"
             $Inputs["Environment"] = "live"
-            $Inputs["IdentitySubscriptionId"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
-            $Inputs["ConnectivitySubscriptionId"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
-            $Inputs["ManagementSubscriptionId"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
             $Inputs["SecurityContact"] = "test@test.com"
           }
 
@@ -273,14 +270,16 @@ jobs:
               -repositoryName $repositoryName `
               -workflowFileName "ci.yaml" `
               -skipDestroy `
-              -personalAccessToken "${{ secrets.VCS_TOKEN_GITHUB }}"
+              -personalAccessToken "${{ secrets.VCS_TOKEN_GITHUB }}" `
+              -iac $infrastructureAsCode
 
             Write-Host "Running GitHub Actions Test for CD"
             ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/github-action-run.ps1 `
               -organizationName $versionControlSystemOrganisationName `
               -repositoryName $repositoryName `
               -workflowFileName "cd.yaml" `
-              -personalAccessToken "${{ secrets.VCS_TOKEN_GITHUB }}"
+              -personalAccessToken "${{ secrets.VCS_TOKEN_GITHUB }}"`
+              -iac $infrastructureAsCode
           }
 
           if($versionControlSystem -eq "azuredevops") {
@@ -292,14 +291,16 @@ jobs:
               -projectName $projectName `
               -pipelineNamePart "Continuous Integration" `
               -skipDestroy `
-              -personalAccessToken "${{ secrets.VCS_TOKEN_AZURE_DEVOPS }}"
+              -personalAccessToken "${{ secrets.VCS_TOKEN_AZURE_DEVOPS }}"`
+              -iac $infrastructureAsCode
 
             Write-Host "Running Azure DevOps Pipelines Test for CD"
             ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/azuredevops-pipeline-run.ps1 `
               -organizationName $versionControlSystemOrganisationName `
               -projectName $projectName `
               -pipelineNamePart "Continuous Delivery" `
-              -personalAccessToken "${{ secrets.VCS_TOKEN_AZURE_DEVOPS }}"
+              -personalAccessToken "${{ secrets.VCS_TOKEN_AZURE_DEVOPS }}"`
+              -iac $infrastructureAsCode
           }
 
         shell: pwsh

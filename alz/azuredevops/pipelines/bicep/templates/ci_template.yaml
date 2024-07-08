@@ -54,39 +54,6 @@ stages:
             condition: eq(variables['CUSTOM_MODULES'], 'true')
             displayName: Bicep Build & Lint All Custom Modules
             
-      - job: lint
-        displayName: Lint Bicep
-        pool:
-          ${agent_pool_configuration}
-        steps:
-          - checkout: self
-            displayName: Checkout Repo
-
-          - task: DockerInstaller@0
-
-          - bash: |
-              docker version
-
-              if [$? -eq 0 ]; then
-                echo "Docker is installed and running"
-              else
-                echo "Docker is not running, you will need to use an alternative agent compute type that supports docker..."
-                exit 0
-              fi
-
-              docker pull github/super-linter:latest
-              docker run \
-                -e RUN_LOCAL=true \
-                -e VALIDATE_JSON=true \
-                -e VALIDATE_MARKDOWN=true \
-                -e VALIDATE_POWERSHELL=true \
-                -e VALIDATE_YAML=true \
-                -e VALIDATE_EDITORCONFIG=true \
-                -e "FILTER_REGEX_EXCLUDE=.*upstream-releases/*|.*generateddocs/.*.bicep.md" \
-                -v $(System.DefaultWorkingDirectory):/tmp/lint \
-                github/super-linter
-            displayName: Run github/super-linter
-
       - deployment: whatif
         displayName: What If Deploy with Bicep
         pool:

@@ -58,35 +58,6 @@ jobs:
             throw $output
           }
 
-  lint:
-    name: Lint Bicep
-    runs-on:
-      ${runner_name}
-    environment: ${environment_name_plan}
-    permissions:
-      id-token: write
-      contents: read
-
-    steps:
-      - name: Checkout Bicep Module
-        uses: actions/checkout@v4
-        
-      - name: Install Bicep and Update Az Module
-        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-installer@main
-
-      - name: Run github/super-linter
-        uses: github/super-linter@v4
-        env:
-          VALIDATE_ALL_CODEBASE: false
-          DEFAULT_BRANCH: main
-          GITHUB_TOKEN: $${{ secrets.GITHUB_TOKEN }}
-          VALIDATE_JSON: true
-          VALIDATE_MARKDOWN: true
-          VALIDATE_POWERSHELL: true
-          VALIDATE_YAML: true
-          VALIDATE_EDITORCONFIG: true
-          FILTER_REGEX_EXCLUDE: ".*upstream-releases/*|.*generateddocs/.*.bicep.md"   
-
   whatif:
     name: What If
     runs-on:
