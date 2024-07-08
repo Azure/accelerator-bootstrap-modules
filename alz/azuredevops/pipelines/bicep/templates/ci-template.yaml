@@ -53,7 +53,7 @@ stages:
             workingDirectory: config/custom-modules
             condition: eq(variables['CUSTOM_MODULES'], 'true')
             displayName: Bicep Build & Lint All Custom Modules
-            
+
       - deployment: whatif
         displayName: What If Deploy with Bicep
         pool:
