@@ -36,8 +36,8 @@ env:
   TERRAFORM_STARTER_MODULE_REPOSITORY: Azure/alz-terraform-accelerator
   POWERSHELL_MODULE_REPOSITORY: Azure/ALZ-PowerShell-Module
   ALZ_POWERSHELL_BRANCH: ${{ inputs.powershell_branch != '' && inputs.powershell_branch || 'main' }}
-  ALZ_BICEP_BRANCH: ${{ inputs.alz_bicep_branch != '' && inputs.powershell_branch || 'main' }}
-  ALZ_TERRAFORM_BRANCH: ${{ inputs.alz_terraform_branch != '' && inputs.powershell_branch || 'main' }}
+  ALZ_BICEP_BRANCH: ${{ inputs.alz_bicep_branch != '' && inputs.alz_bicep_branch || 'main' }}
+  ALZ_TERRAFORM_BRANCH: ${{ inputs.alz_terraform_branch != '' && inputs.alz_terraform_branch || 'main' }}
 jobs:
   e2e-test:
     name: "IAC: ${{ matrix.iac }}, OS: ${{ matrix.os }}, VCS: ${{ matrix.vcs }}, TF: ${{ matrix.tf }}, AG: ${{ matrix.ag }}"
