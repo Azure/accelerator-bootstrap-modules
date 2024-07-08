@@ -28,10 +28,16 @@ permissions:
   contents: read
 
 env:
-  SOURCE_CODE_FOLDER: source-code
-  ALZ_POWERSHELL_BRANCH: ${{ github.event.inputs.powershell_branch }}
-  ALZ_BICEP_BRANCH: ${{ github.event.inputs.alz_bicep_branch }}
-  ALZ_TERRAFORM_BRANCH: ${{ github.event.inputs.alz_terraform_branch }}
+  BOOTSTRAP_MODULE_FOLDER: ./accelerator-bootstrap-module
+  STARTER_MODULE_FOLDER: ./accelerator-starter-module
+  POWERSHELL_MODULE_FOLDER: ./accelerator-powershell-module
+  TARGET_FOLDER: ./target
+  BICEP_STARTER_MODULE_REPOSITORY: Azure/ALZ-Bicep
+  TERRAFORM_STARTER_MODULE_REPOSITORY: Azure/alz-terraform-accelerator
+  POWERSHELL_MODULE_REPOSITORY: Azure/ALZ-PowerShell-Module
+  ALZ_POWERSHELL_BRANCH: ${{ inputs.powershell_branch != '' && inputs.powershell_branch || 'main' }}
+  ALZ_BICEP_BRANCH: ${{ inputs.alz_bicep_branch != '' && inputs.powershell_branch || 'main' }}
+  ALZ_TERRAFORM_BRANCH: ${{ inputs.alz_terraform_branch != '' && inputs.powershell_branch || 'main' }}
 jobs:
   e2e-test:
     name: "IAC: ${{ matrix.iac }}, OS: ${{ matrix.os }}, VCS: ${{ matrix.vcs }}, TF: ${{ matrix.tf }}, AG: ${{ matrix.ag }}"
@@ -70,10 +76,33 @@ jobs:
       - name: Show env
         run: env | sort
 
-      - name: Checkout repository
+      - name: Checkout Bootstrap Modules
         uses: actions/checkout@v4
         with:
-          path: ${{ env.SOURCE_CODE_FOLDER }}
+          path: ${{ env.BOOTSTRAP_MODULE_FOLDER }}
+
+      - name: Checkout PowerShell Module
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.POWERSHELL_MODULE_REPOSITORY }}
+          ref: ${{ env.ALZ_POWERSHELL_BRANCH }}
+          path: ${{ env.POWERSHELL_MODULE_FOLDER }}
+        
+      - name: Checkout Starter Modules for Bicep
+        uses: actions/checkout@v4
+        if: ${{ matrix.iac == 'bicep' }}
+        with:
+          repository: ${{ env.BICEP_STARTER_MODULE_REPOSITORY }}
+          ref: ${{ env.ALZ_BICEP_BRANCH }}
+          path: ${{ env.STARTER_MODULE_FOLDER }} 
+      
+      - name: Checkout Starter Modules for Terraform
+        uses: actions/checkout@v4
+        if: ${{ matrix.iac == 'terraform' }}
+        with:
+          repository: ${{ env.TERRAFORM_STARTER_MODULE_REPOSITORY }}
+          ref: ${{ env.ALZ_TERRAFORM_BRANCH }}
+          path: ${{ env.STARTER_MODULE_FOLDER }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -201,20 +230,9 @@ jobs:
 
           # Install the Module
           Write-Host "Installing the Accelerator PowerShell Module"
-          ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Install-AcceleratorModule.ps1 -ModuleBranch "${{ env.ALZ_POWERSHELL_BRANCH }}"
+          ${{ env.POWERSHELL_MODULE_FOLDER }}/actions_bootstrap_for_e2e_tests.ps1 | Out-String | Write-Verbose
+          Invoke-Build -File ${{ env.POWERSHELL_MODULE_FOLDER }}/src/ALZ.build.ps1 BuildAndInstallOnly | Out-String | Write-Verbose
           Write-Host "Installed Accelerator Module"
-
-          # Download the Starter Module
-          $infrastructureAsCode = "${{ matrix.iac }}"
-          Write-Host "Downloading the Starter Module"
-          if($infrastructureAsCode -eq "bicep") {
-            ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Install-StarterModule.ps1 -ModuleBranch "${{ env.ALZ_BICEP_BRANCH }}" -ModuleUrl "https://github.com/Azure/ALZ-Bicep"
-          }
-
-          if($infrastructureAsCode -eq "bicep") {
-            ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Install-StarterModule.ps1 -ModuleBranch "${{ env.ALZ_TERRAFORM_BRANCH }}" -ModuleUrl "https://github.com/Azure/alz-terraform-accelerator"
-          }
-          Write-Host "Downloaded Starter Module"
 
           # Run the Module in a retry loop
           $retryCount = 0
@@ -226,7 +244,7 @@ jobs:
             $retryCount++
             try {
               Write-Host "Running the ALZ Module"
-              Deploy-Accelerator -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "./${{ env.SOURCE_CODE_FOLDER }}" -starterModuleOverrideFolderPath "./${{ env.SOURCE_CODE_FOLDER }}/accelerator-starter-module" -autoApprove -ErrorAction Stop -Verbose
+              Deploy-Accelerator -output "${{ env.TARGET_FOLDER }}" -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "${{ env.BOOTSTRAP_MODULE_FOLDER }}" -starterModuleOverrideFolderPath "${{ env.STARTER_MODULE_FOLDER }}" -autoApprove -ErrorAction Stop -Verbose
               if ($LastExitCode -eq 0) {
                 $success = $true
               } else {
@@ -234,7 +252,7 @@ jobs:
               }
             } catch {
               Write-Host "Failed to apply the bootstrap environment. Destroy and retry..."
-              ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/destroy.ps1 -versionControlSystem $versionControlSystem
+              ${{ env.BOOTSTRAP_MODULE_FOLDER }}/.github/tests/scripts/destroy.ps1 -versionControlSystem $versionControlSystem
             }
           } while ($success -eq $false -and $retryCount -lt $maximumRetries)
 
@@ -270,7 +288,7 @@ jobs:
             $repositoryName = "alz-$uniqueId"
 
             Write-Host "Running GitHub Actions Test for CI"
-            ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/github-action-run.ps1 `
+            ${{ env.BOOTSTRAP_MODULE_FOLDER }}/.github/tests/scripts/github-action-run.ps1 `
               -organizationName $versionControlSystemOrganisationName `
               -repositoryName $repositoryName `
               -workflowFileName "ci.yaml" `
@@ -279,7 +297,7 @@ jobs:
               -iac $infrastructureAsCode
 
             Write-Host "Running GitHub Actions Test for CD"
-            ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/github-action-run.ps1 `
+            ${{ env.BOOTSTRAP_MODULE_FOLDER }}/.github/tests/scripts/github-action-run.ps1 `
               -organizationName $versionControlSystemOrganisationName `
               -repositoryName $repositoryName `
               -workflowFileName "cd.yaml" `
@@ -291,7 +309,7 @@ jobs:
             $projectName = "alz-test-$uniqueId"
 
             Write-Host "Running Azure DevOps Pipelines Test for CI"
-            ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/azuredevops-pipeline-run.ps1 `
+            ${{ env.BOOTSTRAP_MODULE_FOLDER }}/.github/tests/scripts/azuredevops-pipeline-run.ps1 `
               -organizationName $versionControlSystemOrganisationName `
               -projectName $projectName `
               -pipelineNamePart "Continuous Integration" `
@@ -300,7 +318,7 @@ jobs:
               -iac $infrastructureAsCode
 
             Write-Host "Running Azure DevOps Pipelines Test for CD"
-            ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/azuredevops-pipeline-run.ps1 `
+            ${{ env.BOOTSTRAP_MODULE_FOLDER }}/.github/tests/scripts/azuredevops-pipeline-run.ps1 `
               -organizationName $versionControlSystemOrganisationName `
               -projectName $projectName `
               -pipelineNamePart "Continuous Delivery" `
@@ -328,23 +346,12 @@ jobs:
           $versionControlSystem = "${{ matrix.vcs }}"
 
           Write-Host "Installing the Accelerator PowerShell Module"
-          ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Install-AcceleratorModule.ps1 -ModuleBranch "${{ env.ALZ_POWERSHELL_BRANCH }}"
+          ${{ env.POWERSHELL_MODULE_FOLDER }}/actions_bootstrap_for_e2e_tests.ps1 | Out-String | Write-Verbose
+          Invoke-Build -File ${{ env.POWERSHELL_MODULE_FOLDER }}/src/ALZ.build.ps1 BuildAndInstallOnly | Out-String | Write-Verbose
           Write-Host "Installed Accelerator Module"
 
-          # Download the Starter Module
-          $infrastructureAsCode = "${{ matrix.iac }}"
-          Write-Host "Downloading the Starter Module"
-          if($infrastructureAsCode -eq "bicep") {
-            ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Install-StarterModule.ps1 -ModuleBranch "${{ env.ALZ_BICEP_BRANCH }}" -ModuleUrl "https://github.com/Azure/ALZ-Bicep"
-          }
-
-          if($infrastructureAsCode -eq "bicep") {
-            ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/Install-StarterModule.ps1 -ModuleBranch "${{ env.ALZ_TERRAFORM_BRANCH }}" -ModuleUrl "https://github.com/Azure/alz-terraform-accelerator"
-          }
-          Write-Host "Downloaded Starter Module"
-
           # Run destroy
-          ./${{ env.SOURCE_CODE_FOLDER }}/.github/tests/scripts/destroy.ps1 -versionControlSystem $versionControlSystem
+          ${{ env.BOOTSTRAP_MODULE_FOLDER }}/.github/tests/scripts/destroy.ps1 -versionControlSystem $versionControlSystem
 
         shell: pwsh
         env:

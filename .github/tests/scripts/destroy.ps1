@@ -5,7 +5,7 @@ param (
     [string]$versionControlSystem
 )
 
-$bootstrapDirectoryPath = "./bootstrap/local/alz/$versionControlSystem"
+$bootstrapDirectoryPath = "$($env:TARGET_FOLDER)/bootstrap/local/alz/$versionControlSystem"
 Write-Host "Bootstrap Directory Path: $bootstrapDirectoryPath"
 
 if(Test-Path -Path "$bootstrapDirectoryPath/override.tfvars") {
@@ -24,7 +24,7 @@ do {
         Write-Host "Runner IP Address: $myIp"
 
         Write-Host "Running Terraform Destroy"
-        Deploy-Accelerator -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "./$($env:SOURCE_CODE_FOLDER)" -starterModuleOverrideFolderPath "./$($env:SOURCE_CODE_FOLDER)/accelerator-starter-module" -autoApprove -destroy -ErrorAction Stop
+        Deploy-Accelerator -output "$($env:TARGET_FOLDER)" -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "$($env:BOOTSTRAP_MODULE_FOLDER)" -starterModuleOverrideFolderPath "$($env:STARTER_MODULE_FOLDER)" -autoApprove -destroy -ErrorAction Stop
         if ($LastExitCode -eq 0) {
             $success = $true
         } else {
