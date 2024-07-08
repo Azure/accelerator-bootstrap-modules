@@ -6,7 +6,7 @@ on:
       skip_what_if:
         default: false
         type: boolean
-%{ for script_file in script_files ~}  # yamllint disable-line
+%{ for script_file in script_files ~}
       ${script_file.name}:
         type: boolean
         default: true
@@ -56,7 +56,7 @@ jobs:
         with:
           managementGroupId: $${{ env.MANAGEMENT_GROUP_ID }}
 
-%{ for script_file in script_files ~}  # yamllint disable-line
+%{ for script_file in script_files ~}
       - name: 'What If: ${script_file.displayName}'
         uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-deploy@main
         if: $${{ inputs.${script_file.name} && !inputs.destroy }}
@@ -113,7 +113,7 @@ jobs:
           subscription-id: $${{ vars.AZURE_SUBSCRIPTION_ID }}
           enable-AzPSSession: true
 
-%{ for script_file in script_files ~}  # yamllint disable-line
+%{ for script_file in script_files ~}
       - name: 'Deploy: ${script_file.displayName}'
         uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-deploy@main
         if: $${{ inputs.${script_file.name} && !inputs.destroy }}

@@ -6,7 +6,7 @@ parameters:
   - name: destroy
     type: boolean
     default: false
-%{ for script_file in script_files ~}  # yamllint disable-line
+%{ for script_file in script_files ~}
   - name: ${script_file.name}
     type: boolean
     default: true
@@ -47,7 +47,7 @@ stages:
                   - template: helpers/bicep-templates.yaml
                     parameters:
                       serviceConnection: '${service_connection_name_plan}'
-%{ for script_file in script_files ~}  # yamllint disable-line
+%{ for script_file in script_files ~}
                       ${script_file.name}: $${{ parameters.${script_file.name} }}
 %{ endfor ~}
                 - $${{ if eq(parameters.destroy, true) }}:
@@ -91,7 +91,7 @@ stages:
                     parameters:
                       serviceConnection: '${service_connection_name_apply}'
                       whatIfEnabled: false
-%{ for script_file in script_files ~}  # yamllint disable-line
+%{ for script_file in script_files ~}
                       ${script_file.name}: $${{ parameters.${script_file.name} }}
 %{ endfor ~}
                 - $${{ if eq(parameters.destroy, true) }}:
