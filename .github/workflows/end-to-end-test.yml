@@ -281,11 +281,6 @@ jobs:
         run: |
           $infrastructureAsCode = "${{ matrix.iac }}"
 
-          if($infrastructureAsCode -eq "bicep") {
-            Write-Host "Skipping Pipelines or Actions for Bicep"
-            exit 0
-          }
-
           # Get Inputs
           $versionControlSystem = "${{ matrix.vcs }}"
           $versionControlSystemOrganisationName = "${{ vars.VCS_ORGANIZATION }}"
