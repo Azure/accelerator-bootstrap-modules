@@ -64,12 +64,13 @@ runs:
           $deploymentType = $env:DEPLOYMENT_TYPE
           $deploymentTimeStamp = Get-Date -Format 'yyyyMMddTHHMMssffffZ'
           $deploymentName = $env:DISPLAY_NAME.Replace(" ", "-")
+          $deploymentPrefix = $env:MANAGEMENT_GROUP_ID
 
-          if($deploymentName.Length -gt 43) {
-            $deploymentName = $deploymentName.Substring(0, 42)
+          if($deploymentName.Length -gt 42) {
+            $deploymentName = $deploymentName.Substring(0, (41 - $deploymentPrefix.Length))
           }
 
-          $deploymentName = "$deploymentName-$deploymentTimeStamp"
+          $deploymentName = "$deploymentPrefix-$deploymentName-$deploymentTimeStamp"
 
           $inputObject = @{
             DeploymentName        = $deploymentName
