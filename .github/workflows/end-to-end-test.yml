@@ -120,6 +120,23 @@ jobs:
           $operatingSystem = "${{ matrix.os }}"
           $terraformVersion = "${{ matrix.tf }}"
           $selfHostedAgents = "${{ matrix.ag }}"
+          
+          $locations = @(
+            "uksouth",
+            "northeurope",
+            "eastus",
+            "eastus2",
+            "canadacentral",
+            "westeurope",
+            "swedencentral",
+            "westus",
+            "westus2",
+            "westus3",
+            "australiaeast"
+          )
+          $jobIndex = ${{ strategy.job-index }}
+          $locationIndex = $jobIndex % $locations.Length
+          $location = $locations[$locationIndex]
 
           $enableSelfHostedAgents = "false"
           if($selfHostedAgents -eq "public" -or $selfHostedAgents -eq "private") {
@@ -155,6 +172,7 @@ jobs:
           Write-Host "Self Hosted Agents: $selfHostedAgents ($selfhostedAgentsShort)"
           Write-Host "Local Deploy Azure Resources: $localDeployAzureResources"
           Write-Host "Run Number: $runNumber"
+          Write-Host "Location: $location"
 
           $uniqueId = "$infrastructureAsCodeShort$operatingSystemShort$versionControlSystemShort$authSchemeShort$terraformVersionShort$selfhostedAgentsShort$runNumber".ToLower()
           echo "UNIQUE_ID=$uniqueId" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
@@ -165,7 +183,7 @@ jobs:
           $Inputs["iac"] = $infrastructureAsCode
           $Inputs["bootstrap"] = "alz_$versionControlSystem"
           $Inputs["starter"] = "test"
-          $Inputs["bootstrap_location"] = "uksouth"
+          $Inputs["bootstrap_location"] = $location
           $Inputs["bootstrap_subscription_id"] = ""
           $Inputs["service_name"] = "alz"
           $Inputs["environment_name"] = $uniqueId
@@ -207,11 +225,11 @@ jobs:
           $Inputs["subscription_id_management"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
           $Inputs["parent_management_group_display_name"] = "Tenant Root Group"
           $Inputs["child_management_group_display_name"] = "E2E Test"
-          $Inputs["resource_group_location"] = "uksouth"
+          $Inputs["resource_group_location"] = $location
 
           if($infrastructureAsCode -eq "bicep") {
             $Inputs["Prefix"] = $uniqueId
-            $Inputs["Location"] = "uksouth"
+            $Inputs["Location"] = $location
             $Inputs["Environment"] = "live"
             $Inputs["SecurityContact"] = "test@test.com"
             $Inputs["networkType"] = "none"
