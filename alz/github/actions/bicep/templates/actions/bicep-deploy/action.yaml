@@ -15,7 +15,7 @@ inputs:
     description: 'The path to the parameters file'
     required: true
   managementGroupId:
-    description: 'The management group id'
+    description: 'The root parent management group id'
     required: true
   subscriptionId:
     description: 'The subscription id'
@@ -63,7 +63,7 @@ runs:
 
           $deploymentType = $env:DEPLOYMENT_TYPE
 
-          $deploymentPrefix = $env:MANAGEMENT_GROUP_ID
+          $deploymentPrefix = $env:PREFIX
           $deploymentName = $env:DISPLAY_NAME.Replace(" ", "-")
           $deploymentTimeStamp = Get-Date -Format 'yyyyMMddHHmmss'
           
@@ -106,7 +106,7 @@ runs:
 
             if ($deploymentType -eq "managementGroup") {
               $inputObject.Location = $env:LOCATION
-              $inputObject.ManagementGroupId = $env:MANAGEMENT_GROUP_ID
+              $inputObject.ManagementGroupId = $env:ROOT_PARENT_MANAGEMENT_GROUP_ID
               if ($inputObject.ManagementGroupId -eq "") {
                 $inputObject.ManagementGroupId = (Get-AzContext).Tenant.TenantId
               }
@@ -163,7 +163,7 @@ runs:
         DISPLAY_NAME: $${{ inputs.displayName }}
         TEMPLATE_FILE_PATH: $${{ inputs.templateFilePath }}
         TEMPLATE_PARAMETERS_FILE_PATH: $${{ inputs.templateParametersFilePath }}
-        MANAGEMENT_GROUP_ID: $${{ inputs.managementGroupId }}
+        ROOT_PARENT_MANAGEMENT_GROUP_ID: $${{ inputs.managementGroupId }}
         SUBSCRIPTION_ID: $${{ inputs.subscriptionId }}
         RESOURCE_GROUP_NAME: $${{ inputs.resourceGroupName }}
         LOCATION: $${{ inputs.location }}
