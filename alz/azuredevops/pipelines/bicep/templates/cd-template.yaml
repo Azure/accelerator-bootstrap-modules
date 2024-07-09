@@ -51,6 +51,10 @@ stages:
                       ${script_file.name}: $${{ parameters.${script_file.name} }}
 %{ endfor ~}
                 - $${{ if eq(parameters.destroy, true) }}:
+                  - template: helpers/bicep-installer.yaml
+                    parameters:
+                      serviceConnection: '${service_connection_name_plan}'
+
                   - template: helpers/bicep-destroy.yaml
                     parameters:
                       serviceConnection: '${service_connection_name_plan}'
@@ -95,6 +99,10 @@ stages:
                       ${script_file.name}: $${{ parameters.${script_file.name} }}
 %{ endfor ~}
                 - $${{ if eq(parameters.destroy, true) }}:
+                  - template: helpers/bicep-installer.yaml
+                    parameters:
+                      serviceConnection: '${service_connection_name_apply}'
+
                   - template: helpers/bicep-destroy.yaml
                     parameters:
                       serviceConnection: '${service_connection_name_apply}'
