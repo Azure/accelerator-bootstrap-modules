@@ -170,6 +170,7 @@ jobs:
           $Inputs["service_name"] = "alz"
           $Inputs["environment_name"] = $uniqueId
           $Inputs["postfix_number"] = "1"
+          $Inputs["create_branch_policies"] = "true"
 
           $Inputs["use_private_networking"] = $enablePrivateNetworking
           $Inputs["allow_storage_access_from_my_ip"] = "true"
@@ -227,6 +228,7 @@ jobs:
 
           # Get Inputs
           $versionControlSystem = "${{ matrix.vcs }}"
+          $infrastructureAsCode = "${{ matrix.iac }}"
 
           # Install the Module
           Write-Host "Installing the Accelerator PowerShell Module"
@@ -244,7 +246,11 @@ jobs:
             $retryCount++
             try {
               Write-Host "Running the ALZ Module"
-              Deploy-Accelerator -output "${{ env.TARGET_FOLDER }}" -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "${{ env.BOOTSTRAP_MODULE_FOLDER }}" -starterModuleOverrideFolderPath "${{ env.STARTER_MODULE_FOLDER }}" -autoApprove -ErrorAction Stop -Verbose
+              $starterModuleOverrideFolderPath = "${{ env.STARTER_MODULE_FOLDER }}"
+              if($infrastructureAsCode -eq "terraform") { 
+                $starterModuleOverrideFolderPath = "$starterModuleOverrideFolderPath/templates"
+              }
+              Deploy-Accelerator -output "${{ env.TARGET_FOLDER }}" -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "${{ env.BOOTSTRAP_MODULE_FOLDER }}" -starterModuleOverrideFolderPath $starterModuleOverrideFolderPath -autoApprove -ErrorAction Stop -Verbose
               if ($LastExitCode -eq 0) {
                 $success = $true
               } else {
