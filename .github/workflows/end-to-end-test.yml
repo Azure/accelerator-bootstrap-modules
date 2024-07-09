@@ -32,6 +32,7 @@ env:
   STARTER_MODULE_FOLDER: ./stm
   POWERSHELL_MODULE_FOLDER: ./psm
   TARGET_FOLDER: ./out
+  LOCAL_TARGET_FOLDER: ./loc
   BICEP_STARTER_MODULE_REPOSITORY: Azure/ALZ-Bicep
   TERRAFORM_STARTER_MODULE_REPOSITORY: Azure/alz-terraform-accelerator
   POWERSHELL_MODULE_REPOSITORY: Azure/ALZ-PowerShell-Module
@@ -239,7 +240,7 @@ jobs:
           }
 
           if($versionControlSystem -eq "local") {
-            $Inputs["target_directory"] = ""
+            $Inputs["target_directory"] = "${{ github.workspace }}/${{ env.LOCAL_TARGET_FOLDER }}"
             $Inputs["create_bootstrap_resources_in_azure"] = $localDeployAzureResources
           }
 
@@ -324,9 +325,20 @@ jobs:
 
           if ($success -eq $false) {
             Write-Host "File Structure after Bootstrap..."
-            $files = Get-ChildItem -Recurse -Force
+            $files = Get-ChildItem -File -Recurse -Force
             $files | ForEach-Object { Write-Host  (Resolve-Path $_ -Relative)}
             throw "Failed to apply the bootstrap environment after $maximumRetries attempts."
+          } else {
+            Write-Host "Output Folder Structure after Bootstrap..."
+            $files = Get-ChildItem -Path "${{ env.TARGET_FOLDER }}" -File -Recurse -Force
+            $files | ForEach-Object { Write-Host  (Resolve-Path $_ -Relative)}
+
+            if($versionControlSystem -eq "local") {
+              Write-Host ""
+              Write-Host "Local Output Folder Structure after Bootstrap..."
+              $files = Get-ChildItem -Path "${{ env.LOCAL_TARGET_FOLDER }}" -File -Recurse -Force
+              $files | ForEach-Object { Write-Host  (Resolve-Path $_ -Relative)}
+            }
           }
 
         shell: pwsh
