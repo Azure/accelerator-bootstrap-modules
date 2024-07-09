@@ -73,7 +73,7 @@ steps:
 
             $deploymentType = "$${{ scriptFile.deploymentType }}"
 
-            $deploymentPrefix = $env:MANAGEMENT_GROUP_ID
+            $deploymentPrefix = "$${{ scriptFile.managementGroupId }}"
             $deploymentName = "$${{ scriptFile.displayName }}".Replace(" ", "-")
             $deploymentTimeStamp = Get-Date -Format 'yyyyMMddHHMMss'
             
