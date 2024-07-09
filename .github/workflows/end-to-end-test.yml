@@ -46,11 +46,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        vcs: ['github', 'azuredevops', 'local']  # Version Control System
         iac: ['terraform', 'bicep']
+        ag: ['public', 'private', 'none']  # Self Hosted Agents
         os: ['ubuntu', 'windows', 'macos']  # Operating System
         tf: ['latest', '1.5.0']  # Terraform Version
-        vcs: ['github', 'azuredevops', 'local']  # Version Control System
-        ag: ['public', 'private', 'none']  # Self Hosted Agents
         exclude:
           - iac: bicep
             tf: 1.5.0
