@@ -28,10 +28,10 @@ permissions:
   contents: read
 
 env:
-  BOOTSTRAP_MODULE_FOLDER: ./accelerator-bootstrap-module
-  STARTER_MODULE_FOLDER: ./accelerator-starter-module
-  POWERSHELL_MODULE_FOLDER: ./accelerator-powershell-module
-  TARGET_FOLDER: ./target
+  BOOTSTRAP_MODULE_FOLDER: ./bsm
+  STARTER_MODULE_FOLDER: ./stm
+  POWERSHELL_MODULE_FOLDER: ./psm
+  TARGET_FOLDER: ./out
   BICEP_STARTER_MODULE_REPOSITORY: Azure/ALZ-Bicep
   TERRAFORM_STARTER_MODULE_REPOSITORY: Azure/alz-terraform-accelerator
   POWERSHELL_MODULE_REPOSITORY: Azure/ALZ-PowerShell-Module
