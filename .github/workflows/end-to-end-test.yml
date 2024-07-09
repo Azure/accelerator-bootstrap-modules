@@ -87,7 +87,7 @@ jobs:
             vcs: legacy-azuredevops
           - tf: 1.5.0
             vcs: legacy-azuredevops
-          
+
     runs-on: ${{ matrix.os }}-latest
     steps:
       - name: Show env
@@ -104,15 +104,15 @@ jobs:
           repository: ${{ env.POWERSHELL_MODULE_REPOSITORY }}
           ref: ${{ env.ALZ_POWERSHELL_BRANCH }}
           path: ${{ env.POWERSHELL_MODULE_FOLDER }}
-        
+
       - name: Checkout Starter Modules for Bicep
         uses: actions/checkout@v4
         if: ${{ matrix.iac == 'bicep' }}
         with:
           repository: ${{ env.BICEP_STARTER_MODULE_REPOSITORY }}
           ref: ${{ env.ALZ_BICEP_BRANCH }}
-          path: ${{ env.STARTER_MODULE_FOLDER }} 
-      
+          path: ${{ env.STARTER_MODULE_FOLDER }}
+
       - name: Checkout Starter Modules for Terraform
         uses: actions/checkout@v4
         if: ${{ matrix.iac == 'terraform' }}
@@ -137,7 +137,7 @@ jobs:
           $operatingSystem = "${{ matrix.os }}"
           $terraformVersion = "${{ matrix.tf }}"
           $selfHostedAgents = "${{ matrix.ag }}"
-          
+
           $locations = @(
             "uksouth",
             "northeurope",
@@ -304,7 +304,7 @@ jobs:
             try {
               Write-Host "Running the ALZ Module"
               $starterModuleOverrideFolderPath = "${{ env.STARTER_MODULE_FOLDER }}"
-              if($infrastructureAsCode -eq "terraform") { 
+              if($infrastructureAsCode -eq "terraform") {
                 $starterModuleOverrideFolderPath = "$starterModuleOverrideFolderPath/templates"
               }
               if($versionControlSystem.StartsWith("legacy-")) {

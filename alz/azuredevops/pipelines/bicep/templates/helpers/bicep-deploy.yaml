@@ -76,7 +76,7 @@ steps:
             $deploymentPrefix = $env:PREFIX
             $deploymentName = "$${{ scriptFile.displayName }}".Replace(" ", "-")
             $deploymentTimeStamp = Get-Date -Format 'yyyyMMddHHmmss'
-            
+
             $prefixPostFixAndHythenLength = $deploymentPrefix.Length + $deploymentTimeStamp.Length + 2
             $deploymentNameMaxLength = 64 - $prefixPostFixAndHythenLength
 
