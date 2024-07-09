@@ -7,6 +7,9 @@ locals {
   root_parent_management_group_id = var.root_parent_management_group_id == "" ? data.azurerm_client_config.current.tenant_id : var.root_parent_management_group_id
 }
 
+locals {
+  iac_terraform = "terraform"
+}
 
 locals {
   plan_key  = "plan"

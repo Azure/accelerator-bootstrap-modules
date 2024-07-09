@@ -22,6 +22,7 @@ module "azure" {
   federated_credentials            = local.federated_credentials
   resource_group_identity_name     = local.resource_names.resource_group_identity
   resource_group_state_name        = local.resource_names.resource_group_state
+  create_storage_account           = var.iac_type == local.iac_terraform
   storage_account_name             = local.resource_names.storage_account
   storage_container_name           = local.resource_names.storage_container
   azure_location                   = var.bootstrap_location
