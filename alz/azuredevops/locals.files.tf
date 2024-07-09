@@ -25,7 +25,6 @@ locals {
     resourceGroupNameVariable  = try("$(${script_file.resourceGroupName})", "")
     deploymentType             = script_file.deploymentType
     firstRunWhatIf             = script_file.firstRunWhatIf
-    groupNameDisplayName       = script_file.groupName
     group                      = script_file.group
   } if try(script_file.networkType, "") == "" || try(script_file.networkType, "") == local.networking_type } : {}
 
