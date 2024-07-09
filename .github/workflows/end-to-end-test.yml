@@ -214,6 +214,7 @@ jobs:
             $Inputs["Location"] = "uksouth"
             $Inputs["Environment"] = "live"
             $Inputs["SecurityContact"] = "test@test.com"
+            $Inputs["networkType"] = "none"
           }
 
           $json = $Inputs | ConvertTo-Json -Depth 100 | Out-File -FilePath inputs.json -Encoding utf8 -Force
