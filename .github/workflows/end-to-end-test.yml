@@ -122,7 +122,7 @@ jobs:
           path: ${{ env.STARTER_MODULE_FOLDER }}
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: ${{ matrix.tf }}
           terraform_wrapper: false
@@ -407,7 +407,7 @@ jobs:
         shell: pwsh
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "latest"
           terraform_wrapper: false
