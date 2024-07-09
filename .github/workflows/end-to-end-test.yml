@@ -46,7 +46,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        vcs: ['github', 'azuredevops', 'local']  # Version Control System
+        vcs: ['github', 'azuredevops', 'local', 'biceplegacy']  # Version Control System
         iac: ['terraform', 'bicep']
         ag: ['public', 'private', 'none']  # Self Hosted Agents
         os: ['ubuntu', 'windows', 'macos']  # Operating System
@@ -57,6 +57,10 @@ jobs:
           - vcs: local
             ag: public
           - vcs: local
+            ag: private
+          - vcs: biceplegacy
+            ag: public
+          - vcs: biceplegacy
             ag: private
           - vcs: azuredevops
             tf: 1.5.0
@@ -70,7 +74,11 @@ jobs:
             vcs: github
           - os: macos
             vcs: github
-
+          - iac: terraform
+            vcs: biceplegacy
+          - tf: 1.5.0
+            vcs: biceplegacy
+          
     runs-on: ${{ matrix.os }}-latest
     steps:
       - name: Show env
@@ -268,7 +276,11 @@ jobs:
               if($infrastructureAsCode -eq "terraform") { 
                 $starterModuleOverrideFolderPath = "$starterModuleOverrideFolderPath/templates"
               }
-              Deploy-Accelerator -output "${{ env.TARGET_FOLDER }}" -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "${{ env.BOOTSTRAP_MODULE_FOLDER }}" -starterModuleOverrideFolderPath $starterModuleOverrideFolderPath -autoApprove -ErrorAction Stop -Verbose
+              if($versionControlSystem -eq "biceplegacy") {
+                Deploy-Accelerator -output "${{ env.TARGET_FOLDER }}" -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "${{ env.BOOTSTRAP_MODULE_FOLDER }}" -starterModuleOverrideFolderPath $starterModuleOverrideFolderPath -autoApprove -bicepLegacyMode $true -ErrorAction Stop -Verbose
+              } else {
+                Deploy-Accelerator -output "${{ env.TARGET_FOLDER }}" -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "${{ env.BOOTSTRAP_MODULE_FOLDER }}" -starterModuleOverrideFolderPath $starterModuleOverrideFolderPath -autoApprove -ErrorAction Stop -Verbose
+              }
               if ($LastExitCode -eq 0) {
                 $success = $true
               } else {
@@ -300,6 +312,12 @@ jobs:
 
           # Get Inputs
           $versionControlSystem = "${{ matrix.vcs }}"
+
+          if($versionControlSystem -eq "biceplegacy") {
+            Write-Host "Running in Bicep Legacy mode, so not pipelines to run..."
+            exit 0
+          }
+
           $versionControlSystemOrganisationName = "${{ vars.VCS_ORGANIZATION }}"
           $uniqueId = $ENV:UNIQUE_ID
 
