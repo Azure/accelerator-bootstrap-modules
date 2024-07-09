@@ -40,14 +40,14 @@ env:
   ALZ_TERRAFORM_BRANCH: ${{ inputs.alz_terraform_branch != '' && inputs.alz_terraform_branch || 'main' }}
 jobs:
   e2e-test:
-    name: "IAC: ${{ matrix.iac }}, OS: ${{ matrix.os }}, VCS: ${{ matrix.vcs }}, TF: ${{ matrix.tf }}, AG: ${{ matrix.ag }}"
+    name: "${{ matrix.vcs }}-${{ matrix.iac }}-${{ matrix.ag }}-${{ matrix.os }}-${{ matrix.tf }}"
     environment: ${{ github.event_name == 'schedule' && 'CSUTFAUTO' || 'CSUTF' }}
     if: "${{ github.repository == 'Azure/accelerator-bootstrap-modules' && (contains(github.event.pull_request.labels.*.name, 'PR: Safe to test 🧪') || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') }}"
     strategy:
       fail-fast: false
       matrix:
         iac: ['terraform', 'bicep']
-        os: ['ubuntu-latest', 'windows-latest', 'macos-latest']  # Operating System
+        os: ['ubuntu', 'windows', 'macos']  # Operating System
         tf: ['latest', '1.5.0']  # Terraform Version
         vcs: ['github', 'azuredevops', 'local']  # Version Control System
         ag: ['public', 'private', 'none']  # Self Hosted Agents
@@ -62,16 +62,16 @@ jobs:
             tf: 1.5.0
           - vcs: github
             tf: 1.5.0
-          - os: windows-latest
+          - os: windows
             vcs: azuredevops
-          - os: macos-latest
+          - os: macos
             vcs: azuredevops
-          - os: windows-latest
+          - os: windows
             vcs: github
-          - os: macos-latest
+          - os: macos
             vcs: github
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}-latest
     steps:
       - name: Show env
         run: env | sort
