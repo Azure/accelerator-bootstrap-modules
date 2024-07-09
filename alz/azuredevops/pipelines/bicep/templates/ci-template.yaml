@@ -17,6 +17,8 @@ stages:
             displayName: Checkout Repo
 
           - template: helpers/bicep-installer.yaml
+            parameters:
+              serviceConnection: '${service_connection_name_plan}'
 
           - pwsh: |
               if (Test-Path -Path ./custom-modules/*)
