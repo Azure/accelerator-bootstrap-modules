@@ -173,7 +173,7 @@ jobs:
           Write-Host "Run Number: $runNumber"
           Write-Host "Location: $location"
 
-          $uniqueId = "$infrastructureAsCodeShort$operatingSystemShort$versionControlSystemShort$authSchemeShort$terraformVersionShort$selfhostedAgentsShort$runNumber".ToLower()
+          $uniqueId = "$versionControlSystemShort$infrastructureAsCodeShort$selfhostedAgentsShort$operatingSystemShort$terraformVersionShort$runNumber".ToLower()
           echo "UNIQUE_ID=$uniqueId" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
 
           Write-Host "Unique ID: $uniqueId"
