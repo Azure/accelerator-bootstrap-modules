@@ -72,15 +72,20 @@ steps:
             }
 
             $deploymentType = "$${{ scriptFile.deploymentType }}"
-            $deploymentTimeStamp = Get-Date -Format 'yyyyMMddTHHMMssffffZ'
-            $deploymentName = "$${{ scriptFile.displayName }}".Replace(" ", "-")
-            $deploymentPrefix = $env:MANAGEMENT_GROUP_ID
 
-            if($deploymentName.Length -gt 42) {
-              $deploymentName = $deploymentName.Substring(0, (41 - $deploymentPrefix.Length))
+            $deploymentPrefix = $env:MANAGEMENT_GROUP_ID
+            $deploymentName = "$${{ scriptFile.displayName }}".Replace(" ", "-")
+            $deploymentTimeStamp = Get-Date -Format 'yyyyMMddHHMMss'
+            
+            $prefixPostFixAndHythenLength = $deploymentPrefix.Length + $deploymentTimeStamp.Length + 2
+            $deploymentNameMaxLength = 64 - $prefixPostFixAndHythenLength
+
+            if($deploymentName.Length -gt $deploymentNameMaxLength) {
+              $deploymentName = $deploymentName.Substring(0, $deploymentNameMaxLength)
             }
 
             $deploymentName = "$deploymentPrefix-$deploymentName-$deploymentTimeStamp"
+            Write-Host "Deployment Name: $deploymentName"
 
             $inputObject = @{
               DeploymentName        = $deploymentName
