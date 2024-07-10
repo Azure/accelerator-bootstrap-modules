@@ -1,6 +1,6 @@
 locals {
   agent_pool_configuration  = var.use_self_hosted_agents ? "name: ${local.resource_names.version_control_system_agent_pool}" : "vmImage: ubuntu-latest"
-  repository_name_templates = var.use_separate_repository_for_pipeline_templates ? local.resource_names.version_control_system_repository_templates : local.resource_names.version_control_system_repository
+  repository_name_templates = var.use_separate_repository_for_templates ? local.resource_names.version_control_system_repository_templates : local.resource_names.version_control_system_repository
 
   pipeline_files_directory_path          = "${path.module}/pipelines/${var.iac_type}/main"
   pipeline_template_files_directory_path = "${path.module}/pipelines/${var.iac_type}/templates"
@@ -75,6 +75,6 @@ locals {
     }
   }
   module_files_supported    = { for key, value in local.module_files : key => value if value.content != "unsupported_file_type" && !endswith(key, "-cache.json") }
-  repository_files          = merge(local.cicd_files, local.module_files_supported, var.use_separate_repository_for_pipeline_templates ? {} : local.cicd_template_files)
-  template_repository_files = var.use_separate_repository_for_pipeline_templates ? local.cicd_template_files : {}
+  repository_files          = merge(local.cicd_files, local.module_files_supported, var.use_separate_repository_for_templates ? {} : local.cicd_template_files)
+  template_repository_files = var.use_separate_repository_for_templates ? local.cicd_template_files : {}
 }

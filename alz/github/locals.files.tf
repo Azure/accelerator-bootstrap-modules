@@ -74,6 +74,6 @@ locals {
     }
   }
   module_files_supported    = { for key, value in local.module_files : key => value if value.content != "unsupported_file_type" && !endswith(key, "-cache.json") }
-  repository_files          = merge(local.cicd_files, local.module_files_supported, var.use_separate_repository_for_workflow_templates ? {} : local.cicd_template_files)
-  template_repository_files = var.use_separate_repository_for_workflow_templates ? local.cicd_template_files : {}
+  repository_files          = merge(local.cicd_files, local.module_files_supported, var.use_separate_repository_for_templates ? {} : local.cicd_template_files)
+  template_repository_files = var.use_separate_repository_for_templates ? local.cicd_template_files : {}
 }

@@ -72,7 +72,7 @@ module "azure_devops" {
   repository_name                              = local.resource_names.version_control_system_repository
   repository_files                             = local.repository_files
   template_repository_files                    = local.template_repository_files
-  use_template_repository                      = var.use_separate_repository_for_pipeline_templates
+  use_template_repository                      = var.use_separate_repository_for_templates
   repository_name_templates                    = local.resource_names.version_control_system_repository_templates
   variable_group_name                          = local.resource_names.version_control_system_variable_group
   azure_tenant_id                              = data.azurerm_client_config.current.tenant_id

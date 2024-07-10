@@ -222,7 +222,7 @@ jobs:
             $Inputs["github_personal_access_token"] = "${{ secrets.VCS_TOKEN_GITHUB }}"
             $Inputs["github_runners_personal_access_token"] = "${{ secrets.VCS_TOKEN_GITHUB }}"
             $Inputs["github_organization_name"] = "${{ vars.VCS_ORGANIZATION }}"
-            $Inputs["use_separate_repository_for_workflow_templates"] = "true"
+            $Inputs["use_separate_repository_for_templates"] = "true"
             $Inputs["use_self_hosted_runners"] = $enableSelfHostedAgents
             $Inputs["use_runner_group"] = "true"
           }
@@ -231,7 +231,7 @@ jobs:
             $Inputs["azure_devops_personal_access_token"] = "${{ secrets.VCS_TOKEN_AZURE_DEVOPS }}"
             $Inputs["azure_devops_agents_personal_access_token"] = "${{ secrets.VCS_TOKEN_AZURE_DEVOPS }}"
             $Inputs["azure_devops_organization_name"] = "${{ vars.VCS_ORGANIZATION }}"
-            $Inputs["use_separate_repository_for_pipeline_templates"] = "true"
+            $Inputs["use_separate_repository_for_templates"] = "true"
             $Inputs["azure_devops_use_organisation_legacy_url"] = "false"
             $Inputs["azure_devops_create_project"] = "true"
             $Inputs["azure_devops_project_name"] = "alz-test-$uniqueId"

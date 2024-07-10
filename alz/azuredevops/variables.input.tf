@@ -9,7 +9,7 @@ variable "azure_devops_organization_name" {
   type        = string
 }
 
-variable "use_separate_repository_for_pipeline_templates" {
+variable "use_separate_repository_for_templates" {
   description = "Controls whether to use a separate repository to store pipeline templates. This is an extra layer of security to ensure that the azure credentials can only be leveraged for the specified workload|4"
   type        = bool
   default     = true
