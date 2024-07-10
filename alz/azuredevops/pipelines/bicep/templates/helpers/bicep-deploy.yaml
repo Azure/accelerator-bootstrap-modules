@@ -95,56 +95,77 @@ steps:
               Verbose               = $true
             }
 
-            $result = $null
+            $retryCount = 0
+            $retryMax = 5
+            $retryDelay = 20
+            $finalSuccess = $false
 
-            if ($deploymentType -eq "tenant") {
-              $inputObject.Location = "$${{ scriptFile.location }}"
-              $result = New-AzTenantDeployment @inputObject
-            }
-
-            if ($deploymentType -eq "managementGroup") {
-              $inputObject.Location = "$${{ scriptFile.location }}"
-              $inputObject.ManagementGroupId = "$${{ scriptFile.managementGroupId }}"
-              if ($inputObject.ManagementGroupId -eq "") {
-                $inputObject.ManagementGroupId = (Get-AzContext).Tenant.TenantId
+            while ($retryCount -lt $retryMax) {
+              if($retryCount -gt 0) {
+                Write-Host "Retrying deployment after $retryDelay seconds..."
+                Start-Sleep -Seconds $retryDelay
+                Write-Host "Retrying deployment..."
               }
-              $result = New-AzManagementGroupDeployment @inputObject
-            }
 
-            if ($deploymentType -eq "subscription") {
-              $inputObject.Location = "$${{ scriptFile.location }}"
-              Select-AzSubscription -SubscriptionId "$${{ scriptFile.subscriptionId }}"
-              $result = New-AzSubscriptionDeployment @inputObject
-            }
+              $result = $null
 
-            if ($deploymentType -eq "resourceGroup") {
-              $inputObject.ResourceGroupName = "$${{ scriptFile.resourceGroupName }}"
-              Select-AzSubscription -SubscriptionId "$${{ scriptFile.subscriptionId }}"
-              $result = New-AzResourceGroupDeployment @inputObject
-            }
+              if ($deploymentType -eq "tenant") {
+                $inputObject.Location = "$${{ scriptFile.location }}"
+                $result = New-AzTenantDeployment @inputObject
+              }
 
-            if ($whatIf) {
+              if ($deploymentType -eq "managementGroup") {
+                $inputObject.Location = "$${{ scriptFile.location }}"
+                $inputObject.ManagementGroupId = "$${{ scriptFile.managementGroupId }}"
+                if ($inputObject.ManagementGroupId -eq "") {
+                  $inputObject.ManagementGroupId = (Get-AzContext).Tenant.TenantId
+                }
+                $result = New-AzManagementGroupDeployment @inputObject
+              }
+
+              if ($deploymentType -eq "subscription") {
+                $inputObject.Location = "$${{ scriptFile.location }}"
+                Select-AzSubscription -SubscriptionId "$${{ scriptFile.subscriptionId }}"
+                $result = New-AzSubscriptionDeployment @inputObject
+              }
+
+              if ($deploymentType -eq "resourceGroup") {
+                $inputObject.ResourceGroupName = "$${{ scriptFile.resourceGroupName }}"
+                Select-AzSubscription -SubscriptionId "$${{ scriptFile.subscriptionId }}"
+                $result = New-AzResourceGroupDeployment @inputObject
+              }
+
+              if ($whatIf) {
+                $result | Format-List | Out-Host
+                exit 0
+              }
+
+              $resultId = ""
+
+              if($deploymentType -eq "resourceGroup") {
+                $resultId = "/subscriptions/$${{ scriptFile.subscriptionId }}/resourceGroups/$${{ scriptFile.resourceGroupName }}/providers/Microsoft.Resources/deployments/$deploymentName"
+              } else {
+                $resultId = $result.Id
+              }
+
+              $resultIdEscaped = $resultId.Replace("/", "%2F")
+              $resultUrl = "https://portal.azure.com/#view/HubsExtension/DeploymentDetailsBlade/~/overview/id/$resultIdEscaped"
+
+              Write-Host "Deployment Name: $deploymentName"
+              Write-Host "Deployment ID: $resultId"
+              Write-Host "Deployment Url: $resultUrl"
               $result | Format-List | Out-Host
-              exit 0
+
+              if($result.ProvisioningState -ne "Succeeded") {
+                Write-Host "Deployment failed, entering retry loop..."
+                $retryCount++
+              } else {
+                $finalSuccess = $true
+                break
+              }
             }
 
-            $resultId = ""
-
-            if($deploymentType -eq "resourceGroup") {
-              $resultId = "/subscriptions/$${{ scriptFile.subscriptionId }}/resourceGroups/$${{ scriptFile.resourceGroupName }}/providers/Microsoft.Resources/deployments/$deploymentName"
-            } else {
-              $resultId = $result.Id
-            }
-
-            $resultIdEscaped = $resultId.Replace("/", "%2F")
-            $resultUrl = "https://portal.azure.com/#view/HubsExtension/DeploymentDetailsBlade/~/overview/id/$resultIdEscaped"
-
-            Write-Host "Deployment Name: $deploymentName"
-            Write-Host "Deployment ID: $resultId"
-            Write-Host "Deployment Url: $resultUrl"
-            $result | Format-List | Out-Host
-
-            if($result.ProvisioningState -ne "Succeeded") {
-              Write-Error "Deployment failed"
+            if($finalSuccess -eq $false) {
+              Write-Error "Deployment failed after $retryMax attempts..."
               exit 1
             }
