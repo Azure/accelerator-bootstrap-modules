@@ -88,6 +88,7 @@ function Wait-ForPipelineRunToComplete {
     $pipelineRunUrl = "https://dev.azure.com/$organizationName/$projectName/_apis/pipelines/$pipelineId/runs/$($pipelineRunId)?api-version=7.2-preview.1"
     Write-Host "Pipeline Run URL: $pipelineRunUrl"
 
+    $pipelineRun = $null
     $pipelineRunStatus = ""
     $pipelineRunResult = ""
     while($pipelineRunStatus -ne "completed") {
@@ -104,6 +105,12 @@ function Wait-ForPipelineRunToComplete {
     }
 
     if($pipelineRunResult -ne "succeeded") {
+        # TODO: Get pipeline run logs
+        #$pipelineRunLogsUrl = $pipelineRun.logs_url
+        #$pipelineRunLogs = Invoke-RestMethod -Method GET -Uri $pipelineRunLogsUrl -Headers $headers -StatusCodeVariable statusCode
+        #$pipelineRunLogsString = $pipelineRunLogs | ConvertTo-Json -Depth 100
+        #Write-Host "Pipeline Run Logs:"
+        #Write-Host $pipelineRunLogsString
         throw "The pipeline run did not complete successfully. Conclusion: $pipelineRunResult"
     }
 }

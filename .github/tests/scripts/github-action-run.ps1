@@ -63,6 +63,7 @@ function Wait-ForWorkflowRunToComplete {
     $workflowRunUrl = "https://api.github.com/repos/$organizationName/$repositoryName/actions/runs"
     Write-Host "Workflow Run URL: $workflowRunUrl"
 
+    $workflowRun = $null
     $workflowRunStatus = ""
     $workflowRunConclusion = ""
     while($workflowRunStatus -ne "completed") {
@@ -80,6 +81,12 @@ function Wait-ForWorkflowRunToComplete {
     }
 
     if($workflowRunConclusion -ne "success") {
+        # TODO: Get workflow run logs
+        #$workflowRunLogsUrl = $workflowRun.workflow_runs[0].logs_url
+        #$workflowRunLogs = Invoke-RestMethod -Method GET -Uri $workflowRunLogsUrl -Headers $headers -StatusCodeVariable statusCode
+        #$workflowRunLogsString = $workflowRunLogs | ConvertTo-Json -Depth 100
+        #Write-Host "Workflow Run Logs:"
+        #Write-Host $workflowRunLogsString
         throw "The workflow run did not complete successfully. Conclusion: $workflowRunConclusion"
     }
 }
