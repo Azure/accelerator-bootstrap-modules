@@ -66,6 +66,7 @@ jobs:
 
   apply:
     needs: plan
+    if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     name: Apply with Terraform
     runs-on:
       ${runner_name}
