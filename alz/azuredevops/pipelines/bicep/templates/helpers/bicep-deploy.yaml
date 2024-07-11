@@ -109,30 +109,37 @@ steps:
 
               $result = $null
 
-              if ($deploymentType -eq "tenant") {
-                $inputObject.Location = "$${{ scriptFile.location }}"
-                $result = New-AzTenantDeployment @inputObject
-              }
-
-              if ($deploymentType -eq "managementGroup") {
-                $inputObject.Location = "$${{ scriptFile.location }}"
-                $inputObject.ManagementGroupId = "$${{ scriptFile.managementGroupId }}"
-                if ($inputObject.ManagementGroupId -eq "") {
-                  $inputObject.ManagementGroupId = (Get-AzContext).Tenant.TenantId
+              try {
+                if ($deploymentType -eq "tenant") {
+                  $inputObject.Location = "$${{ scriptFile.location }}"
+                  $result = New-AzTenantDeployment @inputObject
                 }
-                $result = New-AzManagementGroupDeployment @inputObject
-              }
 
-              if ($deploymentType -eq "subscription") {
-                $inputObject.Location = "$${{ scriptFile.location }}"
-                Select-AzSubscription -SubscriptionId "$${{ scriptFile.subscriptionId }}"
-                $result = New-AzSubscriptionDeployment @inputObject
-              }
+                if ($deploymentType -eq "managementGroup") {
+                  $inputObject.Location = "$${{ scriptFile.location }}"
+                  $inputObject.ManagementGroupId = "$${{ scriptFile.managementGroupId }}"
+                  if ($inputObject.ManagementGroupId -eq "") {
+                    $inputObject.ManagementGroupId = (Get-AzContext).Tenant.TenantId
+                  }
+                  $result = New-AzManagementGroupDeployment @inputObject
+                }
 
-              if ($deploymentType -eq "resourceGroup") {
-                $inputObject.ResourceGroupName = "$${{ scriptFile.resourceGroupName }}"
-                Select-AzSubscription -SubscriptionId "$${{ scriptFile.subscriptionId }}"
-                $result = New-AzResourceGroupDeployment @inputObject
+                if ($deploymentType -eq "subscription") {
+                  $inputObject.Location = "$${{ scriptFile.location }}"
+                  Select-AzSubscription -SubscriptionId "$${{ scriptFile.subscriptionId }}"
+                  $result = New-AzSubscriptionDeployment @inputObject
+                }
+
+                if ($deploymentType -eq "resourceGroup") {
+                  $inputObject.ResourceGroupName = "$${{ scriptFile.resourceGroupName }}"
+                  Select-AzSubscription -SubscriptionId "$${{ scriptFile.subscriptionId }}"
+                  $result = New-AzResourceGroupDeployment @inputObject
+                }
+              } catch {
+                Write-Host $_
+                Write-Host "Deployment failed, entering retry loop..."
+                $retryCount++
+                continue
               }
 
               if ($whatIf) {
