@@ -86,14 +86,14 @@ runs:
           }
 
           $retryCount = 0
-          $retryMax = 5
+          $retryMax = 10
           $retryDelay = 20
           $finalSuccess = $false
 
           while ($retryCount -lt $retryMax) {
             if($retryCount -gt 0) {
-              Write-Host "Retrying deployment after $retryDelay seconds..."
-              Start-Sleep -Seconds $retryDelay
+              Write-Host "Retrying deployment after $($retryDelay * $retryCount) seconds..."
+              Start-Sleep -Seconds ($retryDelay * $retryCount)
               Write-Host "Retrying deployment..."
             }
 
