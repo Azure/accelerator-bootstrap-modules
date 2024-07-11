@@ -68,7 +68,7 @@ runs:
           $deploymentTimeStamp = Get-Date -Format 'yyyyMMddHHmmss'
 
           $prefixPostFixAndHythenLength = $deploymentPrefix.Length + $deploymentTimeStamp.Length + 2
-          $deploymentNameMaxLength = 64 - $prefixPostFixAndHythenLength
+          $deploymentNameMaxLength = 63 - $prefixPostFixAndHythenLength
 
           if($deploymentName.Length -gt $deploymentNameMaxLength) {
             $deploymentName = $deploymentName.Substring(0, $deploymentNameMaxLength)
@@ -78,7 +78,6 @@ runs:
           Write-Host "Deployment Name: $deploymentName"
 
           $inputObject = @{
-            DeploymentName        = $deploymentName
             TemplateFile          = $env:TEMPLATE_FILE_PATH
             TemplateParameterFile = $env:TEMPLATE_PARAMETERS_FILE_PATH
             WhatIf                = $whatIf
@@ -94,10 +93,12 @@ runs:
           while ($retryCount -lt $retryMax) {
             if($retryCount -gt 0) {
               $retryDelay = $initialRetryDelay + ($retryCount * $retryDelayIncrement)
-              Write-Host "Retrying deployment after $retryDelay seconds..." -ForegroundColor Green
+              Write-Host "Retrying deployment with attempt number $($retryCount + 1) after $retryDelay seconds..." -ForegroundColor Green
               Start-Sleep -Seconds $retryDelay
               Write-Host "Retrying deployment..." -ForegroundColor Green
             }
+
+            $inputObject.DeploymentName = "$deploymentName$($retryCount + 1)"
 
             $result = $null
 
