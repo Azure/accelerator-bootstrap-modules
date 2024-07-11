@@ -83,6 +83,7 @@ jobs:
   deploy:
     name: Deploy
     needs: whatif
+    if: $${{ always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
     runs-on:
       ${runner_name}
     concurrency: ${backend_azure_storage_account_container_name}
