@@ -96,15 +96,17 @@ steps:
             }
 
             $retryCount = 0
-            $retryMax = 10
-            $retryDelay = 20
+            $retryMax = 30
+            $initialRetryDelay = 20
+            $retryDelayIncrement = 10
             $finalSuccess = $false
 
             while ($retryCount -lt $retryMax) {
               if($retryCount -gt 0) {
-                Write-Host "Retrying deployment after $($retryDelay * $retryCount) seconds..."
-                Start-Sleep -Seconds ($retryDelay * $retryCount)
-                Write-Host "Retrying deployment..."
+                $retryDelay = $initialRetryDelay + ($retryCount * $retryDelayIncrement)
+                Write-Host "Retrying deployment after retryDelay seconds..." -ForegroundColor Green
+                Start-Sleep -Seconds retryDelay
+                Write-Host "Retrying deployment..." -ForegroundColor Green
               }
 
               $result = $null
@@ -136,8 +138,8 @@ steps:
                   $result = New-AzResourceGroupDeployment @inputObject
                 }
               } catch {
-                Write-Host $_
-                Write-Host "Deployment failed, entering retry loop..."
+                Write-Host $_ -ForegroundColor Red
+                Write-Host "Deployment failed with exception, this is likely an intermittent failure so entering retry loop..." -ForegroundColor Red
                 $retryCount++
                 continue
               }
@@ -164,7 +166,7 @@ steps:
               $result | Format-List | Out-Host
 
               if($result.ProvisioningState -ne "Succeeded") {
-                Write-Host "Deployment failed, entering retry loop..."
+                Write-Host "Deployment failed with unsuccessful provisioning state, this is likely an intermittent failure so entering retry loop..." -ForegroundColor Red
                 $retryCount++
               } else {
                 $finalSuccess = $true
@@ -173,6 +175,6 @@ steps:
             }
 
             if($finalSuccess -eq $false) {
-              Write-Error "Deployment failed after $retryMax attempts..."
+              Write-Error "Deployment failed after $retryMax attempts..." -ForegroundColor Red
               exit 1
             }
