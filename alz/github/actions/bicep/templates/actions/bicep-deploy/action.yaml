@@ -95,7 +95,7 @@ runs:
 
             if($retryCount -gt 0) {
               $retryDelay = $initialRetryDelay + ($retryCount * $retryDelayIncrement)
-              Write-Host "Retrying deployment with attempt number $($retryCount + 1) after $retryDelay seconds..." -ForegroundColor Green
+              Write-Host "Retrying deployment with attempt number $retryAttempt after $retryDelay seconds..." -ForegroundColor Green
               Start-Sleep -Seconds $retryDelay
               Write-Host "Retrying deployment..." -ForegroundColor Green
             }
