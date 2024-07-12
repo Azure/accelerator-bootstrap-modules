@@ -47,7 +47,7 @@ steps:
       }
 
       $releaseArtifactUrl = $releaseData.assets | Where-Object { $_.name -eq $releaseArtifactName } | Select-Object -ExpandProperty browser_download_url
-      
+
       $tempFolder = "./download"
 
       New-Item -ItemType Directory -Path $tempFolder | Out-String | Write-Verbose
