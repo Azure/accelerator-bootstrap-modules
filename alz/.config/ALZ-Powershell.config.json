@@ -15,6 +15,22 @@
             "source": "powershell",
             "maps_to": [ "bootstrap" ]
         },
+        "on_demand_folder_repository" :{
+            "type": "string",
+            "source": "powershell",
+            "maps_to": [ "bootstrap" ]
+        },
+        "on_demand_folder_artifact_name" :{
+            "type": "string",
+            "source": "powershell",
+            "maps_to": [ "bootstrap" ]
+        },
+        "release_version": {
+            "type": "string",
+            "source": "powershell",
+            "maps_to": [ "starter" ],
+            "bicep_alias": "ReleaseVersion"
+        },
         "root_parent_management_group_id": {
             "type": "string",
             "default": "",

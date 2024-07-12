@@ -77,6 +77,17 @@ stages:
                   parameters:
                     parametersFileName: $(parametersFileName)
 
+%{ for on_demand_folder in on_demand_folders ~}
+                - template: helpers/bicep-on-demand-folder.yaml
+                  parameters:
+                    repository: "${on_demand_folder_repository}"
+                    releaseArtifactName: "${on_demand_folder_artifact_name}"
+                    releaseVersion: "$(RELEASE_VERSION)"
+                    sourcePath: "${on_demand_folder.source}"
+                    targetPath: "${on_demand_folder.target}"
+
+%{ endfor ~}
+
                 - template: helpers/bicep-templates.yaml
                   parameters:
                     serviceConnection: '${service_connection_name_plan}'

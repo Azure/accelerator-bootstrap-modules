@@ -68,7 +68,7 @@ runs:
           $deploymentTimeStamp = Get-Date -Format 'yyyyMMddHHmmss'
 
           $prefixPostFixAndHythenLength = $deploymentPrefix.Length + $deploymentTimeStamp.Length + 2
-          $deploymentNameMaxLength = 63 - $prefixPostFixAndHythenLength
+          $deploymentNameMaxLength = 61 - $prefixPostFixAndHythenLength
 
           if($deploymentName.Length -gt $deploymentNameMaxLength) {
             $deploymentName = $deploymentName.Substring(0, $deploymentNameMaxLength)
@@ -91,6 +91,8 @@ runs:
           $finalSuccess = $false
 
           while ($retryCount -lt $retryMax) {
+            $retryAttempt = '{0:d2}' -f ($retryCount + 1)
+
             if($retryCount -gt 0) {
               $retryDelay = $initialRetryDelay + ($retryCount * $retryDelayIncrement)
               Write-Host "Retrying deployment with attempt number $($retryCount + 1) after $retryDelay seconds..." -ForegroundColor Green
@@ -98,7 +100,7 @@ runs:
               Write-Host "Retrying deployment..." -ForegroundColor Green
             }
 
-            $inputObject.DeploymentName = "$deploymentName$($retryCount + 1)"
+            $inputObject.DeploymentName = "$deploymentName-$retryAttempt"
 
             $result = $null
 

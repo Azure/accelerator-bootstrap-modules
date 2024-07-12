@@ -79,6 +79,17 @@ jobs:
         with:
           parameters_file_name: $${{ env.PARAMETERS_FILE_NAME }}
 
+%{ for on_demand_folder in on_demand_folders ~}
+      - name: Get On Demand Folder ${on_demand_folder.target}
+        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-on-demand-folder@main
+        with:
+          repository: "${on_demand_folder_repository}"
+          releaseArtifactName: "${on_demand_folder_artifact_name}"
+          releaseVersion: "$${{ env.RELEASE_VERSION }}"
+          sourcePath: "${on_demand_folder.source}"
+          targetPath: "${on_demand_folder.target}"
+
+%{ endfor ~}
       - name: Install Bicep and Update Az Module
         uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-installer@main
 
