@@ -48,11 +48,13 @@ steps:
 
       $releaseArtifactUrl = $releaseData.assets | Where-Object { $_.name -eq $releaseArtifactName } | Select-Object -ExpandProperty browser_download_url
       
-      New-Item -ItemType Directory -Path "./tmp" | Out-String | Write-Verbose
-      $targetPathForZip = "./tmp/$releaseArtifactName"
+      $tempFolder = "./download"
+
+      New-Item -ItemType Directory -Path $tempFolder | Out-String | Write-Verbose
+      $targetPathForZip = "$tempFolder/$releaseArtifactName"
       Invoke-WebRequest -Uri $releaseArtifactUrl -OutFile $targetPathForZip -RetryIntervalSec 3 -MaximumRetryCount 100 | Out-String | Write-Verbose
 
-      $targetPathForExtractedZip = "./tmp/extracted"
+      $targetPathForExtractedZip = "$tempFolder/extracted"
 
       Expand-Archive -Path $targetPathForZip -DestinationPath $targetPathForExtractedZip | Out-String | Write-Verbose
 
@@ -63,7 +65,7 @@ steps:
       New-Item -ItemType Directory -Path $targetFolderPath | Out-String | Write-Verbose
       Copy-Item -Path $sourceFolderPath -Destination $targetFolderPath -Recurse -Force | Out-String | Write-Verbose
 
-      Remove-Item -Path "$targetVersionPath/tmp" -Force -Recurse
+      Remove-Item -Path $tempFolder -Force -Recurse
       Write-Host "Successfully copied the files from the release artifact to the target path $targetPath..."
 
     displayName: Get On Demand Folder
