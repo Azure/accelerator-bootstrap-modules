@@ -28,6 +28,9 @@ steps:
       $repoOrgPlusRepo = $repository.Split("/")[-2..-1] -join "/"
 
       $repoReleaseUrl = "https://api.github.com/repos/$repoOrgPlusRepo/releases/tags/$releaseVersion"
+      if($releaseVersion -eq "latest") {
+          $repoReleaseUrl = "https://api.github.com/repos/$repoOrgPlusRepo/releases/latest"
+      }
       $releaseData = Invoke-RestMethod $repoReleaseUrl -SkipHttpErrorCheck -StatusCodeVariable "statusCode"
       Write-Verbose "Status code: $statusCode"
 

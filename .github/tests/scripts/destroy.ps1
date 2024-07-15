@@ -28,7 +28,7 @@ do {
         if($infrastructureAsCode -eq "terraform") { 
           $starterModuleOverrideFolderPath = "$starterModuleOverrideFolderPath/templates"
         }
-        Deploy-Accelerator -output "$($env:TARGET_FOLDER)" -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "$($env:BOOTSTRAP_MODULE_FOLDER)" -starterModuleOverrideFolderPath $starterModuleOverrideFolderPath -autoApprove -destroy -ErrorAction Stop
+        Deploy-Accelerator -output "$($env:TARGET_FOLDER)" -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "$($env:BOOTSTRAP_MODULE_FOLDER)" -starterModuleOverrideFolderPath $starterModuleOverrideFolderPath -starterRelease "$($env.ALZ_ON_DEMAND_FOLDER_RELEASE_TAG)" -autoApprove -destroy -ErrorAction Stop
         if ($LastExitCode -eq 0) {
             $success = $true
         } else {
