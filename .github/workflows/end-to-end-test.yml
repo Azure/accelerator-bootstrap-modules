@@ -221,7 +221,7 @@ jobs:
           $Inputs["create_branch_policies"] = "true"
 
           $Inputs["use_private_networking"] = $enablePrivateNetworking
-          $Inputs["allow_storage_access_from_my_ip"] = "true"
+          $Inputs["allow_storage_access_from_my_ip"] = "false"
 
           if($versionControlSystem -eq "github") {
             $Inputs["github_personal_access_token"] = "${{ secrets.VCS_TOKEN_GITHUB }}"
