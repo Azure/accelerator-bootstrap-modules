@@ -47,7 +47,7 @@
             "required": true,
             "source": "input",
             "maps_to": [ "bootstrap" ],
-            "validation": "azure_region",
+            "validation": "azure_location",
             "display_order": 1,
             "description": "The region for the bootstrap resources."
         },
@@ -56,7 +56,7 @@
             "required": true,
             "source": "input",
             "maps_to": [ "starter" ],
-            "validation": "azure_region",
+            "validation": "azure_location",
             "bicep_alias": "Location",
             "display_order": 2,
             "description": "The primary region for the Azure Landing Zones resources."

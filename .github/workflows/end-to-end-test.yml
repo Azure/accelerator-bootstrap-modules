@@ -214,6 +214,7 @@ jobs:
           $Inputs["bootstrap"] = "alz_$versionControlSystemMapped"
           $Inputs["starter"] = "test"
           $Inputs["bootstrap_location"] = $location
+          $Inputs["starter_location"] = $location
           $Inputs["bootstrap_subscription_id"] = ""
           $Inputs["service_name"] = "alz"
           $Inputs["environment_name"] = $uniqueId
