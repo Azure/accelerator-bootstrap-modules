@@ -10,12 +10,6 @@ variable "create_bootstrap_resources_in_azure" {
   default     = true
 }
 
-variable "bootstrap_location" {
-  description = "Azure Deployment location for the bootstrap resources (e.g. storage account, identities, etc)|4|azure_location"
-  type        = string
-  default     = ""
-}
-
 variable "bootstrap_subscription_id" {
   description = "Azure Subscription ID for the bootstrap resources (e.g. storage account, identities, etc). Leave empty to use the az login subscription|6|azure_subscription_id"
   type        = string

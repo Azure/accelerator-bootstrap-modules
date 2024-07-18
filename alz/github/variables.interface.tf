@@ -52,3 +52,8 @@ variable "on_demand_folder_artifact_name" {
   type        = string
   default     = ""
 }
+
+variable "bootstrap_location" {
+  description = "Azure Deployment location for the bootstrap resources (e.g. storage account, identities, etc)|4|azure_location"
+  type        = string
+}
