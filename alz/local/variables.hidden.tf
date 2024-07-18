@@ -47,3 +47,222 @@ variable "storage_account_replication_type" {
     error_message = "Invalid storage account replication type. Valid values are ZRS, GZRS and RAGZRS."
   }
 }
+
+variable "custom_role_definitions_terraform" {
+  description = "Custom role definitions to create for Terraform"
+  type = map(object({
+    name        = string
+    description = string
+    permissions = object({
+      actions     = list(string)
+      not_actions = list(string)
+    })
+  }))
+  default = {
+    alz_managment_group_contributor = {
+      name        = "Azure Landing Zones Management Group Contributor ({{service_name}}-{{environment_name}})"
+      description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing the Management Group Structure."
+      permissions = {
+        actions = [
+          "Microsoft.Management/managementGroups/delete",
+          "Microsoft.Management/managementGroups/read",
+          "Microsoft.Management/managementGroups/subscriptions/delete",
+          "Microsoft.Management/managementGroups/subscriptions/write",
+          "Microsoft.Management/managementGroups/write",
+          "Microsoft.Management/managementGroups/subscriptions/read",
+          "Microsoft.Authorization/*/read",
+          "Microsoft.Resources/deployments/write"
+        ]
+        not_actions = []
+      }
+    }
+    alz_managment_group_reader = {
+      name        = "Azure Landing Zones Management Group Reader ({{service_name}}-{{environment_name}})"
+      description = "This is a custom role created by the Azure Landing Zones Accelerator for Reading the Management Group Structure."
+      permissions = {
+        actions = [
+          "Microsoft.Management/managementGroups/read",
+          "Microsoft.Management/managementGroups/subscriptions/read",
+          "Microsoft.Authorization/*/read",
+          "Microsoft.Resources/deployments/write"
+        ]
+        not_actions = []
+      }
+    }
+    alz_subscription_owner = {
+      name        = "Azure Landing Zones Subscription Owner ({{service_name}}-{{environment_name}})"
+      description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing in platfrom subscriptions."
+      permissions = {
+        actions = [
+          "*",
+          "Microsoft.Resources/deployments/write"
+        ]
+        not_actions = []
+      }
+    }
+    alz_subscription_reader = {
+      name        = "Azure Landing Zones Subscription Reader ({{service_name}}-{{environment_name}})"
+      description = "This is a custom role created by the Azure Landing Zones Accelerator for Reading the platform subscriptions."
+      permissions = {
+        actions = [
+          "*/read",
+          "Microsoft.Resources/deployments/write"
+        ]
+        not_actions = []
+      }
+    }
+  }
+}
+
+variable "custom_role_definitions_bicep" {
+  description = "Custom role definitions to create for Bicep"
+  type = map(object({
+    name        = string
+    description = string
+    permissions = object({
+      actions     = list(string)
+      not_actions = list(string)
+    })
+  }))
+  default = {
+    alz_managment_group_contributor = {
+      name        = "Azure Landing Zones Management Group Contributor ({{service_name}}-{{environment_name}})"
+      description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing the Management Group Structure."
+      permissions = {
+        actions = [
+          "Microsoft.Management/managementGroups/delete",
+          "Microsoft.Management/managementGroups/read",
+          "Microsoft.Management/managementGroups/subscriptions/delete",
+          "Microsoft.Management/managementGroups/subscriptions/write",
+          "Microsoft.Management/managementGroups/write",
+          "Microsoft.Management/managementGroups/subscriptions/read",
+          "Microsoft.Authorization/policyDefinitions/write",
+          "Microsoft.Authorization/policySetDefinitions/write",
+          "Microsoft.Authorization/roleDefinitions/write",
+          "Microsoft.Authorization/*/read",
+          "Microsoft.Resources/deployments/whatIf/action",
+          "Microsoft.Resources/deployments/write",
+          "Microsoft.Resources/deployments/validate/action",
+          "Microsoft.Resources/deployments/read",
+          "Microsoft.Resources/deployments/operationStatuses/read"
+        ]
+        not_actions = []
+      }
+    }
+    alz_managment_group_reader = {
+      name        = "Azure Landing Zones Management Group What If ({{service_name}}-{{environment_name}})"
+      description = "This is a custom role created by the Azure Landing Zones Accelerator for running Bicep What If for the Management Group Structure."
+      permissions = {
+        actions = [
+          "Microsoft.Management/managementGroups/read",
+          "Microsoft.Management/managementGroups/subscriptions/read",
+          "Microsoft.Authorization/*/read",
+          "Microsoft.Authorization/policyDefinitions/write",
+          "Microsoft.Authorization/policySetDefinitions/write",
+          "Microsoft.Authorization/roleDefinitions/write",
+          "Microsoft.Authorization/policyAssignments/write",
+          "Microsoft.Insights/diagnosticSettings/write",
+          "Microsoft.Insights/diagnosticSettings/read",
+          "Microsoft.Resources/deployments/whatIf/action",
+          "Microsoft.Resources/deployments/write"
+        ]
+        not_actions = []
+      }
+    }
+    alz_subscription_owner = {
+      name        = "Azure Landing Zones Subscription Owner ({{service_name}}-{{environment_name}})"
+      description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing in platfrom subscriptions."
+      permissions = {
+        actions = [
+          "*",
+          "Microsoft.Resources/deployments/whatIf/action",
+          "Microsoft.Resources/deployments/write"
+        ]
+        not_actions = []
+      }
+    }
+    alz_subscription_reader = {
+      name        = "Azure Landing Zones Subscription What If ({{service_name}}-{{environment_name}})"
+      description = "This is a custom role created by the Azure Landing Zones Accelerator for running Bicep What If for the platform subscriptions."
+      permissions = {
+        actions = [
+          "*/read",
+          "Microsoft.Resources/subscriptions/resourceGroups/write",
+          "Microsoft.ManagedIdentity/userAssignedIdentities/write",
+          "Microsoft.Automation/automationAccounts/write",
+          "Microsoft.OperationalInsights/workspaces/write",
+          "Microsoft.OperationalInsights/workspaces/linkedServices/write",
+          "Microsoft.OperationsManagement/solutions/write",
+          "Microsoft.Insights/dataCollectionRules/write",
+          "Microsoft.Authorization/locks/write",
+          "Microsoft.Network/*/write",
+          "Microsoft.Resources/deployments/whatIf/action",
+          "Microsoft.Resources/deployments/write"
+        ]
+        not_actions = []
+      }
+    }
+  }
+}
+
+variable "role_assignments_terraform" {
+  description = "Role assignments to create for Terraform"
+  type = map(object({
+    custom_role_definition_key         = string
+    user_assigned_managed_identity_key = string
+    scope                              = string
+  }))
+  default = {
+    plan_management_group = {
+      custom_role_definition_key         = "alz_managment_group_reader"
+      user_assigned_managed_identity_key = "plan"
+      scope                              = "management_group"
+    }
+    apply_management_group = {
+      custom_role_definition_key         = "alz_managment_group_contributor"
+      user_assigned_managed_identity_key = "apply"
+      scope                              = "management_group"
+    }
+    plan_subscription = {
+      custom_role_definition_key         = "alz_subscription_reader"
+      user_assigned_managed_identity_key = "plan"
+      scope                              = "subscription"
+    }
+    apply_subscription = {
+      custom_role_definition_key         = "alz_subscription_owner"
+      user_assigned_managed_identity_key = "apply"
+      scope                              = "subscription"
+    }
+  }
+}
+
+variable "role_assignments_bicep" {
+  description = "Role assignments to create for Bicep"
+  type = map(object({
+    custom_role_definition_key         = string
+    user_assigned_managed_identity_key = string
+    scope                              = string
+  }))
+  default = {
+    plan_management_group = {
+      custom_role_definition_key         = "alz_managment_group_reader"
+      user_assigned_managed_identity_key = "plan"
+      scope                              = "management_group"
+    }
+    apply_management_group = {
+      custom_role_definition_key         = "alz_managment_group_contributor"
+      user_assigned_managed_identity_key = "apply"
+      scope                              = "management_group"
+    }
+    plan_subscription = {
+      custom_role_definition_key         = "alz_subscription_reader"
+      user_assigned_managed_identity_key = "plan"
+      scope                              = "subscription"
+    }
+    apply_subscription = {
+      custom_role_definition_key         = "alz_subscription_owner"
+      user_assigned_managed_identity_key = "apply"
+      scope                              = "subscription"
+    }
+  }
+}

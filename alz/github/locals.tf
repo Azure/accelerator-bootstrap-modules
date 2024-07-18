@@ -12,6 +12,10 @@ locals {
 }
 
 locals {
+  iac_terraform = "terraform"
+}
+
+locals {
   use_runner_group                   = var.use_runner_group && module.github.organization_plan == local.enterprise_plan && var.use_self_hosted_runners
   runner_organization_repository_url = local.use_runner_group ? module.github.organization_url : "${module.github.organization_url}/${module.github.repository_names.module}"
 }
@@ -22,8 +26,8 @@ locals {
 }
 
 locals {
-  ci_file_name = "ci.yaml"
-  cd_file_name = "cd.yaml"
+  ci_template_file_name = "workflows/ci-template.yaml"
+  cd_template_file_name = "workflows/cd-template.yaml"
 }
 
 locals {
@@ -80,4 +84,25 @@ locals {
 
 locals {
   runner_container_instance_dockerfile_url = "${var.runner_container_image_repository}#${var.runner_container_image_tag}:${var.runner_container_image_folder}"
+}
+
+locals {
+  custom_role_definitions_bicep_names     = { for key, value in var.custom_role_definitions_bicep : "custom_role_definition_bicep_${key}" => value.name }
+  custom_role_definitions_terraform_names = { for key, value in var.custom_role_definitions_terraform : "custom_role_definition_terraform_${key}" => value.name }
+
+  custom_role_definitions_bicep = {
+    for key, value in var.custom_role_definitions_bicep : key => {
+      name        = local.resource_names["custom_role_definition_bicep_${key}"]
+      description = value.description
+      permissions = value.permissions
+    }
+  }
+
+  custom_role_definitions_terraform = {
+    for key, value in var.custom_role_definitions_terraform : key => {
+      name        = local.resource_names["custom_role_definition_terraform_${key}"]
+      description = value.description
+      permissions = value.permissions
+    }
+  }
 }

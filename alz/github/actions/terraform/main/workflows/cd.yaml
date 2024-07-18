@@ -1,5 +1,5 @@
 ---
-name: 02 Azure Landing Zone Continuous Delivery
+name: 02 Azure Landing Zones Continuous Delivery
 on:
   push:
     branches:
@@ -23,4 +23,4 @@ jobs:
       id-token: write
       contents: read
     with:
-      terraform_action: $${{ github.event.inputs.terraform_action }}
+      terraform_action: $${{ inputs.terraform_action }}

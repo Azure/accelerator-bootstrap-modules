@@ -1,0 +1,81 @@
+---
+name: Get On Demand Folder
+description: Download and Copy On Demand Folder from Release Artifact
+inputs:
+  repository:
+    description: 'The source repository'
+    required: true
+  releaseArtifactName:
+    description: 'The release artifact name'
+    required: true
+  releaseVersion:
+    description: 'The release version'
+    required: true
+  sourcePath:
+    description: 'The source path'
+    required: true
+  targetPath:
+    description: 'The target path'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Import Variables from File
+      run: |
+        $repository = "$${{ inputs.repository }}"
+        $releaseArtifactName = "$${{ inputs.releaseArtifactName }}"
+        $releaseVersion = "$${{ inputs.releaseVersion }}"
+        $sourcePath = "$${{ inputs.sourcePath }}"
+        $targetPath = "$${{ inputs.targetPath }}"
+
+        Write-Host "Repository: $repository"
+        Write-Host "Release Artifact Name: $releaseArtifactName"
+        Write-Host "Release Version: $releaseVersion"
+        Write-Host "Source Path: $sourcePath"
+        Write-Host "Target Path: $targetPath"
+
+        $repoOrgPlusRepo = $repository.Split("/")[-2..-1] -join "/"
+
+        $repoReleaseUrl = "https://api.github.com/repos/$repoOrgPlusRepo/releases/tags/$releaseVersion"
+        $releaseData = Invoke-RestMethod $repoReleaseUrl -SkipHttpErrorCheck -StatusCodeVariable "statusCode"
+        Write-Verbose "Status code: $statusCode"
+
+        if($statusCode -eq 404) {
+            Write-Error "The release $release does not exist in the GitHub repository $repository - $repoReleaseUrl"
+            throw "The release $release does not exist in the GitHub repository $repository - $repoReleaseUrl"
+        }
+
+        # Handle transient errors like throttling
+        if($statusCode -ge 400 -and $statusCode -le 599) {
+            Write-Host "Retrying as got the Status Code $statusCode, which may be a tranisent error." -ForegroundColor Yellow
+            $releaseData = Invoke-RestMethod $repoReleaseUrl -RetryIntervalSec 3 -MaximumRetryCount 100
+        }
+
+        if($statusCode -ne 200) {
+            throw "Unable to query repository version, please check your internet connection and try again..."
+        }
+
+        $releaseArtifactUrl = $releaseData.assets | Where-Object { $_.name -eq $releaseArtifactName } | Select-Object -ExpandProperty browser_download_url
+
+        $tempFolder = "./download"
+
+        New-Item -ItemType Directory -Path $tempFolder | Out-String | Write-Verbose
+        $targetPathForZip = "$tempFolder/$releaseArtifactName"
+        Invoke-WebRequest -Uri $releaseArtifactUrl -OutFile $targetPathForZip -RetryIntervalSec 3 -MaximumRetryCount 100 | Out-String | Write-Verbose
+
+        $targetPathForExtractedZip = "$tempFolder/extracted"
+
+        Expand-Archive -Path $targetPathForZip -DestinationPath $targetPathForExtractedZip | Out-String | Write-Verbose
+
+        $sourceFolderPath = "$($targetPathForExtractedZip)/$sourcePath/*"
+        $targetFolderPath = "./$targetPath"
+
+        Write-Host "Copying extracted files from $sourceFolderPath to $targetFolderPath"
+        New-Item -ItemType Directory -Path $targetFolderPath | Out-String | Write-Verbose
+        Copy-Item -Path $sourceFolderPath -Destination $targetFolderPath -Recurse -Force | Out-String | Write-Verbose
+
+        Remove-Item -Path $tempFolder -Force -Recurse
+        Write-Host "Successfully copied the files from the release artifact to the target path $targetPath..."
+
+      shell: pwsh

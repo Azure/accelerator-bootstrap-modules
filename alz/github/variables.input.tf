@@ -9,15 +9,10 @@ variable "github_organization_name" {
   type        = string
 }
 
-variable "use_separate_repository_for_workflow_templates" {
+variable "use_separate_repository_for_templates" {
   description = "Controls whether to use a separate repository to store action templates. This is an extra layer of security to ensure that the azure credentials can only be leveraged for the specified workload|4"
   type        = bool
   default     = true
-}
-
-variable "bootstrap_location" {
-  description = "Azure Deployment location for the bootstrap resources (e.g. storage account, identities, etc)|4|azure_location"
-  type        = string
 }
 
 variable "bootstrap_subscription_id" {
@@ -79,4 +74,10 @@ variable "apply_approvers" {
   description = "Apply stage approvers to the action / pipeline, must be a list of SPNs separate by a comma (e.g. abcdef@microsoft.com,ghijklm@microsoft.com)|14"
   type        = list(string)
   default     = []
+}
+
+variable "create_branch_policies" {
+  description = "Controls whether to create branch policies for the repositories|15"
+  type        = bool
+  default     = true
 }

@@ -6,7 +6,8 @@ param (
     [switch]$skipDestroy = $false,
     [int]$maximumRetries = 10,
     [int]$retryCount = 0,
-    [int]$retryDelay = 10000
+    [int]$retryDelay = 10000,
+    [string]$iac
 )
 
 function Invoke-Workflow {
@@ -15,6 +16,7 @@ function Invoke-Workflow {
         [string]$repositoryName,
         [string]$workflowId,
         [string]$workflowAction = "",
+        [string]$iac,
         [hashtable]$headers
     )
     $workflowDispatchUrl = "https://api.github.com/repos/$organizationName/$repositoryName/actions/workflows/$workflowId/dispatches"
@@ -26,12 +28,23 @@ function Invoke-Workflow {
             ref = "main"
         } | ConvertTo-Json -Depth 100
     } else {
-        $workflowDispatchBody = @{
-            ref = "main"
-            inputs = @{
-                terraform_action = $workflowAction
-            }
-        } | ConvertTo-Json -Depth 100
+        if($iac -eq "terraform") {
+            $workflowDispatchBody = @{
+                ref = "main"
+                inputs = @{
+                    terraform_action = $workflowAction
+                }
+            } | ConvertTo-Json -Depth 100
+        }
+
+        if($iac -eq "bicep") {
+            $workflowDispatchBody = @{
+                ref = "main"
+                inputs = @{
+                    destroy = ($workflowAction -eq "destroy").ToString().ToLower()
+                }
+            } | ConvertTo-Json -Depth 100
+        }
     }
 
     $result = Invoke-RestMethod -Method POST -Uri $workflowDispatchUrl -Headers $headers -Body $workflowDispatchBody -StatusCodeVariable statusCode
@@ -50,6 +63,7 @@ function Wait-ForWorkflowRunToComplete {
     $workflowRunUrl = "https://api.github.com/repos/$organizationName/$repositoryName/actions/runs"
     Write-Host "Workflow Run URL: $workflowRunUrl"
 
+    $workflowRun = $null
     $workflowRunStatus = ""
     $workflowRunConclusion = ""
     while($workflowRunStatus -ne "completed") {
@@ -67,6 +81,12 @@ function Wait-ForWorkflowRunToComplete {
     }
 
     if($workflowRunConclusion -ne "success") {
+        # TODO: Get workflow run logs
+        #$workflowRunLogsUrl = $workflowRun.workflow_runs[0].logs_url
+        #$workflowRunLogs = Invoke-RestMethod -Method GET -Uri $workflowRunLogsUrl -Headers $headers -StatusCodeVariable statusCode
+        #$workflowRunLogsString = $workflowRunLogs | ConvertTo-Json -Depth 100
+        #Write-Host "Workflow Run Logs:"
+        #Write-Host $workflowRunLogsString
         throw "The workflow run did not complete successfully. Conclusion: $workflowRunConclusion"
     }
 }
@@ -103,7 +123,7 @@ try {
 
     # Trigger the apply workflow
     Write-Host "Triggering the $workflowAction workflow"
-    Invoke-Workflow -organizationName $organizationName -repositoryName $repositoryName -workflowId $workflowId -workflowAction $workflowAction -headers $headers
+    Invoke-Workflow -organizationName $organizationName -repositoryName $repositoryName -workflowId $workflowId -workflowAction $workflowAction -iac $iac -headers $headers
     Write-Host "$workflowAction workflow triggered successfully"
 
     # Wait for the apply workflow to complete
@@ -120,7 +140,7 @@ try {
 
     # Trigger the destroy workflow
     Write-Host "Triggering the $workflowAction workflow"
-    Invoke-Workflow -organizationName $organizationName -repositoryName $repositoryName -workflowId $workflowId -workflowAction $workflowAction -headers $headers
+    Invoke-Workflow -organizationName $organizationName -repositoryName $repositoryName -workflowId $workflowId -workflowAction $workflowAction -iac $iac -headers $headers
     Write-Host "$workflowAction workflow triggered successfully"
 
     # Wait for the apply workflow to complete

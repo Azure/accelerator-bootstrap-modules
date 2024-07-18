@@ -1,0 +1,36 @@
+---
+name: 02 Azure Landing Zones Continuous Delivery
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      skip_what_if:
+        description: 'Skip What If Check?'
+        default: false
+        type: boolean
+%{ for script_file_group in script_file_groups ~}
+      ${script_file_group.name}:
+        description: 'Run Steps: ${script_file_group.displayName}'
+        type: boolean
+        default: true
+%{ endfor ~}
+      destroy:
+        description: '[DANGER!] Destroy? [DANGER!]'
+        default: false
+        type: boolean
+
+jobs:
+  plan_and_apply:
+    uses: ${organization_name}/${repository_name_templates}/${cd_template_path}@main
+    name: 'CD'
+    permissions:
+      id-token: write
+      contents: read
+    with:
+      skip_what_if: $${{ inputs.skip_what_if }}
+      destroy: $${{ inputs.destroy }}
+%{ for script_file in script_files ~}
+      ${script_file.name}: $${{ inputs.${script_file.group} }}
+%{ endfor ~}

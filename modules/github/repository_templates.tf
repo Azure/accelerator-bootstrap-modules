@@ -22,7 +22,7 @@ resource "github_repository_file" "alz_templates" {
 }
 
 resource "github_branch_protection" "alz_templates" {
-  count                           = var.use_template_repository ? 1 : 0
+  count                           = var.use_template_repository && var.create_branch_policies ? 1 : 0
   depends_on                      = [github_repository_file.alz_templates]
   repository_id                   = github_repository.alz_templates[0].name
   pattern                         = "main"

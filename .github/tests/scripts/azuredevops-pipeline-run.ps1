@@ -6,7 +6,8 @@ param (
     [switch]$skipDestroy = $false,
     [int]$maximumRetries = 10,
     [int]$retryCount = 0,
-    [int]$retryDelay = 10000
+    [int]$retryDelay = 10000,
+    [string]$iac
 )
 
 function Invoke-Pipeline {
@@ -15,6 +16,7 @@ function Invoke-Pipeline {
         [string]$projectName,
         [int]$pipelineId,
         [string]$pipelineAction = "",
+        [string]$iac,
         [hashtable]$headers
     )
     $pipelineDispatchUrl = "https://dev.azure.com/$organizationName/$projectName/_apis/pipelines/$pipelineId/runs?api-version=7.2-preview.1"
@@ -32,18 +34,35 @@ function Invoke-Pipeline {
             }
         } | ConvertTo-Json -Depth 100
     } else {
-        $pipelineDispatchBody = @{
-            "resources" = @{
-                "repositories" = @{
-                    "self" = @{
-                        "refName" = "refs/heads/main"
+        if($iac -eq "terraform") {
+            $pipelineDispatchBody = @{
+                "resources" = @{
+                    "repositories" = @{
+                        "self" = @{
+                            "refName" = "refs/heads/main"
+                        }
                     }
                 }
-            }
-            "templateParameters" = @{
-                "terraform_action" = $pipelineAction
-            }
-        } | ConvertTo-Json -Depth 100
+                "templateParameters" = @{
+                    "terraform_action" = $pipelineAction
+                }
+            } | ConvertTo-Json -Depth 100
+        }
+
+        if($iac -eq "bicep") {
+            $pipelineDispatchBody = @{
+                "resources" = @{
+                    "repositories" = @{
+                        "self" = @{
+                            "refName" = "refs/heads/main"
+                        }
+                    }
+                }
+                "templateParameters" = @{
+                    "destroy" = ($pipelineAction -eq "destroy").ToString().ToLower()
+                }
+            } | ConvertTo-Json -Depth 100
+        }
     }
 
     $result = Invoke-RestMethod -Method POST -Uri $pipelineDispatchUrl -Headers $headers -Body $pipelineDispatchBody -StatusCodeVariable statusCode -ContentType "application/json"
@@ -69,6 +88,7 @@ function Wait-ForPipelineRunToComplete {
     $pipelineRunUrl = "https://dev.azure.com/$organizationName/$projectName/_apis/pipelines/$pipelineId/runs/$($pipelineRunId)?api-version=7.2-preview.1"
     Write-Host "Pipeline Run URL: $pipelineRunUrl"
 
+    $pipelineRun = $null
     $pipelineRunStatus = ""
     $pipelineRunResult = ""
     while($pipelineRunStatus -ne "completed") {
@@ -85,6 +105,12 @@ function Wait-ForPipelineRunToComplete {
     }
 
     if($pipelineRunResult -ne "succeeded") {
+        # TODO: Get pipeline run logs
+        #$pipelineRunLogsUrl = $pipelineRun.logs_url
+        #$pipelineRunLogs = Invoke-RestMethod -Method GET -Uri $pipelineRunLogsUrl -Headers $headers -StatusCodeVariable statusCode
+        #$pipelineRunLogsString = $pipelineRunLogs | ConvertTo-Json -Depth 100
+        #Write-Host "Pipeline Run Logs:"
+        #Write-Host $pipelineRunLogsString
         throw "The pipeline run did not complete successfully. Conclusion: $pipelineRunResult"
     }
 }
@@ -122,7 +148,7 @@ try {
 
     # Trigger the apply pipeline
     Write-Host "Triggering the $pipelineAction pipeline"
-    $pipelineRunId = Invoke-Pipeline -organizationName $organizationName -projectName $projectName -pipelineId $pipelineId -pipelineAction $pipelineAction -headers $headers
+    $pipelineRunId = Invoke-Pipeline -organizationName $organizationName -projectName $projectName -pipelineId $pipelineId -pipelineAction $pipelineAction -iac $iac -headers $headers
     Write-Host "$pipelineAction pipeline triggered successfully"
 
     # Wait for the apply pipeline to complete
@@ -139,7 +165,7 @@ try {
 
     # Trigger the destroy pipeline
     Write-Host "Triggering the $pipelineAction pipeline"
-    $pipelineRunId = Invoke-Pipeline -organizationName $organizationName -projectName $projectName -pipelineId $pipelineId -pipelineAction "destroy" -headers $headers
+    $pipelineRunId = Invoke-Pipeline -organizationName $organizationName -projectName $projectName -pipelineId $pipelineId -pipelineAction "destroy" -iac $iac -headers $headers
     Write-Host "$pipelineAction pipeline triggered successfully"
 
     # Wait for the apply pipeline to complete

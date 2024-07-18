@@ -4,7 +4,7 @@ module "resource_names" {
   environment_name = var.environment_name
   service_name     = var.service_name
   postfix_number   = var.postfix_number
-  resource_names   = var.resource_names
+  resource_names   = merge(var.resource_names, local.custom_role_definitions_bicep_names, local.custom_role_definitions_terraform_names)
 }
 
 module "files" {
@@ -21,6 +21,7 @@ module "azure" {
   resource_group_agents_name                                = local.resource_names.resource_group_agents
   resource_group_network_name                               = local.resource_names.resource_group_network
   resource_group_state_name                                 = local.resource_names.resource_group_state
+  create_storage_account                                    = var.iac_type == local.iac_terraform
   storage_account_name                                      = local.resource_names.storage_account
   storage_container_name                                    = local.resource_names.storage_container
   azure_location                                            = var.bootstrap_location
@@ -56,6 +57,8 @@ module "azure" {
   container_registry_image_tag                              = var.agent_container_image_tag
   container_registry_dockerfile_name                        = var.agent_container_image_dockerfile
   container_registry_dockerfile_repository_folder_url       = local.agent_container_instance_dockerfile_url
+  custom_role_definitions                                   = var.iac_type == "terraform" ? local.custom_role_definitions_terraform : local.custom_role_definitions_bicep
+  role_assignments                                          = var.iac_type == "terraform" ? var.role_assignments_terraform : var.role_assignments_bicep
 }
 
 module "azure_devops" {
@@ -69,7 +72,7 @@ module "azure_devops" {
   repository_name                              = local.resource_names.version_control_system_repository
   repository_files                             = local.repository_files
   template_repository_files                    = local.template_repository_files
-  use_template_repository                      = var.use_separate_repository_for_pipeline_templates
+  use_template_repository                      = var.use_separate_repository_for_templates
   repository_name_templates                    = local.resource_names.version_control_system_repository_templates
   variable_group_name                          = local.resource_names.version_control_system_variable_group
   azure_tenant_id                              = data.azurerm_client_config.current.tenant_id
@@ -83,4 +86,5 @@ module "azure_devops" {
   group_name                                   = local.resource_names.version_control_system_group
   agent_pool_name                              = local.resource_names.version_control_system_agent_pool
   use_self_hosted_agents                       = var.use_self_hosted_agents
+  create_branch_policies                       = var.create_branch_policies
 }

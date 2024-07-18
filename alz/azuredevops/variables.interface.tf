@@ -34,3 +34,26 @@ variable "configuration_file_path" {
   type        = string
   default     = ""
 }
+
+variable "starter_module_name" {
+  description = "The name of the starter module"
+  type        = string
+  default     = ""
+}
+
+variable "on_demand_folder_repository" {
+  description = "The repository to use for the on-demand folders"
+  type        = string
+  default     = ""
+}
+
+variable "on_demand_folder_artifact_name" {
+  description = "The branch to use for the on-demand folders"
+  type        = string
+  default     = ""
+}
+
+variable "bootstrap_location" {
+  description = "Azure Deployment location for the bootstrap resources (e.g. storage account, identities, etc)|4|azure_location"
+  type        = string
+}

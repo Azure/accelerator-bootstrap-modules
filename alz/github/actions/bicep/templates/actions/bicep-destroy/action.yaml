@@ -1,0 +1,16 @@
+---
+name: "[DANGER!] DESTROY! [DANGER!]"
+description: "Destroy all the resources"
+inputs:
+  whatIfEnabled:
+    description: 'Is the WhatIf flag enabled?'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Bicep Deploy
+      uses: azure/powershell@v2
+      with:
+        azPSVersion: 'latest'
+        inlineScript: ./${destroy_script_path} -WhatIfEnabled $$${{ inputs.whatIfEnabled }}

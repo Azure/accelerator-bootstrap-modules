@@ -1,0 +1,94 @@
+---
+stages:
+  - stage: validate
+    displayName: Validation Bicep
+    variables:
+      - group: ${variable_group_name}
+      - name: parametersFileName
+        value: parameters.json
+
+    jobs:
+      - job: validate
+        displayName: Validate Bicep
+        pool:
+          ${agent_pool_configuration}
+        steps:
+          - checkout: self
+            displayName: Checkout Repo
+
+          - template: helpers/bicep-installer.yaml
+            parameters:
+              serviceConnection: '${service_connection_name_plan}'
+
+          - pwsh: |
+              if (Test-Path -Path ./custom-modules/*)
+              {
+                echo "##vso[task.setvariable variable=CUSTOM_MODULES;]true"
+                echo "Set CUSTOM_MODULES to true"
+              }
+              else
+              {
+                echo "Set CUSTOM_MODULES to false"
+              }
+            workingDirectory: config
+            displayName: Check for Custom Modules
+
+          - pwsh: |
+              $output = @()
+              Get-ChildItem -Recurse -Filter '*.bicep' | ForEach-Object {
+                  Write-Information "==> Attempting Bicep Build For File: $_" -InformationAction Continue
+                  $bicepOutput = bicep build $_.FullName 2>&1
+                  if ($LastExitCode -ne 0)
+                  {
+                    foreach ($item in $bicepOutput) {
+                      $output += "$($item) `r`n"
+                    }
+                  }
+                  else
+                  {
+                    echo "Bicep Build Successful for File: $_"
+                  }
+              }
+              if ($output.length -gt 0) {
+                throw $output
+              }
+            workingDirectory: config/custom-modules
+            condition: eq(variables['CUSTOM_MODULES'], 'true')
+            displayName: Bicep Build & Lint All Custom Modules
+
+      - deployment: whatif
+        displayName: What If Deploy with Bicep
+        pool:
+          ${agent_pool_configuration}
+        environment: ${environment_name_plan}
+        timeoutInMinutes: 0
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                  displayName: Checkout Bicep Module
+
+                - template: helpers/bicep-installer.yaml
+                  parameters:
+                    serviceConnection: '${service_connection_name_plan}'
+
+                - template: helpers/bicep-variables.yaml
+                  parameters:
+                    parametersFileName: $(parametersFileName)
+
+%{ for on_demand_folder in on_demand_folders ~}
+                - template: helpers/bicep-on-demand-folder.yaml
+                  parameters:
+                    repository: "${on_demand_folder_repository}"
+                    releaseArtifactName: "${on_demand_folder_artifact_name}"
+                    releaseVersion: "$(RELEASE_VERSION)"
+                    sourcePath: "${on_demand_folder.source}"
+                    targetPath: "${on_demand_folder.target}"
+
+%{ endfor ~}
+
+                - template: helpers/bicep-templates.yaml
+                  parameters:
+                    serviceConnection: '${service_connection_name_plan}'
+                    whatIfEnabled: true

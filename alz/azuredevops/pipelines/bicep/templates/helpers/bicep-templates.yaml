@@ -1,0 +1,32 @@
+---
+parameters:
+  - name: serviceConnection
+    type: string
+  - name: whatIfEnabled
+    type: boolean
+    default: true
+%{ for script_file in script_files ~}
+  - name: ${script_file.name}
+    type: boolean
+    default: true
+%{ endfor ~}
+
+steps:
+  - template: bicep-deploy.yaml
+    parameters:
+      serviceConnection: $${{ parameters.serviceConnection }}
+      whatIfEnabled: $${{ parameters.whatIfEnabled }}
+      scriptFiles:
+%{ for script_file in script_files ~}
+        - displayName: "${script_file.displayName}"
+          templateFilePath: "${script_file.templateFilePath}"
+          templateParametersFilePath: "${script_file.templateParametersFilePath}"
+          managementGroupId: ${script_file.managementGroupIdVariable}
+          subscriptionId: ${script_file.subscriptionIdVariable}
+          resourceGroupName: ${script_file.resourceGroupNameVariable}
+          location: "$(LOCATION)"
+          deploymentType: "${script_file.deploymentType}"
+          firstRunWhatIf: ${script_file.firstRunWhatIf}
+          runStep: $${{ parameters.${script_file.name} }}
+
+%{ endfor ~}

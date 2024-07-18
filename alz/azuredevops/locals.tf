@@ -8,13 +8,19 @@ locals {
 }
 
 locals {
+  iac_terraform = "terraform"
+}
+
+locals {
   plan_key  = "plan"
   apply_key = "apply"
 }
 
 locals {
-  ci_file_name = "ci.yaml"
-  cd_file_name = "cd.yaml"
+  ci_file_name          = "ci.yaml"
+  cd_file_name          = "cd.yaml"
+  ci_template_file_name = "ci-template.yaml"
+  cd_template_file_name = "cd-template.yaml"
 }
 
 locals {
@@ -70,15 +76,15 @@ locals {
       environment_name        = local.resource_names.version_control_system_environment_plan
       service_connection_name = local.resource_names.version_control_system_service_connection_plan
       service_connection_required_templates = [
-        local.ci_file_name,
-        local.cd_file_name
+        "${local.target_folder_name}/${local.ci_template_file_name}",
+        "${local.target_folder_name}/${local.cd_template_file_name}"
       ]
     }
     (local.apply_key) = {
       environment_name        = local.resource_names.version_control_system_environment_apply
       service_connection_name = local.resource_names.version_control_system_service_connection_apply
       service_connection_required_templates = [
-        local.cd_file_name
+        "${local.target_folder_name}/${local.cd_template_file_name}"
       ]
     }
   }
@@ -90,4 +96,25 @@ locals {
 
 locals {
   agent_container_instance_dockerfile_url = "${var.agent_container_image_repository}#${var.agent_container_image_tag}:${var.agent_container_image_folder}"
+}
+
+locals {
+  custom_role_definitions_bicep_names     = { for key, value in var.custom_role_definitions_bicep : "custom_role_definition_bicep_${key}" => value.name }
+  custom_role_definitions_terraform_names = { for key, value in var.custom_role_definitions_terraform : "custom_role_definition_terraform_${key}" => value.name }
+
+  custom_role_definitions_bicep = {
+    for key, value in var.custom_role_definitions_bicep : key => {
+      name        = local.resource_names["custom_role_definition_bicep_${key}"]
+      description = value.description
+      permissions = value.permissions
+    }
+  }
+
+  custom_role_definitions_terraform = {
+    for key, value in var.custom_role_definitions_terraform : key => {
+      name        = local.resource_names["custom_role_definition_terraform_${key}"]
+      description = value.description
+      permissions = value.permissions
+    }
+  }
 }

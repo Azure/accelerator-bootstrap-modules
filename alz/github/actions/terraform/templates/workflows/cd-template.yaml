@@ -30,7 +30,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
 
       - name: Terraform Init
         run: |
@@ -40,10 +42,10 @@ jobs:
           -backend-config="container_name=$${{vars.BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME}}" \
           -backend-config="key=terraform.tfstate"
 
-      - name: Terraform Plan for $${{ github.event.inputs.terraform_action == 'destroy' && 'Destroy' || 'Apply' }}
+      - name: Terraform Plan for $${{ inputs.terraform_action == 'destroy' && 'Destroy' || 'Apply' }}
         run: |
           # shellcheck disable=SC2086
-          terraform plan -out=tfplan -input=false $${{ github.event.inputs.terraform_action == 'destroy' && '-destroy' || '' }}
+          terraform plan -out=tfplan -input=false $${{ inputs.terraform_action == 'destroy' && '-destroy' || '' }}
 
       - name: Create Module Artifact
         run: |
@@ -86,7 +88,9 @@ jobs:
           name: module
 
       - name: Install Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
 
       - name: Terraform Init
         run: |
@@ -96,5 +100,5 @@ jobs:
           -backend-config="container_name=$${{vars.BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME}}" \
           -backend-config="key=terraform.tfstate"
 
-      - name: Terraform $${{ github.event.inputs.terraform_action == 'destroy' && 'Destroy' || 'Apply' }}
+      - name: Terraform $${{ inputs.terraform_action == 'destroy' && 'Destroy' || 'Apply' }}
         run: terraform apply -input=false -auto-approve tfplan

@@ -1,0 +1,18 @@
+---
+parameters:
+  - name: serviceConnection
+    type: string
+  - name: whatIfEnabled
+    type: boolean
+    default: true
+
+steps:
+  - task: AzurePowerShell@5
+    displayName: "[DANGER!] DESTROY! [DANGER!]"
+    inputs:
+      azureSubscription: $${{ parameters.serviceConnection }}
+      pwsh: true
+      azurePowerShellVersion: LatestVersion
+      ScriptType: "FilePath"
+      ScriptPath: "${destroy_script_path}"
+      ScriptArguments: "-WhatIfEnabled $$${{ parameters.whatIfEnabled }}"

@@ -1,0 +1,124 @@
+---
+name: Continuous Integration
+on:
+  workflow_call:
+
+jobs:
+  validate:
+    name: Validate Bicep
+    runs-on:
+      ${runner_name}
+    environment: ${environment_name_plan}
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout Bicep Module
+        uses: actions/checkout@v4
+
+      - name: Install Bicep and Update Az Module
+        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-installer@main
+
+      - name: Check for Custom Modules
+        shell: pwsh
+        working-directory: config
+        run: |
+          if (Test-Path -Path ./custom-modules/*)
+          {
+            echo "CUSTOM_MODULES=true" >> $env:GITHUB_ENV
+            echo "Set CUSTOM_MODULES to true"
+          }
+          else
+          {
+            echo "Set CUSTOM_MODULES to false"
+          }
+
+      - name: Bicep Build & Lint All Custom Modules
+        shell: pwsh
+        if: $${{ env.CUSTOM_MODULES == 'true' }}
+        working-directory: config/custom-modules
+        run: |
+          $output = @()
+          Get-ChildItem -Recurse -Filter '*.bicep' | ForEach-Object {
+              Write-Information "==> Attempting Bicep Build For File: $_" -InformationAction Continue
+              $bicepOutput = bicep build $_.FullName 2>&1
+              if ($LastExitCode -ne 0)
+              {
+                foreach ($item in $bicepOutput) {
+                  $output += "$($item) `r`n"
+                }
+              }
+              else
+              {
+                echo "Bicep Build Successful for File: $_"
+              }
+          }
+          if ($output.length -gt 0) {
+            throw $output
+          }
+
+  whatif:
+    name: What If
+    runs-on:
+      ${runner_name}
+    concurrency: ${backend_azure_storage_account_container_name}
+    environment: ${environment_name_plan}
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      PARAMETERS_FILE_NAME: parameters.json
+
+    steps:
+      - name: Checkout Bicep Module
+        uses: actions/checkout@v4
+
+      - name: Get Bicep Variables
+        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-variables@main
+        with:
+          parameters_file_name: $${{ env.PARAMETERS_FILE_NAME }}
+
+%{ for on_demand_folder in on_demand_folders ~}
+      - name: Get On Demand Folder ${on_demand_folder.target}
+        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-on-demand-folder@main
+        with:
+          repository: "${on_demand_folder_repository}"
+          releaseArtifactName: "${on_demand_folder_artifact_name}"
+          releaseVersion: "$${{ env.RELEASE_VERSION }}"
+          sourcePath: "${on_demand_folder.source}"
+          targetPath: "${on_demand_folder.target}"
+
+%{ endfor ~}
+      - name: Install Bicep and Update Az Module
+        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-installer@main
+
+      - name: OIDC Login to Tenant
+        uses: azure/login@v2
+        with:
+          client-id: $${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: $${{ vars.AZURE_TENANT_ID }}
+          subscription-id: $${{ vars.AZURE_SUBSCRIPTION_ID }}
+          enable-AzPSSession: true
+
+      - name: First Deployment Check
+        id: firstDeploymentCheck
+        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-first-deployment-check@main
+        with:
+          managementGroupId: $${{ env.MANAGEMENT_GROUP_ID }}
+%{ for script_file in script_files ~}
+      - name: 'What If: ${script_file.displayName}'
+        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-deploy@main
+        with:
+          displayName: '${script_file.displayName}'
+          templateFilePath: '${script_file.templateFilePath}'
+          templateParametersFilePath: '${script_file.templateParametersFilePath}'
+          managementGroupId: '${script_file.managementGroupIdVariable}'
+          subscriptionId: '${script_file.subscriptionIdVariable}'
+          resourceGroupName: '${script_file.resourceGroupNameVariable}'
+          location: '$${{ env.LOCATION }}'
+          deploymentType: '${script_file.deploymentType}'
+          firstRunWhatIf: '${script_file.firstRunWhatIf}'
+          firstDeployment: '$${{ env.firstDeployment }}'
+          whatIfEnabled: 'true'
+%{ endfor ~}
