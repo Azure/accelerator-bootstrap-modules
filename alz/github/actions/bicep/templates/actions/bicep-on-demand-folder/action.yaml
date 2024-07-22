@@ -38,12 +38,15 @@ runs:
         $repoOrgPlusRepo = $repository.Split("/")[-2..-1] -join "/"
 
         $repoReleaseUrl = "https://api.github.com/repos/$repoOrgPlusRepo/releases/tags/$releaseVersion"
+        if($releaseVersion -eq "latest") {
+          $repoReleaseUrl = "https://api.github.com/repos/$repoOrgPlusRepo/releases/latest"
+        }
         $releaseData = Invoke-RestMethod $repoReleaseUrl -SkipHttpErrorCheck -StatusCodeVariable "statusCode"
         Write-Verbose "Status code: $statusCode"
 
         if($statusCode -eq 404) {
-            Write-Error "The release $release does not exist in the GitHub repository $repository - $repoReleaseUrl"
-            throw "The release $release does not exist in the GitHub repository $repository - $repoReleaseUrl"
+            Write-Error "The release $releaseVersion does not exist in the GitHub repository $repository - $repoReleaseUrl"
+            throw "The release $releaseVersion does not exist in the GitHub repository $repository - $repoReleaseUrl"
         }
 
         # Handle transient errors like throttling
