@@ -51,15 +51,15 @@
             "display_order": 1,
             "description": "The region for the bootstrap resources."
         },
-        "starter_location": {
-            "type": "string",
+        "starter_locations": {
+            "type": "list(string)",
             "required": true,
             "source": "input",
             "maps_to": [ "starter" ],
             "validation": "azure_location",
             "bicep_alias": "Location",
             "display_order": 2,
-            "description": "The primary region for the Azure Landing Zones resources."
+            "description": "The regions for the Azure Landing Zones resources."
         },
         "root_parent_management_group_id": {
             "type": "string",
