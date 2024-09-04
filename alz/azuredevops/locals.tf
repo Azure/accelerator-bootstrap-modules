@@ -12,6 +12,11 @@ locals {
 }
 
 locals {
+  use_private_networking          = var.use_self_hosted_agents && var.use_private_networking
+  allow_storage_access_from_my_ip = local.use_private_networking && var.allow_storage_access_from_my_ip
+}
+
+locals {
   plan_key  = "plan"
   apply_key = "apply"
 }
