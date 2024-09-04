@@ -16,6 +16,11 @@ locals {
 }
 
 locals {
+  use_private_networking          = var.use_self_hosted_runners && var.use_private_networking
+  allow_storage_access_from_my_ip = local.use_private_networking && var.allow_storage_access_from_my_ip
+}
+
+locals {
   use_runner_group                   = var.use_runner_group && module.github.organization_plan == local.enterprise_plan && var.use_self_hosted_runners
   runner_organization_repository_url = local.use_runner_group ? module.github.organization_url : "${module.github.organization_url}/${module.github.repository_names.module}"
 }

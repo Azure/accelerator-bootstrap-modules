@@ -43,8 +43,8 @@ module "azure" {
   virtual_network_subnet_name_container_instances           = local.resource_names.subnet_container_instances
   virtual_network_subnet_name_private_endpoints             = local.resource_names.subnet_private_endpoints
   storage_account_private_endpoint_name                     = local.resource_names.storage_account_private_endpoint
-  use_private_networking                                    = var.use_private_networking
-  allow_storage_access_from_my_ip                           = var.allow_storage_access_from_my_ip
+  use_private_networking                                    = local.use_private_networking
+  allow_storage_access_from_my_ip                           = local.allow_storage_access_from_my_ip
   virtual_network_address_space                             = var.virtual_network_address_space
   virtual_network_subnet_address_prefix_container_instances = var.virtual_network_subnet_address_prefix_container_instances
   virtual_network_subnet_address_prefix_private_endpoints   = var.virtual_network_subnet_address_prefix_private_endpoints
