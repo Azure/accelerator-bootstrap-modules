@@ -249,7 +249,7 @@ jobs:
             $Inputs["create_bootstrap_resources_in_azure"] = $localDeployAzureResources
           }
 
-          $Inputs["apply_approvers"] = ""
+          $Inputs["apply_approvers"] = @()
           $Inputs["root_parent_management_group_id"] = ""
           $Inputs["subscription_id_connectivity"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
           $Inputs["subscription_id_identity"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
@@ -278,7 +278,8 @@ jobs:
             $Inputs["ConnectivitySubscriptionId"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
           }
 
-          $json = $Inputs | ConvertTo-Json -Depth 100 | Out-File -FilePath inputs.json -Encoding utf8 -Force
+          $json = ConvertTo-Json $Inputs -Depth 100
+          $json | Out-File -FilePath inputs.json -Encoding utf8 -Force
 
         shell: pwsh
 
