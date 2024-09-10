@@ -7,12 +7,28 @@ module "resource_names" {
   resource_names   = merge(var.resource_names, local.custom_role_definitions_bicep_names, local.custom_role_definitions_terraform_names)
 }
 
+module "architecture_definition" {
+  count                        = local.has_architecture_definition ? 1 : 0
+  source                       = "../../modules/template_architecture_definition"
+  starter_module_folder_path   = local.starter_module_folder_path
+  architecture_definition_name = local.architecture_definition_name
+  enable_alz                   = var.enable_alz
+  architecture_definition_path = var.architecture_definition_path
+}
+
+resource "local_file" "architecture_definition_file" {
+  count    = local.has_architecture_definition ? 1 : 0
+  content  = module.architecture_definition[0].architecture_definition_json
+  filename = local.architecture_definition_file_destination
+}
+
 module "files" {
   source                            = "../../modules/files"
   starter_module_folder_path        = local.starter_module_folder_path
   additional_files                  = var.additional_files
   configuration_file_path           = var.configuration_file_path
   built_in_configurartion_file_name = var.built_in_configurartion_file_name
+  additional_folders_path           = var.additional_folders_path
 }
 
 module "azure" {

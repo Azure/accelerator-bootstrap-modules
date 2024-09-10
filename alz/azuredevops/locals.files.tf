@@ -84,6 +84,12 @@ locals {
     }
   }
 
+  architecture_definition_file = local.has_architecture_definition ? {
+    "lib/architecture_definitions/${local.architecture_definition_name}.alz_architecture_definition.json" = {
+      content = module.architecture_definition[0].architecture_definition_json
+    }
+  } : {}
+
   # Build a map of module files with types that are supported
   module_files_supported = { for key, value in local.module_files : key => value if value.content != "unsupported_file_type" && !endswith(key, "-cache.json") && !endswith(key, var.bicep_config_file_path) }
 
@@ -96,6 +102,6 @@ locals {
   module_files_filtered = { for key, value in local.module_files_supported : key => value if !contains(local.excluded_module_files, key) }
 
   # Create final maps of all files to be included in the repositories
-  repository_files          = merge(local.cicd_files, local.module_files_filtered, var.use_separate_repository_for_templates ? {} : local.cicd_template_files)
+  repository_files          = merge(local.cicd_files, local.module_files_filtered, var.use_separate_repository_for_templates ? {} : local.cicd_template_files, local.architecture_definition_file)
   template_repository_files = var.use_separate_repository_for_templates ? local.cicd_template_files : {}
 }
