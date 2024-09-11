@@ -113,6 +113,12 @@ variable "additional_files" {
   default     = []
 }
 
+variable "additional_folders_path" {
+  description = "Additional folders to upload to the repository. This must be specified as a comma-separated list of absolute paths (e.g. c:\\templates\\Microsoft_Cloud_for_Industry\\Common or /templates/Microsoft_Cloud_for_Industry/Common)"
+  type        = list(string)
+  default     = []
+}
+
 variable "storage_account_replication_type" {
   description = "Controls the redundancy for the storage account"
   type        = string
@@ -350,4 +356,16 @@ variable "role_assignments_bicep" {
       scope                              = "subscription"
     }
   }
+}
+
+variable "architecture_definition_path" {
+  description = "The path to the architecture definition file to use instead of the default"
+  type        = string
+  default     = ""
+}
+
+variable "enable_alz" {
+  description = "Enable the ALZ archetypes in the architecture definition"
+  type        = bool
+  default     = false
 }

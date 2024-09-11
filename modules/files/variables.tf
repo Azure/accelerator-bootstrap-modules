@@ -26,3 +26,9 @@ variable "built_in_configurartion_file_name" {
   type        = string
   default     = "config.yaml"
 }
+
+variable "additional_folders_path" {
+  description = "Additional folders"
+  type        = list(string)
+  default     = []
+}
