@@ -77,4 +77,6 @@ locals {
     confidential_corp_archetypes   = join(", ", local.confidential_corp)
     confidential_online_archetypes = join(", ", local.confidential_online)
   }
+
+  template_file = templatefile(local.template_file_path, local.template_vars)
 }
