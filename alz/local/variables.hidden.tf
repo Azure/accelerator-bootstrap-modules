@@ -170,8 +170,7 @@ variable "custom_role_definitions_bicep" {
           "Microsoft.Insights/diagnosticSettings/write",
           "Microsoft.Insights/diagnosticSettings/read",
           "Microsoft.Resources/deployments/whatIf/action",
-          "Microsoft.Resources/deployments/write",
-          "Microsoft.SecurityInsights/onboardingStates/write"
+          "Microsoft.Resources/deployments/write"
         ]
         not_actions = []
       }

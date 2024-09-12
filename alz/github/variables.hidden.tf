@@ -288,7 +288,8 @@ variable "custom_role_definitions_bicep" {
           "Microsoft.Authorization/locks/write",
           "Microsoft.Network/*/write",
           "Microsoft.Resources/deployments/whatIf/action",
-          "Microsoft.Resources/deployments/write"
+          "Microsoft.Resources/deployments/write",
+          "Microsoft.SecurityInsights/onboardingStates/write"
         ]
         not_actions = []
       }
