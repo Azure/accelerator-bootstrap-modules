@@ -229,7 +229,9 @@ variable "custom_role_definitions_bicep" {
           "Microsoft.Resources/deployments/write",
           "Microsoft.Resources/deployments/validate/action",
           "Microsoft.Resources/deployments/read",
-          "Microsoft.Resources/deployments/operationStatuses/read"
+          "Microsoft.Resources/deployments/operationStatuses/read",
+          "Microsoft.Authorization/roleAssignments/write",
+          "Microsoft.Authorization/roleAssignments/delete"
         ]
         not_actions = []
       }
