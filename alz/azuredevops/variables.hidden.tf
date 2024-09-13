@@ -351,15 +351,3 @@ variable "role_assignments_bicep" {
     }
   }
 }
-
-variable "architecture_definition_path" {
-  description = "The path to the architecture definition file to use instead of the default"
-  type        = string
-  default     = ""
-}
-
-variable "enable_alz" {
-  description = "Enable the ALZ archetypes in the architecture definition"
-  type        = bool
-  default     = false
-}
