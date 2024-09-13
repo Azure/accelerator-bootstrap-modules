@@ -235,7 +235,9 @@ variable "custom_role_definitions_bicep" {
           "Microsoft.Resources/deployments/write",
           "Microsoft.Resources/deployments/validate/action",
           "Microsoft.Resources/deployments/read",
-          "Microsoft.Resources/deployments/operationStatuses/read"
+          "Microsoft.Resources/deployments/operationStatuses/read",
+          "Microsoft.Authorization/roleAssignments/write",
+          "Microsoft.Authorization/roleAssignments/delete"
         ]
         not_actions = []
       }
@@ -288,7 +290,8 @@ variable "custom_role_definitions_bicep" {
           "Microsoft.Authorization/locks/write",
           "Microsoft.Network/*/write",
           "Microsoft.Resources/deployments/whatIf/action",
-          "Microsoft.Resources/deployments/write"
+          "Microsoft.Resources/deployments/write",
+          "Microsoft.SecurityInsights/onboardingStates/write"
         ]
         not_actions = []
       }
