@@ -1,4 +1,4 @@
-data "local_file" "custom_architecture_definition_json" {
-  count    = local.has_custom_architecture_definition ? 1 : 0
-  filename = var.architecture_definition_path
+data "local_file" "architecture_definition_override_json" {
+  count    = local.has_architecture_definition_override ? 1 : 0
+  filename = local.architecture_definition_override_path
 }
