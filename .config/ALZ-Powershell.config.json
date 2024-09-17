@@ -193,6 +193,7 @@
                 "Values": [
                     "hubNetworking",
                     "vwanConnectivity",
+                    "hubNetworkingMultiRegion",
                     "none"
                 ]
             }
