@@ -144,6 +144,7 @@ variable "custom_role_definitions_bicep" {
           "Microsoft.Management/managementGroups/subscriptions/read",
           "Microsoft.Authorization/policyDefinitions/write",
           "Microsoft.Authorization/policySetDefinitions/write",
+          "Microsoft.Authorization/policyAssignments/write",
           "Microsoft.Authorization/roleDefinitions/write",
           "Microsoft.Authorization/*/read",
           "Microsoft.Resources/deployments/whatIf/action",
