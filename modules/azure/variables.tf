@@ -147,8 +147,7 @@ variable "resource_providers" {
     "Microsoft.Security",
     "Microsoft.SecurityInsights",
     "Microsoft.Storage",
-    "Microsoft.StreamAnalytics",
-    "Microsoft.TimeSeriesInsights"
+    "Microsoft.StreamAnalytics"
   ]
 }
 
