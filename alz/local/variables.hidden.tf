@@ -144,6 +144,7 @@ variable "custom_role_definitions_bicep" {
           "Microsoft.Management/managementGroups/subscriptions/read",
           "Microsoft.Authorization/policyDefinitions/write",
           "Microsoft.Authorization/policySetDefinitions/write",
+          "Microsoft.Authorization/policyAssignments/write",
           "Microsoft.Authorization/roleDefinitions/write",
           "Microsoft.Authorization/*/read",
           "Microsoft.Resources/deployments/whatIf/action",
@@ -152,7 +153,8 @@ variable "custom_role_definitions_bicep" {
           "Microsoft.Resources/deployments/read",
           "Microsoft.Resources/deployments/operationStatuses/read",
           "Microsoft.Authorization/roleAssignments/write",
-          "Microsoft.Authorization/roleAssignments/delete"
+          "Microsoft.Authorization/roleAssignments/delete",
+          "Microsoft.Insights/diagnosticSettings/write"
         ]
         not_actions = []
       }
