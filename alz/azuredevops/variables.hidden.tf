@@ -54,10 +54,10 @@ variable "agent_container_memory_max" {
   default     = 4
 }
 
-variable "built_in_configurartion_file_name" {
-  description = "The name of the built-in configuration file"
-  type        = string
-  default     = "config.yaml"
+variable "built_in_configurartion_file_names" {
+  description = "Built-in configuration file name"
+  type        = list(string)
+  default     = ["config.yaml", "config-hub-and-spoke-vnet.yaml", "config-virtual-wan.yaml"]
 }
 
 variable "module_folder_path_relative" {

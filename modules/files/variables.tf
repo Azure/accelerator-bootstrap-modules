@@ -21,10 +21,10 @@ variable "configuration_file_path" {
   default     = ""
 }
 
-variable "built_in_configurartion_file_name" {
+variable "built_in_configurartion_file_names" {
   description = "Built-in configuration file name"
-  type        = string
-  default     = "config.yaml"
+  type        = list(string)
+  default     = ["config.yaml", "config-hub-and-spoke-vnet.yaml", "config-virtual-wan.yaml"]
 }
 
 variable "additional_folders_path" {
