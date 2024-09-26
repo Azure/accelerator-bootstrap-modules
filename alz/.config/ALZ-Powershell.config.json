@@ -53,13 +53,23 @@
         },
         "starter_location": {
             "type": "string",
-            "required": true,
+            "required": false,
             "source": "input",
             "maps_to": [ "starter" ],
             "validation": "azure_location",
             "bicep_alias": "Location",
             "display_order": 2,
-            "description": "The primary region for the Azure Landing Zones resources."
+            "description": "The regions for the Azure Landing Zones resources."
+        },
+        "starter_locations": {
+            "type": "list(string)",
+            "required": false,
+            "source": "input",
+            "maps_to": [ "starter" ],
+            "validation": "azure_location",
+            "bicep_alias": "Locations",
+            "display_order": 2,
+            "description": "The regions for the Azure Landing Zones resources."
         },
         "root_parent_management_group_id": {
             "type": "string",
@@ -107,7 +117,7 @@
             "required": false,
             "source": "input",
             "maps_to": [ "bootstrap", "starter" ],
-            "display_map_filter" : [ "starter" ],
+            "display_map_filter": [ "starter" ],
             "validation": "configuration_file_path",
             "display_order": 7,
             "description": "The identifier of the Connectivity Subscription."
