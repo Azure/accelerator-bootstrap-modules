@@ -192,7 +192,9 @@
                 "Display": true,
                 "Values": [
                     "hubNetworking",
+                    "hubNetworkingMultiRegion",
                     "vwanConnectivity",
+                    "vwanConnectivityMultiRegion",
                     "none"
                 ]
             }
