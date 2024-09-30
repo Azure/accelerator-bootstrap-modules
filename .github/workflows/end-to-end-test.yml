@@ -154,9 +154,15 @@ jobs:
             "westus3",
             "australiaeast"
           )
+
+          $locationsSingleAvailabilityZone = @(
+            "ukwest"
+          )
+
           $jobIndex = ${{ strategy.job-index }}
           $locationIndex = $jobIndex % $locations.Length
           $location = $locations[$locationIndex]
+          $location2 = $locationsSingleAvailabilityZone[$locationIndex % $locationsSingleAvailabilityZone.Length]
 
           $enableSelfHostedAgents = "false"
           if($selfHostedAgents -eq "public" -or $selfHostedAgents -eq "private") {
@@ -210,11 +216,11 @@ jobs:
           }
 
           $Inputs = @{}
-          $Inputs["iac"] = $infrastructureAsCode
-          $Inputs["bootstrap"] = "alz_$versionControlSystemMapped"
-          $Inputs["starter"] = "test"
+          $Inputs["iac_type"] = $infrastructureAsCode
+          $Inputs["bootstrap_module_name"] = "alz_$versionControlSystemMapped"
+          $Inputs["starter_module_name"] = "test"
           $Inputs["bootstrap_location"] = $location
-          $Inputs["starter_location"] = $location
+          $Inputs["starter_location"] = [$location, %location2]
           $Inputs["bootstrap_subscription_id"] = ""
           $Inputs["service_name"] = "alz"
           $Inputs["environment_name"] = $uniqueId
