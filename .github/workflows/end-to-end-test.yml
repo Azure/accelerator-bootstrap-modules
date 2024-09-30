@@ -52,7 +52,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        vcs: ['github', 'azuredevops', 'local', 'legacy-github', 'legacy-azuredevops']  # Version Control System
+        vcs: ['github', 'azuredevops', 'local']  # Version Control System
         iac: ['terraform', 'bicep']
         ag: ['public', 'private', 'none']  # Self Hosted Agents
         os: ['ubuntu', 'windows', 'macos']  # Operating System
@@ -63,14 +63,6 @@ jobs:
           - vcs: local
             ag: public
           - vcs: local
-            ag: private
-          - vcs: legacy-github
-            ag: public
-          - vcs: legacy-github
-            ag: private
-          - vcs: legacy-azuredevops
-            ag: public
-          - vcs: legacy-azuredevops
             ag: private
           - vcs: azuredevops
             tf: 1.5.0
@@ -84,14 +76,6 @@ jobs:
             vcs: github
           - os: macos
             vcs: github
-          - iac: terraform
-            vcs: legacy-github
-          - tf: 1.5.0
-            vcs: legacy-github
-          - iac: terraform
-            vcs: legacy-azuredevops
-          - tf: 1.5.0
-            vcs: legacy-azuredevops
 
     runs-on: ${{ matrix.os }}-latest
     steps:
@@ -266,24 +250,13 @@ jobs:
           $Inputs["child_management_group_display_name"] = "E2E Test"
           $Inputs["resource_group_location"] = $location
 
-          # Modern Bicep
+          # Bicep
           if($infrastructureAsCode -eq "bicep") {
             $Inputs["Prefix"] = $uniqueId
             $Inputs["Location"] = $location
             $Inputs["Environment"] = "live"
             $Inputs["SecurityContact"] = "test@test.com"
             $Inputs["networkType"] = "none"
-          }
-
-          # Legacy Bicep
-          if($versionControlSystem.StartsWith("legacy-")) {
-            $Inputs["Prefix"] = $uniqueId
-            $Inputs["Location"] = $location
-            $Inputs["Environment"] = "live"
-            $Inputs["SecurityContact"] = "test@test.com"
-            $Inputs["IdentitySubscriptionId"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
-            $Inputs["ManagementSubscriptionId"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
-            $Inputs["ConnectivitySubscriptionId"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
           }
 
           $json = ConvertTo-Json $Inputs -Depth 100
@@ -321,11 +294,8 @@ jobs:
               if($infrastructureAsCode -eq "terraform") {
                 $starterModuleOverrideFolderPath = "$starterModuleOverrideFolderPath/templates"
               }
-              if($versionControlSystem.StartsWith("legacy-")) {
-                Deploy-Accelerator -output "${{ env.TARGET_FOLDER }}" -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "${{ env.BOOTSTRAP_MODULE_FOLDER }}" -starterModuleOverrideFolderPath $starterModuleOverrideFolderPath -autoApprove -bicepLegacyMode $true -ErrorAction Stop -Verbose
-              } else {
-                Deploy-Accelerator -output "${{ env.TARGET_FOLDER }}" -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "${{ env.BOOTSTRAP_MODULE_FOLDER }}" -starterModuleOverrideFolderPath $starterModuleOverrideFolderPath -starterRelease "${{ env.ALZ_ON_DEMAND_FOLDER_RELEASE_TAG }}" -autoApprove -ErrorAction Stop -Verbose
-              }
+              Deploy-Accelerator -output "${{ env.TARGET_FOLDER }}" -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "${{ env.BOOTSTRAP_MODULE_FOLDER }}" -starterModuleOverrideFolderPath $starterModuleOverrideFolderPath -starterRelease "${{ env.ALZ_ON_DEMAND_FOLDER_RELEASE_TAG }}" -autoApprove -ErrorAction Stop -Verbose
+              
               if ($LastExitCode -eq 0) {
                 $success = $true
               } else {
@@ -368,12 +338,6 @@ jobs:
 
           # Get Inputs
           $versionControlSystem = "${{ matrix.vcs }}"
-
-          if($versionControlSystem -eq "biceplegacy") {
-            Write-Host "Running in Bicep Legacy mode, so not pipelines to run..."
-            exit 0
-          }
-
           $versionControlSystemOrganisationName = "${{ vars.VCS_ORGANIZATION }}"
           $uniqueId = $ENV:UNIQUE_ID
 
