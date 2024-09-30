@@ -161,8 +161,9 @@ jobs:
 
           $jobIndex = ${{ strategy.job-index }}
           $locationIndex = $jobIndex % $locations.Length
+          $location2Index = $jobIndex % $locationsSingleAvailabilityZone.Length
           $location = $locations[$locationIndex]
-          $location2 = $locationsSingleAvailabilityZone[$locationIndex % $locationsSingleAvailabilityZone.Length]
+          $location2 = $locationsSingleAvailabilityZone[$location2Index]
 
           $enableSelfHostedAgents = "false"
           if($selfHostedAgents -eq "public" -or $selfHostedAgents -eq "private") {
@@ -204,6 +205,7 @@ jobs:
           Write-Host "Local Deploy Azure Resources: $localDeployAzureResources"
           Write-Host "Run Number: $runNumber"
           Write-Host "Location: $location"
+          Write-Host "Location 2: $location2"
 
           $uniqueId = "$versionControlSystemShort$infrastructureAsCodeShort$selfhostedAgentsShort$operatingSystemShort$terraformVersionShort$runNumber".ToLower()
           echo "UNIQUE_ID=$uniqueId" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
@@ -220,7 +222,7 @@ jobs:
           $Inputs["bootstrap_module_name"] = "alz_$versionControlSystemMapped"
           $Inputs["starter_module_name"] = "test"
           $Inputs["bootstrap_location"] = $location
-          $Inputs["starter_location"] = [$location, $location2]
+          $Inputs["starter_location"] = @($location, $location2)
           $Inputs["bootstrap_subscription_id"] = ""
           $Inputs["service_name"] = "alz"
           $Inputs["environment_name"] = $uniqueId
