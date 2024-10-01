@@ -73,7 +73,7 @@ variable "module_folder_path_relative" {
 variable "resource_names" {
   type        = map(string)
   description = "Overrides for resource names"
-  default     = {
+  default = {
     resource_group_state                                       = "rg-{{service_name}}-{{environment_name}}-state-{{azure_location}}-{{postfix_number}}"
     resource_group_identity                                    = "rg-{{service_name}}-{{environment_name}}-identity-{{azure_location}}-{{postfix_number}}"
     resource_group_agents                                      = "rg-{{service_name}}-{{environment_name}}-agents-{{azure_location}}-{{postfix_number}}"

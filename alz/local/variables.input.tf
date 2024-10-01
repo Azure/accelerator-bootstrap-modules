@@ -33,3 +33,9 @@ variable "postfix_number" {
   type        = number
   default     = 1
 }
+
+variable "grant_permissions_to_current_user" {
+  description = "Grant permissions to the current user on the bootstrap resources in addition to the user assinged managed identities."
+  type        = bool
+  default     = true
+}

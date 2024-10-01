@@ -50,7 +50,7 @@ variable "federated_credentials" {
 variable "default_target_directory" {
   description = "The default target directory to create the landing zone files in"
   type        = string
-  default     = "../../../local"
+  default     = "../../../../../local-output"
 }
 
 variable "storage_account_replication_type" {
@@ -285,4 +285,14 @@ variable "role_assignments_bicep" {
       scope                              = "subscription"
     }
   }
+}
+
+variable "bicep_config_file_path" {
+  type    = string
+  default = "accelerator/.config/ALZ-Powershell-Auto.config.json"
+}
+
+variable "bicep_parameters_file_path" {
+  type    = string
+  default = "parameters.json"
 }

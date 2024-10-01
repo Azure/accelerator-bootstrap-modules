@@ -279,3 +279,8 @@ variable "role_assignments" {
     scope                              = string
   }))
 }
+
+variable "additional_role_assignment_principal_ids" {
+  type    = map(string)
+  default = {}
+}
