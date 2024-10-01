@@ -1,7 +1,7 @@
 locals {
   deploy_script_file_directory_path = "${path.module}/scripts"
 
-  deploy_script_files = fileset(local.deploy_script_file_directory_path, "**/*.ps1")
+  deploy_script_files = var.iac_type == "bicep" ? fileset(local.deploy_script_file_directory_path, "**/*.ps1") : []
 
   starter_module_config = var.iac_type == "bicep" ? jsondecode(file("${var.module_folder_path}/${var.bicep_config_file_path}")).starter_modules[var.starter_module_name] : null
   script_files_all      = var.iac_type == "bicep" ? local.starter_module_config.deployment_files : []
