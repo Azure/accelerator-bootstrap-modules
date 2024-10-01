@@ -21,7 +21,7 @@ locals {
     subscriptionIdVariable     = try("$env:${script_file.subscriptionId}", "\"\"")
     resourceGroupNameVariable  = try("$env:${script_file.resourceGroupName}", "\"\"")
     deploymentType             = script_file.deploymentType
-    firstRunWhatIf             = format("%s%s", "$", "${script_file.firstRunWhatIf}")
+    firstRunWhatIf             = format("%s%s", "$", script_file.firstRunWhatIf)
     group                      = script_file.group
   } if try(script_file.networkType, "") == "" || try(script_file.networkType, "") == local.networking_type } : {}
 
