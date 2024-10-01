@@ -46,7 +46,7 @@ env:
   ALZ_ON_DEMAND_FOLDER_RELEASE_TAG: ${{ inputs.alz_on_demand_folder_release_tag != '' && inputs.alz_on_demand_folder_release_tag || 'latest' }}
 jobs:
   e2e-test:
-    name: "${{ matrix.vcs }}-${{ matrix.iac }}-${{ matrix.ag }}-${{ matrix.os }}-${{ matrix.tf }}"
+    name: "${{ matrix.vcs }}-${{ matrix.iac }}-${{ matrix.ag }}-${{ matrix.os }}-${{ matrix.tf }}-${{ matrix.rg }}"
     environment: ${{ github.event_name == 'schedule' && 'CSUTFAUTO' || 'CSUTF' }}
     if: "${{ github.repository == 'Azure/accelerator-bootstrap-modules' && (contains(github.event.pull_request.labels.*.name, 'PR: Safe to test 🧪') || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') }}"
     strategy:
@@ -57,6 +57,7 @@ jobs:
         ag: ['public', 'private', 'none']  # Self Hosted Agents
         os: ['ubuntu', 'windows', 'macos']  # Operating System
         tf: ['latest', '1.5.0']  # Terraform Version
+        rg: ['single','multi'] # Regions
         exclude:
           - iac: bicep
             tf: 1.5.0
@@ -76,6 +77,16 @@ jobs:
             vcs: github
           - os: macos
             vcs: github
+          - rg: single
+            vcs: github
+          - rg: single
+            vcs: azuredevops
+          - rg: single
+            tf: 1.5.0
+          - rg: single
+            os: windows
+          - rg: single
+            os: macos
 
     runs-on: ${{ matrix.os }}-latest
     steps:
@@ -126,6 +137,7 @@ jobs:
           $operatingSystem = "${{ matrix.os }}"
           $terraformVersion = "${{ matrix.tf }}"
           $selfHostedAgents = "${{ matrix.ag }}"
+          $regions = "${{ matrix.rg }}"
 
           $locations = @(
             "uksouth",
@@ -188,6 +200,7 @@ jobs:
           Write-Host "Self Hosted Agents: $selfHostedAgents ($selfhostedAgentsShort)"
           Write-Host "Local Deploy Azure Resources: $localDeployAzureResources"
           Write-Host "Run Number: $runNumber"
+          Write-Host "Regions: $regions"
           Write-Host "Location: $location"
           Write-Host "Location 2: $location2"
 
@@ -206,7 +219,11 @@ jobs:
           $Inputs["bootstrap_module_name"] = "alz_$versionControlSystemMapped"
           $Inputs["starter_module_name"] = "test"
           $Inputs["bootstrap_location"] = $location
-          $Inputs["starter_location"] = @($location, $location2)
+          if($regions -eq "multi") {
+            $Inputs["starter_locations"] = @($location, $location2)
+          } else {
+            $Inputs["starter_locations"] = @($location)
+          }
           $Inputs["bootstrap_subscription_id"] = ""
           $Inputs["service_name"] = "alz"
           $Inputs["environment_name"] = $uniqueId
