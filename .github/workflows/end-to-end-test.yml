@@ -57,7 +57,7 @@ jobs:
         ag: ['public', 'private', 'none']  # Self Hosted Agents
         os: ['ubuntu', 'windows', 'macos']  # Operating System
         tf: ['latest', '1.5.0']  # Terraform Version
-        rg: ['single','multi'] # Regions
+        rg: ['single', 'multi'] # Regions
         exclude:
           - iac: bicep
             tf: 1.5.0
@@ -312,7 +312,7 @@ jobs:
                 $starterModuleOverrideFolderPath = "$starterModuleOverrideFolderPath/templates"
               }
               Deploy-Accelerator -output "${{ env.TARGET_FOLDER }}" -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "${{ env.BOOTSTRAP_MODULE_FOLDER }}" -starterModuleOverrideFolderPath $starterModuleOverrideFolderPath -starterRelease "${{ env.ALZ_ON_DEMAND_FOLDER_RELEASE_TAG }}" -autoApprove -ErrorAction Stop -Verbose
-              
+
               if ($LastExitCode -eq 0) {
                 $success = $true
               } else {
