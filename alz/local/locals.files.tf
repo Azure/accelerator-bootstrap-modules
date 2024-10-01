@@ -25,16 +25,6 @@ locals {
     group                      = script_file.group
   } if try(script_file.networkType, "") == "" || try(script_file.networkType, "") == local.networking_type } : {}
 
-  script_file_groups_all = var.iac_type == "bicep" ? local.starter_module_config.deployment_file_groups : []
-
-  used_script_file_groups = distinct([for script_file in local.script_files_all : script_file.group])
-
-  script_file_groups = { for script_file_group in local.script_file_groups_all : format("%03d", script_file_group.order) => {
-    name        = script_file_group.name
-    displayName = script_file_group.displayName
-    } if contains(local.used_script_file_groups, script_file_group.name)
-  }
-
   deploy_script_files_parsed = { for deploy_script_file in local.deploy_script_files : "${local.target_folder_name}/${deploy_script_file}" =>
     {
       content = templatefile("${local.deploy_script_file_directory_path}/${deploy_script_file}", {
