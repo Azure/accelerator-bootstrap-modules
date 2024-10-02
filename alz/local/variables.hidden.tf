@@ -50,7 +50,7 @@ variable "federated_credentials" {
 variable "default_target_directory" {
   description = "The default target directory to create the landing zone files in"
   type        = string
-  default     = "../../../../../local-output"
+  default     = "../../../../local-output"
 }
 
 variable "storage_account_replication_type" {
