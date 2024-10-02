@@ -48,8 +48,8 @@ locals {
   management          = local.enable_alz ? local.alz_management : []
   connectivity        = local.enable_alz ? local.alz_connectivity : []
   identity            = local.enable_alz ? local.alz_identity : []
-  confidential_corp   = local.confidential
-  confidential_online = local.confidential
+  confidential_corp   = local.enable_alz ? concat(local.confidential, local.alz_corp) : local.confidential
+  confidential_online = local.enable_alz ? concat(local.confidential, local.alz_online) : local.confidential
 
   template_vars = {
     architecture_definition_name            = var.architecture_definition_name
