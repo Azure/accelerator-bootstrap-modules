@@ -46,31 +46,24 @@ env:
   ALZ_ON_DEMAND_FOLDER_RELEASE_TAG: ${{ inputs.alz_on_demand_folder_release_tag != '' && inputs.alz_on_demand_folder_release_tag || 'latest' }}
 jobs:
   e2e-test:
-    name: "${{ matrix.vcs }}-${{ matrix.iac }}-${{ matrix.ag }}-${{ matrix.os }}-${{ matrix.tf }}"
+    name: "${{ matrix.vcs }}-${{ matrix.iac }}-${{ matrix.ag }}-${{ matrix.os }}-${{ matrix.tf }}-${{ matrix.rg }}"
     environment: ${{ github.event_name == 'schedule' && 'CSUTFAUTO' || 'CSUTF' }}
     if: "${{ github.repository == 'Azure/accelerator-bootstrap-modules' && (contains(github.event.pull_request.labels.*.name, 'PR: Safe to test 🧪') || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') }}"
     strategy:
       fail-fast: false
       matrix:
-        vcs: ['github', 'azuredevops', 'local', 'legacy-github', 'legacy-azuredevops']  # Version Control System
+        vcs: ['github', 'azuredevops', 'local']  # Version Control System
         iac: ['terraform', 'bicep']
         ag: ['public', 'private', 'none']  # Self Hosted Agents
         os: ['ubuntu', 'windows', 'macos']  # Operating System
         tf: ['latest', '1.5.0']  # Terraform Version
+        rg: ['single', 'multi'] # Regions
         exclude:
           - iac: bicep
             tf: 1.5.0
           - vcs: local
             ag: public
           - vcs: local
-            ag: private
-          - vcs: legacy-github
-            ag: public
-          - vcs: legacy-github
-            ag: private
-          - vcs: legacy-azuredevops
-            ag: public
-          - vcs: legacy-azuredevops
             ag: private
           - vcs: azuredevops
             tf: 1.5.0
@@ -84,14 +77,16 @@ jobs:
             vcs: github
           - os: macos
             vcs: github
-          - iac: terraform
-            vcs: legacy-github
-          - tf: 1.5.0
-            vcs: legacy-github
-          - iac: terraform
-            vcs: legacy-azuredevops
-          - tf: 1.5.0
-            vcs: legacy-azuredevops
+          - rg: single
+            vcs: github
+          - rg: single
+            vcs: azuredevops
+          - rg: single
+            tf: 1.5.0
+          - rg: single
+            os: windows
+          - rg: single
+            os: macos
 
     runs-on: ${{ matrix.os }}-latest
     steps:
@@ -142,6 +137,7 @@ jobs:
           $operatingSystem = "${{ matrix.os }}"
           $terraformVersion = "${{ matrix.tf }}"
           $selfHostedAgents = "${{ matrix.ag }}"
+          $regions = "${{ matrix.rg }}"
 
           $locations = @(
             "uksouth",
@@ -154,9 +150,16 @@ jobs:
             "westus3",
             "australiaeast"
           )
+
+          $locationsSingleAvailabilityZone = @(
+            "ukwest"
+          )
+
           $jobIndex = ${{ strategy.job-index }}
           $locationIndex = $jobIndex % $locations.Length
+          $location2Index = $jobIndex % $locationsSingleAvailabilityZone.Length
           $location = $locations[$locationIndex]
+          $location2 = $locationsSingleAvailabilityZone[$location2Index]
 
           $enableSelfHostedAgents = "false"
           if($selfHostedAgents -eq "public" -or $selfHostedAgents -eq "private") {
@@ -197,7 +200,9 @@ jobs:
           Write-Host "Self Hosted Agents: $selfHostedAgents ($selfhostedAgentsShort)"
           Write-Host "Local Deploy Azure Resources: $localDeployAzureResources"
           Write-Host "Run Number: $runNumber"
+          Write-Host "Regions: $regions"
           Write-Host "Location: $location"
+          Write-Host "Location 2: $location2"
 
           $uniqueId = "$versionControlSystemShort$infrastructureAsCodeShort$selfhostedAgentsShort$operatingSystemShort$terraformVersionShort$runNumber".ToLower()
           echo "UNIQUE_ID=$uniqueId" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
@@ -210,11 +215,15 @@ jobs:
           }
 
           $Inputs = @{}
-          $Inputs["iac"] = $infrastructureAsCode
-          $Inputs["bootstrap"] = "alz_$versionControlSystemMapped"
-          $Inputs["starter"] = "test"
+          $Inputs["iac_type"] = $infrastructureAsCode
+          $Inputs["bootstrap_module_name"] = "alz_$versionControlSystemMapped"
+          $Inputs["starter_module_name"] = "test"
           $Inputs["bootstrap_location"] = $location
-          $Inputs["starter_location"] = $location
+          if($regions -eq "multi") {
+            $Inputs["starter_locations"] = @($location, $location2)
+          } else {
+            $Inputs["starter_locations"] = @($location)
+          }
           $Inputs["bootstrap_subscription_id"] = ""
           $Inputs["service_name"] = "alz"
           $Inputs["environment_name"] = $uniqueId
@@ -258,24 +267,13 @@ jobs:
           $Inputs["child_management_group_display_name"] = "E2E Test"
           $Inputs["resource_group_location"] = $location
 
-          # Modern Bicep
+          # Bicep
           if($infrastructureAsCode -eq "bicep") {
             $Inputs["Prefix"] = $uniqueId
             $Inputs["Location"] = $location
             $Inputs["Environment"] = "live"
             $Inputs["SecurityContact"] = "test@test.com"
             $Inputs["networkType"] = "none"
-          }
-
-          # Legacy Bicep
-          if($versionControlSystem.StartsWith("legacy-")) {
-            $Inputs["Prefix"] = $uniqueId
-            $Inputs["Location"] = $location
-            $Inputs["Environment"] = "live"
-            $Inputs["SecurityContact"] = "test@test.com"
-            $Inputs["IdentitySubscriptionId"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
-            $Inputs["ManagementSubscriptionId"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
-            $Inputs["ConnectivitySubscriptionId"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
           }
 
           $json = ConvertTo-Json $Inputs -Depth 100
@@ -313,11 +311,8 @@ jobs:
               if($infrastructureAsCode -eq "terraform") {
                 $starterModuleOverrideFolderPath = "$starterModuleOverrideFolderPath/templates"
               }
-              if($versionControlSystem.StartsWith("legacy-")) {
-                Deploy-Accelerator -output "${{ env.TARGET_FOLDER }}" -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "${{ env.BOOTSTRAP_MODULE_FOLDER }}" -starterModuleOverrideFolderPath $starterModuleOverrideFolderPath -autoApprove -bicepLegacyMode $true -ErrorAction Stop -Verbose
-              } else {
-                Deploy-Accelerator -output "${{ env.TARGET_FOLDER }}" -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "${{ env.BOOTSTRAP_MODULE_FOLDER }}" -starterModuleOverrideFolderPath $starterModuleOverrideFolderPath -starterRelease "${{ env.ALZ_ON_DEMAND_FOLDER_RELEASE_TAG }}" -autoApprove -ErrorAction Stop -Verbose
-              }
+              Deploy-Accelerator -output "${{ env.TARGET_FOLDER }}" -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "${{ env.BOOTSTRAP_MODULE_FOLDER }}" -starterModuleOverrideFolderPath $starterModuleOverrideFolderPath -starterRelease "${{ env.ALZ_ON_DEMAND_FOLDER_RELEASE_TAG }}" -autoApprove -ErrorAction Stop -Verbose
+
               if ($LastExitCode -eq 0) {
                 $success = $true
               } else {
@@ -360,12 +355,6 @@ jobs:
 
           # Get Inputs
           $versionControlSystem = "${{ matrix.vcs }}"
-
-          if($versionControlSystem -eq "biceplegacy") {
-            Write-Host "Running in Bicep Legacy mode, so not pipelines to run..."
-            exit 0
-          }
-
           $versionControlSystemOrganisationName = "${{ vars.VCS_ORGANIZATION }}"
           $uniqueId = $ENV:UNIQUE_ID
 

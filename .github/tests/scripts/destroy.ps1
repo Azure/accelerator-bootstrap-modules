@@ -8,7 +8,7 @@ param (
 $bootstrapDirectoryPath = "$($env:TARGET_FOLDER)/bootstrap/local/alz/$versionControlSystem"
 Write-Host "Bootstrap Directory Path: $bootstrapDirectoryPath"
 
-if(Test-Path -Path "$bootstrapDirectoryPath/override.tfvars.json") {
+if(Test-Path -Path "$bootstrapDirectoryPath/terraform.tfvars.json") {
     Write-Host "Bootstrap tfvars Exists"
 } else {
     Write-Host "Bootstrap tfvars does not exist, so there is nothing to clean up. Exiting now."

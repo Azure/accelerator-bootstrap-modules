@@ -45,3 +45,10 @@ resource "azurerm_role_assignment" "alz_storage_container" {
   role_definition_name = "Storage Blob Data Owner"
   principal_id         = azurerm_user_assigned_identity.alz[each.key].principal_id
 }
+
+resource "azurerm_role_assignment" "alz_storage_container_additional" {
+  for_each             = var.create_storage_account ? var.additional_role_assignment_principal_ids : {}
+  scope                = azapi_resource.storage_account_container[0].id
+  role_definition_name = "Storage Blob Data Owner"
+  principal_id         = each.value
+}

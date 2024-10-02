@@ -25,6 +25,15 @@ variable "module_folder_path_relative" {
 variable "resource_names" {
   type        = map(string)
   description = "Overrides for resource names"
+  default = {
+    resource_group_state                                        = "rg-{{service_name}}-{{environment_name}}-state-{{azure_location}}-{{postfix_number}}"
+    resource_group_identity                                     = "rg-{{service_name}}-{{environment_name}}-identity-{{azure_location}}-{{postfix_number}}"
+    user_assigned_managed_identity_plan                         = "id-{{service_name}}-{{environment_name}}-{{azure_location}}-plan-{{postfix_number}}"
+    user_assigned_managed_identity_apply                        = "id-{{service_name}}-{{environment_name}}-{{azure_location}}-apply-{{postfix_number}}"
+    user_assigned_managed_identity_federated_credentials_prefix = "{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}"
+    storage_account                                             = "sto{{service_name}}{{environment_name}}{{azure_location_short}}{{postfix_number}}{{random_string}}"
+    storage_container                                           = "{{environment_name}}-tfstate"
+  }
 }
 
 variable "federated_credentials" {
@@ -41,7 +50,7 @@ variable "federated_credentials" {
 variable "default_target_directory" {
   description = "The default target directory to create the landing zone files in"
   type        = string
-  default     = "../../../local"
+  default     = "../../../../../local-output"
 }
 
 variable "storage_account_replication_type" {
@@ -276,4 +285,14 @@ variable "role_assignments_bicep" {
       scope                              = "subscription"
     }
   }
+}
+
+variable "bicep_config_file_path" {
+  type    = string
+  default = "accelerator/.config/ALZ-Powershell-Auto.config.json"
+}
+
+variable "bicep_parameters_file_path" {
+  type    = string
+  default = "parameters.json"
 }

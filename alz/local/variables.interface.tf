@@ -46,3 +46,15 @@ variable "bootstrap_location" {
   type        = string
   default     = ""
 }
+
+variable "on_demand_folder_repository" {
+  description = "The repository to use for the on-demand folders"
+  type        = string
+  default     = ""
+}
+
+variable "on_demand_folder_artifact_name" {
+  description = "The branch to use for the on-demand folders"
+  type        = string
+  default     = ""
+}
