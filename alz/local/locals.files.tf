@@ -38,7 +38,7 @@ locals {
 
   module_files = { for key, value in module.files.files : key =>
     {
-      content = try(replace((file(value.path)), "# backend \"azurerm\" {}", "backend \"local\" {}"), "unsupported_file_type")
+      content = try(replace((file(value.path)), "# backend \"azurerm\" {}", (var.create_bootstrap_resources_in_azure ? "backend \"azurerm\" {}" : "backend \"local\" {}")), "unsupported_file_type")
     } if var.iac_type == "bicep" ? true : !endswith(key, ".ps1")
   }
 
