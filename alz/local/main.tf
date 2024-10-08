@@ -85,8 +85,8 @@ if($deployApproved -ne "yes") {
 terraform apply tfplan
 
 COMMAND 
-  
-    command_without_azure_resources = <<COMMAND
+
+  command_without_azure_resources = <<COMMAND
 # Initialize the Terraform configuration
 terraform init
 
