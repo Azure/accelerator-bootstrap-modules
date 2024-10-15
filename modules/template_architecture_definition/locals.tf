@@ -5,7 +5,7 @@ locals {
   default_postfix                       = local.starter_module_tfvars.default_postfix
   enable_alz                            = local.starter_module_tfvars.apply_alz_archetypes_via_architecture_definition_template
   architecture_definition_override_path = local.starter_module_tfvars.architecture_definition_override_path
-  default_template_file_path            = "${var.starter_module_folder_path}/templates/${var.architecture_definition_name}.alz_architecture_definition.json.tftpl"
+  default_template_file_path            = "${path.module}/templates/${var.architecture_definition_name}.alz_architecture_definition.json.tftpl"
   template_file_path                    = local.starter_module_tfvars.architecture_definition_template_path != "" ? local.starter_module_tfvars.architecture_definition_template_path : local.default_template_file_path
 
   # Customer has provided a custom architecture definition
