@@ -113,13 +113,6 @@ locals {
 }
 
 locals {
-  slz_architecture_definition_name = "slz"
-  fsi_architecture_definition_name = "fsi"
-  slz_template_name                = "microsoft_cloud_for_sovereignty"
-  fsi_template_name                = "microsoft_cloud_for_financial_services"
-
-  architecture_definition_name = (var.starter_module_name == local.slz_template_name ? local.slz_architecture_definition_name :
-  var.starter_module_name == local.fsi_template_name ? local.fsi_architecture_definition_name : "")
-
-  has_architecture_definition = local.architecture_definition_name != ""
+  architecture_definition_name = var.architecture_definition_name
+  has_architecture_definition = var.architecture_definition_name != null
 }
