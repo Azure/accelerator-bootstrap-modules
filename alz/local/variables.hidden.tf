@@ -296,3 +296,9 @@ variable "bicep_parameters_file_path" {
   type    = string
   default = "parameters.json"
 }
+
+variable "architecture_definition_name" {
+  type        = string
+  description = "Name of the architecture definition use by Microsoft Cloud for Industry"
+  default     = null
+}

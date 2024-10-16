@@ -397,3 +397,9 @@ variable "role_assignments_bicep" {
     }
   }
 }
+
+variable "architecture_definition_name" {
+  type        = string
+  description = "Name of the architecture definition use by Microsoft Cloud for Industry"
+  default     = null
+}
