@@ -61,5 +61,5 @@ locals {
 locals {
   architecture_definition_name             = var.architecture_definition_name
   has_architecture_definition              = var.architecture_definition_name != null
-  architecture_definition_file_destination = "${local.target_directory}/lib/architecture_definitions/${local.architecture_definition_name}.alz_architecture_definition.json"
+  architecture_definition_file_destination = var.architecture_definition_name != null ? "${local.target_directory}/lib/architecture_definitions/${local.architecture_definition_name}.alz_architecture_definition.json" : ""
 }
