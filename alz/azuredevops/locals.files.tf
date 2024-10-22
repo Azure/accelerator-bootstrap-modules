@@ -45,12 +45,13 @@ locals {
   cicd_files = { for pipeline_file in local.pipeline_files : "${local.target_folder_name}/${pipeline_file}" =>
     {
       content = templatefile("${local.pipeline_files_directory_path}/${pipeline_file}", {
-        project_name              = var.azure_devops_project_name
-        repository_name_templates = local.repository_name_templates
-        ci_template_path          = "${local.target_folder_name}/${local.ci_template_file_name}"
-        cd_template_path          = "${local.target_folder_name}/${local.cd_template_file_name}"
-        script_files              = local.script_files
-        script_file_groups        = local.script_file_groups
+        project_name                     = var.azure_devops_project_name
+        repository_name_templates        = local.repository_name_templates
+        ci_template_path                 = "${local.target_folder_name}/${local.ci_template_file_name}"
+        cd_template_path                 = "${local.target_folder_name}/${local.cd_template_file_name}"
+        script_files                     = local.script_files
+        script_file_groups               = local.script_file_groups
+        root_module_folder_relative_path = var.root_module_folder_relative_path
       })
     }
   }

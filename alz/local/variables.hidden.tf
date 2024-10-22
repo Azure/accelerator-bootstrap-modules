@@ -302,3 +302,9 @@ variable "architecture_definition_name" {
   description = "Name of the architecture definition use by Microsoft Cloud for Industry"
   default     = null
 }
+
+variable "root_module_folder_relative_path" {
+  type        = string
+  description = "The root module folder path"
+  default     = "."
+}

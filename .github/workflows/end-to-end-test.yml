@@ -192,6 +192,8 @@ jobs:
           $localDeployAzureResources = if($terraformVersion -eq "latest") { "true" } else { "false" }
 
           $runNumber = "${{ github.run_number }}"
+          $runNumberEven = $runNumber % 2 -eq 0
+          $starterModule = $runNumberEven ? "test" : "test_nested"
 
           Write-Host "Infrastructure As Code: $infrastructureAsCode ($infrastructureAsCodeShort)"
           Write-Host "Version Control System: $versionControlSystem ($versionControlSystemShort)"
@@ -200,6 +202,7 @@ jobs:
           Write-Host "Self Hosted Agents: $selfHostedAgents ($selfhostedAgentsShort)"
           Write-Host "Local Deploy Azure Resources: $localDeployAzureResources"
           Write-Host "Run Number: $runNumber"
+          Write-Host "Starter Module: $starterModule"
           Write-Host "Regions: $regions"
           Write-Host "Location: $location"
           Write-Host "Location 2: $location2"
@@ -217,7 +220,7 @@ jobs:
           $Inputs = @{}
           $Inputs["iac_type"] = $infrastructureAsCode
           $Inputs["bootstrap_module_name"] = "alz_$versionControlSystemMapped"
-          $Inputs["starter_module_name"] = "test"
+          $Inputs["starter_module_name"] =  $starterModule
           $Inputs["bootstrap_location"] = $location
           if($regions -eq "multi") {
             $Inputs["starter_locations"] = @($location, $location2)

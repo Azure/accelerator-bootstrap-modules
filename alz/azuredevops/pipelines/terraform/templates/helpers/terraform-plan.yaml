@@ -3,6 +3,8 @@ parameters:
   - name: terraform_action
     default: 'apply'
   - name: serviceConnection
+  - name: root_module_folder_relative_path
+    default: '.'
 
 steps:
   - task: AzureCLI@2
@@ -30,6 +32,7 @@ steps:
         # Run Terraform Plan
         $command = "terraform"
         $arguments = @()
+        $arguments += "-chdir=$${{ parameters.root_module_folder_relative_path }}"
         $arguments += "plan"
         $arguments += "-out=tfplan"
         $arguments += "-input=false"
