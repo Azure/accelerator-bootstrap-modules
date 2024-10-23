@@ -1,3 +1,7 @@
+param(
+  [string]$runNumber = "999"
+)
+
 $combinations = [ordered]@{
   azuredevops_bicep = [ordered]@{
     infrastructureAsCode = @("bicep")
@@ -106,7 +110,8 @@ function Get-MatrixRecursively {
   param(
     $calculatedCombinations = @(),
     $indexes = [ordered]@{},
-    $definition
+    $definition,
+    $runNumber
   )
 
   if($indexes.Count -eq 0) {
@@ -130,7 +135,7 @@ function Get-MatrixRecursively {
 
   $combination.Name = $name.Trim("-")
   $combination.Hash = Get-Hash $name
-  $combination.ShortName = $combination.Hash.Substring(0,5)
+  $combination.ShortName = "r" + $combination.Hash.Substring(0,5).ToLower() + "r" + $runNumber
 
   $calculatedCombinations += $combination
 
@@ -144,7 +149,7 @@ function Get-MatrixRecursively {
   }
 
   if($hasMore) {
-    $calculatedCombinations = Get-MatrixRecursively -calculatedCombinations $calculatedCombinations -indexes $indexes -definition $definition
+    $calculatedCombinations = Get-MatrixRecursively -calculatedCombinations $calculatedCombinations -indexes $indexes -definition $definition -runNumber $runNumber
   }
 
   return $calculatedCombinations
@@ -153,7 +158,7 @@ function Get-MatrixRecursively {
 $finalMatrix = @()
 
 foreach($key in $combinations.Keys) {
-  $finalMatrix += Get-MatrixRecursively -definition $combinations[$key]
+  $finalMatrix += Get-MatrixRecursively -definition $combinations[$key] -runNumber $runNumber
 }
 
 return $finalMatrix
