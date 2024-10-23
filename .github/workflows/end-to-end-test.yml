@@ -74,7 +74,7 @@ jobs:
     if: "${{ github.repository == 'Azure/accelerator-bootstrap-modules' && (contains(github.event.pull_request.labels.*.name, 'PR: Safe to test 🧪') || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') }}"
     strategy:
       fail-fast: false
-      matrix: 
+      matrix:
         include: ${{ fromJSON(needs.define-matrix.outputs.matrix) }}
 
     runs-on: ${{ matrix.operatingSystem }}-latest
@@ -162,7 +162,7 @@ jobs:
           if($selfHostedAgents -eq "private") {
             $enablePrivateNetworking = "true"
           }
-       
+
           $localDeployAzureResources = $deployAzureResources
 
           $runNumber = "${{ github.run_number }}"
