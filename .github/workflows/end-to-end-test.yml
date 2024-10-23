@@ -54,11 +54,16 @@ jobs:
       colors: ${{ steps.matrix.outputs.matrix }}
 
     steps:
+      - name: Checkout Bootstrap Modules
+        uses: actions/checkout@v4
+        with:
+          path: ${{ env.BOOTSTRAP_MODULE_FOLDER }}
       - name: Generate Matrix
         id: matrix
         run: |
           $matrix = ${{ env.BOOTSTRAP_MODULE_FOLDER }}/.github/tests/scripts/generate-matrix.ps1
           $matrixJson = ConvertFrom-Json $matrix -Depth 10
+          Write-Host $matrixJson
           Write-Output "matrix=$matrixJson" >> $env:GITHUB_OUTPUT
         shell: pwsh
 
