@@ -31,7 +31,7 @@ jobs:
           -check
 
       - name: Terraform Init
-        run: | 
+        run: |
           terraform \
           -chdir="$${inputs.root_module_folder_relative_path}}" \
           init \
