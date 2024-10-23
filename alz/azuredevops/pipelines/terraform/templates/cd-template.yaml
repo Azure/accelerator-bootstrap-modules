@@ -58,7 +58,11 @@ stages:
                     targetPath: '$(Build.ArtifactsStagingDirectory)'
                     artifact: 'module'
                     publishLocation: 'pipeline'
-                - pwsh: terraform show tfplan
+                - pwsh: |
+                    terraform `
+                    -chdir="$${{ parameters.root_module_folder_relative_path }}" `
+                    show `
+                    tfplan
                   displayName: Show the Plan for Review
   - stage: apply
     displayName: Apply
