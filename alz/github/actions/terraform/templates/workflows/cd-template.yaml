@@ -41,7 +41,7 @@ jobs:
       - name: Terraform Init
         run: |
           terraform \
-          -chdir="$${inputs.root_module_folder_relative_path}}" \
+          -chdir="$${{inputs.root_module_folder_relative_path}}" \
           init \
           -backend-config="resource_group_name=$${{vars.BACKEND_AZURE_RESOURCE_GROUP_NAME}}" \
           -backend-config="storage_account_name=$${{vars.BACKEND_AZURE_STORAGE_ACCOUNT_NAME}}" \
@@ -52,7 +52,7 @@ jobs:
         run: |
           # shellcheck disable=SC2086
           terraform \
-          
+          -chdir="$${{inputs.root_module_folder_relative_path}}" \
           plan \
           -out=tfplan \
           -input=false \
@@ -61,7 +61,7 @@ jobs:
       - name: Create Module Artifact
         run: |
           $stagingDirectory = "staging"
-          $rootModuleFolder = "$${inputs.root_module_folder_relative_path}}"
+          $rootModuleFolder = "$${{inputs.root_module_folder_relative_path}}"
           New-Item -Path . -Name $stagingDirectory -ItemType "directory"
           Copy-Item -Path "./*" -Exclude @(".git", ".terraform", ".github",  $stagingDirectory) -Recurse -Destination "./$stagingDirectory"
           
@@ -81,7 +81,7 @@ jobs:
       - name: Show the Plan for Review
         run: |
           terraform \
-          -chdir="$${inputs.root_module_folder_relative_path}}" \
+          -chdir="$${{inputs.root_module_folder_relative_path}}" \
           show \
           tfplan
 
@@ -116,7 +116,7 @@ jobs:
       - name: Terraform Init
         run: |
           terraform \
-          -chdir="$${inputs.root_module_folder_relative_path}}" \
+          -chdir="$${{inputs.root_module_folder_relative_path}}" \
           init \
           -backend-config="resource_group_name=$${{vars.BACKEND_AZURE_RESOURCE_GROUP_NAME}}" \
           -backend-config="storage_account_name=$${{vars.BACKEND_AZURE_STORAGE_ACCOUNT_NAME}}" \
@@ -126,7 +126,7 @@ jobs:
       - name: Terraform $${{ inputs.terraform_action == 'destroy' && 'Destroy' || 'Apply' }}
         run: |
           terraform \
-          -chdir="$${inputs.root_module_folder_relative_path}}" \
+          -chdir="$${{inputs.root_module_folder_relative_path}}" \
           apply \
           -input=false \
           -auto-approve \

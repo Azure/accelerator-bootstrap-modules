@@ -26,21 +26,21 @@ jobs:
       - name: Terraform Format Check
         run: |
           terraform \
-          -chdir="$${inputs.root_module_folder_relative_path}}" \
+          -chdir="$${{inputs.root_module_folder_relative_path}}" \
           fmt \
           -check
 
       - name: Terraform Init
         run: |
           terraform \
-          -chdir="$${inputs.root_module_folder_relative_path}}" \
+          -chdir="$${{inputs.root_module_folder_relative_path}}" \
           init \
           -backend=false
 
       - name: Terraform Validate
         run: |
           terraform \
-          -chdir="$${inputs.root_module_folder_relative_path}}" \
+          -chdir="$${{inputs.root_module_folder_relative_path}}" \
           validate
 
   plan:
@@ -76,7 +76,7 @@ jobs:
       - name: Terraform Init
         run: |
           terraform \
-          -chdir="$${inputs.root_module_folder_relative_path}}" \
+          -chdir="$${{inputs.root_module_folder_relative_path}}" \
           init \
           -backend-config="resource_group_name=$${{vars.BACKEND_AZURE_RESOURCE_GROUP_NAME}}" \
           -backend-config="storage_account_name=$${{vars.BACKEND_AZURE_STORAGE_ACCOUNT_NAME}}" \
@@ -87,7 +87,7 @@ jobs:
         id: plan
         run: |
           terraform \
-          -chdir="$${inputs.root_module_folder_relative_path}}" \
+          -chdir="$${{inputs.root_module_folder_relative_path}}" \
           plan \
           -input=false
 
