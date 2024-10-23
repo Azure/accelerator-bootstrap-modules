@@ -1,75 +1,93 @@
-$combinations = @{
-  azuredevops_bicep = @{
+$combinations = [ordered]@{
+  azuredevops_bicep = [ordered]@{
+    infrastructureAsCode = @("bicep")
     versionControlSystem = @("azuredevops")
     agentType = @("public", "private", "none")
     operatingSystem = @("ubuntu")
-    terraformVersion = @("latest")
-    infrastructureAsCode = @("bicep")
-    regions = @("multi")
     staterModule = @("test")
+    regions = @("multi")
+    terraformVersion = @("latest")
+    deployAzureResources = @("true")
   }
-  azuredevops_terraform = @{
+  azuredevops_terraform = [ordered]@{
+    infrastructureAsCode = @("terraform")
     versionControlSystem = @("azuredevops")
     agentType = @("public", "private", "none")
     operatingSystem = @("ubuntu")
-    terraformVersion = @("latest")
-    infrastructureAsCode = @("terraform")
-    regions = @("multi")
     staterModule = @("test_nested")
-  }
-  github_bicep = @{
-    versionControlSystem = @("github")
-    agentType = @("public", "private", "none")
-    operatingSystem = @("ubuntu")
+    regions = @("multi")
     terraformVersion = @("latest")
+    deployAzureResources = @("true")
+  }
+  github_bicep = [ordered]@{
     infrastructureAsCode = @("bicep")
-    regions = @("multi")
-    staterModule = @("test")
-  }
-  github_terraform = @{
     versionControlSystem = @("github")
     agentType = @("public", "private", "none")
     operatingSystem = @("ubuntu")
+    staterModule = @("test")    
+    regions = @("multi")    
     terraformVersion = @("latest")
-    infrastructureAsCode = @("terraform")
-    regions = @("multi")
-    staterModule = @("test_nested")
+    deployAzureResources = @("true")
   }
-  local_cross_os_tests = @{
+  github_terraform = [ordered]@{
+    infrastructureAsCode = @("terraform")
+    versionControlSystem = @("github")
+    agentType = @("public", "private", "none")
+    operatingSystem = @("ubuntu")
+    staterModule = @("test_nested")
+    regions = @("multi")
+    terraformVersion = @("latest")
+    deployAzureResources = @("true")
+  }
+  local_deploy_azure_resources_tests = [ordered]@{
+    infrastructureAsCode = @("terraform")
     versionControlSystem = @("local")
     agentType = @("none")
     operatingSystem = @("ubuntu", "windows", "macos")
-    terraformVersion = @("latest", "1.5.0")
-    infrastructureAsCode = @("terraform")
-    regions = @("multi")
-    staterModule = @("test")
+    staterModule = @("test")    
+    regions = @("multi")    
+    terraformVersion = @("latest")
+    deployAzureResources = @("true")
   }
-  local_single_region_tests = @{
+  local_cross_os_terraform_version_tests = [ordered]@{
+    infrastructureAsCode = @("terraform")
+    versionControlSystem = @("local")
+    agentType = @("none")
+    operatingSystem = @("ubuntu", "windows", "macos")
+    staterModule = @("test")    
+    regions = @("multi")    
+    terraformVersion = @("1.5.0")
+    deployAzureResources = @("false")
+  }
+  local_single_region_tests = [ordered]@{
+    infrastructureAsCode = @("terraform")
     versionControlSystem = @("local")
     agentType = @("none")
     operatingSystem = @("ubuntu")
+    staterModule = @("test")    
+    regions = @("single")    
     terraformVersion = @("latest")
-    infrastructureAsCode = @("terraform")
-    regions = @("single")
-    staterModule = @("test")
+    deployAzureResources = @("false")
   }
-  local_starter_module_terraform_tests = @{
+  local_starter_module_terraform_tests = [ordered]@{
+    infrastructureAsCode = @("terraform")
     versionControlSystem = @("local")
     agentType = @("none")
     operatingSystem = @("ubuntu")
-    terraformVersion = @("latest")
-    infrastructureAsCode = @("terraform")
-    regions = @("single")
     staterModule = @("complete", "complete_multi_region", "sovereign_landing_zone", "basic", "hubnetworking")
+    regions = @("single")
+    terraformVersion = @("latest")
+    deployAzureResources = @("false")
   }
-  local_starter_module_bicep_tests = @{
+  local_starter_module_bicep_tests = [ordered]@{
+    infrastructureAsCode = @("terraform")
     versionControlSystem = @("local")
     agentType = @("none")
     operatingSystem = @("ubuntu")
+    staterModule = @("complete")    
+    regions = @("single")    
     terraformVersion = @("latest")
-    infrastructureAsCode = @("terraform")
-    regions = @("single")
-    staterModule = @("complete")
+    deployAzureResources = @("false")
   }
 }
 
@@ -87,7 +105,7 @@ function Get-Hash([string]$textToHash) {
 function Get-MatrixRecursively {
   param(
     $calculatedCombinations = @(),
-    [hashtable]$indexes = @{},
+    [hashtable]$indexes = [ordered]@{},
     [hashtable]$definition
   )
 
@@ -100,7 +118,7 @@ function Get-MatrixRecursively {
     }
   }
 
-  $combination = @{}
+  $combination = [ordered]@{}
   
   $name = ""
   

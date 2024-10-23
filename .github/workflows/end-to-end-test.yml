@@ -63,7 +63,7 @@ jobs:
         run: |
           $matrix = ${{ env.BOOTSTRAP_MODULE_FOLDER }}/.github/tests/scripts/generate-matrix.ps1
           $matrixJson = ConvertTo-Json $matrix -Depth 10 -Compress
-          Write-Host $matrixJson
+          Write-Host (ConvertTo-Json $matrix -Depth 10)
           Write-Output "matrix=$matrixJson" >> $env:GITHUB_OUTPUT
         shell: pwsh
 
@@ -129,6 +129,7 @@ jobs:
           $regions = "${{ matrix.regions }}"
           $starterModule = "${{ matrix.starterModule }}"
           $shortName = "${{ matrix.ShortName }}"
+          $deployAzureResources = "${{ matrix.deployAzureResources }}"
 
           $locations = @(
             "uksouth",
@@ -162,7 +163,7 @@ jobs:
             $enablePrivateNetworking = "true"
           }
        
-          $localDeployAzureResources = if($terraformVersion -eq "latest") { "true" } else { "false" }
+          $localDeployAzureResources = $deployAzureResources
 
           $runNumber = "${{ github.run_number }}"
 
