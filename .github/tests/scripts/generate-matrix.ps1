@@ -105,16 +105,16 @@ function Get-Hash([string]$textToHash) {
 function Get-MatrixRecursively {
   param(
     $calculatedCombinations = @(),
-    [hashtable]$indexes = [ordered]@{},
-    [hashtable]$definition
+    $indexes = [ordered]@{},
+    $definition
   )
 
   if($indexes.Count -eq 0) {
     foreach($key in $definition.Keys) {
-      $indexes[$key] = @{
+      $indexes.Add($key, @{
         current = 0
         max = $definition[$key].Length - 1
-      }
+      })
     }
   }
 
