@@ -49,6 +49,9 @@ stages:
                       !.terraform/**/*
                       !.git/**/*
                       !.pipelines/**/*
+                      !**/.terraform/**/*
+                      !**/.git/**/*
+                      !**/.pipelines/**/*
                     TargetFolder: '$(Build.ArtifactsStagingDirectory)'
                     CleanTargetFolder: true
                     OverWrite: true
