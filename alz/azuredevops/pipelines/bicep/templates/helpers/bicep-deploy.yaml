@@ -95,7 +95,7 @@ steps:
             }
 
             $retryCount = 0
-            $retryMax = 30
+            $retryMax = 10
             $initialRetryDelay = 20
             $retryDelayIncrement = 10
             $finalSuccess = $false
