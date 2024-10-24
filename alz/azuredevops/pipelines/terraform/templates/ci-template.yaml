@@ -1,4 +1,8 @@
 ---
+parameters:
+  - name: root_module_folder_relative_path
+    default: '.'
+
 stages:
   - stage: validate
     displayName: Validation Terraform
@@ -15,11 +19,22 @@ stages:
           - template: helpers/terraform-installer.yaml
             parameters:
               terraformVersion: 'latest'
-          - pwsh: terraform fmt -check
+          - pwsh: |
+              terraform `
+              -chdir="$${{ parameters.root_module_folder_relative_path }}" `
+              fmt `
+              -check
             displayName: Terraform Format Check
-          - pwsh: terraform init -backend=false
+          - pwsh: |
+              terraform `
+              -chdir="$${{ parameters.root_module_folder_relative_path }}" `
+              init `
+              -backend=false
             displayName: Terraform Init
-          - pwsh: terraform validate
+          - pwsh: |
+              terraform `
+              -chdir="$${{ parameters.root_module_folder_relative_path }}" `
+              validate
             displayName: Terraform Validate
       - deployment: plan
         dependsOn: validate
@@ -43,6 +58,8 @@ stages:
                     backendAzureResourceGroupName: $(BACKEND_AZURE_RESOURCE_GROUP_NAME)
                     backendAzureStorageAccountName: $(BACKEND_AZURE_STORAGE_ACCOUNT_NAME)
                     backendAzureStorageAccountContainerName: $(BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)
+                    root_module_folder_relative_path: $${{ parameters.root_module_folder_relative_path }}
                 - template: helpers/terraform-plan.yaml
                   parameters:
                     serviceConnection: '${service_connection_name_plan}'
+                    root_module_folder_relative_path: $${{ parameters.root_module_folder_relative_path }}

@@ -6,6 +6,8 @@ parameters:
   - name: backendAzureStorageAccountContainerName
   - name: backendAzureStorageAccountContainerKeyName
     default: terraform.tfstate
+  - name: root_module_folder_relative_path
+    default: '.'
 
 steps:
   - task: AzureCLI@2
@@ -31,6 +33,7 @@ steps:
         $env:ARM_USE_AZUREAD = "true"
 
         $arguments = @()
+        $arguments += "-chdir=$${{ parameters.root_module_folder_relative_path }}"
         $arguments += "init"
         $arguments += "-backend-config=storage_account_name=$($env:BACKEND_AZURE_STORAGE_ACCOUNT_NAME)"
         $arguments += "-backend-config=container_name=$($env:BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME)"

@@ -30,7 +30,8 @@ locals {
 }
 
 locals {
-  starter_module_folder_path = var.module_folder_path_relative ? ("${path.module}/${var.module_folder_path}") : var.module_folder_path
+  starter_module_folder_path      = var.module_folder_path_relative ? ("${path.module}/${var.module_folder_path}") : var.module_folder_path
+  starter_root_module_folder_path = "${local.starter_module_folder_path}/${var.root_module_folder_relative_path}"
 }
 
 locals {
@@ -61,5 +62,5 @@ locals {
 locals {
   architecture_definition_name             = var.architecture_definition_name
   has_architecture_definition              = var.architecture_definition_name != null
-  architecture_definition_file_destination = var.architecture_definition_name != null ? "${local.target_directory}/lib/architecture_definitions/${local.architecture_definition_name}.alz_architecture_definition.json" : ""
+  architecture_definition_file_destination = var.architecture_definition_name != null ? "${local.target_directory}/${var.root_module_folder_relative_path}/lib/architecture_definitions/${local.architecture_definition_name}.alz_architecture_definition.json" : ""
 }

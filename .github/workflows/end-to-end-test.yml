@@ -44,51 +44,40 @@ env:
   ALZ_BICEP_BRANCH: ${{ inputs.alz_bicep_branch != '' && inputs.alz_bicep_branch || 'main' }}
   ALZ_TERRAFORM_BRANCH: ${{ inputs.alz_terraform_branch != '' && inputs.alz_terraform_branch || 'main' }}
   ALZ_ON_DEMAND_FOLDER_RELEASE_TAG: ${{ inputs.alz_on_demand_folder_release_tag != '' && inputs.alz_on_demand_folder_release_tag || 'latest' }}
+
 jobs:
+  define-matrix:
+    name: Define Matrix
+    runs-on: ubuntu-latest
+
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+
+    steps:
+      - name: Checkout Bootstrap Modules
+        uses: actions/checkout@v4
+        with:
+          path: ${{ env.BOOTSTRAP_MODULE_FOLDER }}
+      - name: Generate Matrix
+        id: matrix
+        run: |
+          $matrix = ${{ env.BOOTSTRAP_MODULE_FOLDER }}/.github/tests/scripts/generate-matrix.ps1 -runNumber "${{ github.run_number }}"
+          $matrixJson = ConvertTo-Json $matrix -Depth 10 -Compress
+          Write-Host (ConvertTo-Json $matrix -Depth 10)
+          Write-Output "matrix=$matrixJson" >> $env:GITHUB_OUTPUT
+        shell: pwsh
+
   e2e-test:
-    name: "${{ matrix.vcs }}-${{ matrix.iac }}-${{ matrix.ag }}-${{ matrix.os }}-${{ matrix.tf }}-${{ matrix.rg }}"
+    needs: define-matrix
+    name: "${{ matrix.name }} (${{ matrix.ShortName }})"
     environment: ${{ github.event_name == 'schedule' && 'CSUTFAUTO' || 'CSUTF' }}
     if: "${{ github.repository == 'Azure/accelerator-bootstrap-modules' && (contains(github.event.pull_request.labels.*.name, 'PR: Safe to test 🧪') || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') }}"
     strategy:
       fail-fast: false
       matrix:
-        vcs: ['github', 'azuredevops', 'local']  # Version Control System
-        iac: ['terraform', 'bicep']
-        ag: ['public', 'private', 'none']  # Self Hosted Agents
-        os: ['ubuntu', 'windows', 'macos']  # Operating System
-        tf: ['latest', '1.5.0']  # Terraform Version
-        rg: ['single', 'multi'] # Regions
-        exclude:
-          - iac: bicep
-            tf: 1.5.0
-          - vcs: local
-            ag: public
-          - vcs: local
-            ag: private
-          - vcs: azuredevops
-            tf: 1.5.0
-          - vcs: github
-            tf: 1.5.0
-          - os: windows
-            vcs: azuredevops
-          - os: macos
-            vcs: azuredevops
-          - os: windows
-            vcs: github
-          - os: macos
-            vcs: github
-          - rg: single
-            vcs: github
-          - rg: single
-            vcs: azuredevops
-          - rg: single
-            tf: 1.5.0
-          - rg: single
-            os: windows
-          - rg: single
-            os: macos
+        include: ${{ fromJSON(needs.define-matrix.outputs.matrix) }}
 
-    runs-on: ${{ matrix.os }}-latest
+    runs-on: ${{ matrix.operatingSystem }}-latest
     steps:
       - name: Show env
         run: env | sort
@@ -107,7 +96,7 @@ jobs:
 
       - name: Checkout Starter Modules for Bicep
         uses: actions/checkout@v4
-        if: ${{ matrix.iac == 'bicep' }}
+        if: ${{ matrix.infrastructureAsCode == 'bicep' }}
         with:
           repository: ${{ env.BICEP_STARTER_MODULE_REPOSITORY }}
           ref: ${{ env.ALZ_BICEP_BRANCH }}
@@ -115,7 +104,7 @@ jobs:
 
       - name: Checkout Starter Modules for Terraform
         uses: actions/checkout@v4
-        if: ${{ matrix.iac == 'terraform' }}
+        if: ${{ matrix.infrastructureAsCode == 'terraform' }}
         with:
           repository: ${{ env.TERRAFORM_STARTER_MODULE_REPOSITORY }}
           ref: ${{ env.ALZ_TERRAFORM_BRANCH }}
@@ -124,20 +113,23 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: ${{ matrix.tf }}
+          terraform_version: ${{ matrix.terraformVersion }}
           terraform_wrapper: false
-        if: ${{ matrix.tf != 'latest' }}
+        if: ${{ matrix.terraformVersion != 'latest' }}
 
       - name: Setup ALZ Module Inputs
         run: |
 
           # Get Inputs
-          $infrastructureAsCode = "${{ matrix.iac }}"
-          $versionControlSystem = "${{ matrix.vcs }}"
-          $operatingSystem = "${{ matrix.os }}"
-          $terraformVersion = "${{ matrix.tf }}"
-          $selfHostedAgents = "${{ matrix.ag }}"
-          $regions = "${{ matrix.rg }}"
+          $infrastructureAsCode = "${{ matrix.infrastructureAsCode }}"
+          $versionControlSystem = "${{ matrix.versionControlSystem }}"
+          $operatingSystem = "${{ matrix.operatingSystem }}"
+          $terraformVersion = "${{ matrix.terraformVersion }}"
+          $selfHostedAgents = "${{ matrix.agentType }}"
+          $regions = "${{ matrix.regions }}"
+          $starterModule = "${{ matrix.starterModule }}"
+          $shortName = "${{ matrix.ShortName }}"
+          $deployAzureResources = "${{ matrix.deployAzureResources }}"
 
           $locations = @(
             "uksouth",
@@ -171,40 +163,23 @@ jobs:
             $enablePrivateNetworking = "true"
           }
 
-          # Get Unique ID
-          $infrastructureAsCodeShort = $infrastructureAsCode.Substring(0, 1)
-
-          $versionControlSystemShort = $versionControlSystem.Substring(0, 1)
-          if($versionControlSystem.Contains("-")) {
-            $versionControlSystemSplit = $versionControlSystem.Split("-")
-            $versionControlSystemShort = $versionControlSystemSplit[0].Substring(0, 1) + $versionControlSystemSplit[1].Substring(0, 1)
-          }
-          $operatingSystemShort = $operatingSystem.Substring(0, 1)
-          $terraformVersionShort = if ($terraformVersion -eq "latest") { "l" } else { "m" }
-          $selfhostedAgentsShort = "n"
-          if($selfHostedAgents -eq "public") {
-            $selfhostedAgentsShort = "p"
-          }
-          if($selfHostedAgents -eq "private") {
-            $selfhostedAgentsShort = "r"
-          }
-
-          $localDeployAzureResources = if($terraformVersion -eq "latest") { "true" } else { "false" }
+          $localDeployAzureResources = $deployAzureResources
 
           $runNumber = "${{ github.run_number }}"
 
-          Write-Host "Infrastructure As Code: $infrastructureAsCode ($infrastructureAsCodeShort)"
-          Write-Host "Version Control System: $versionControlSystem ($versionControlSystemShort)"
-          Write-Host "Operating System: $operatingSystem ($operatingSystemShort)"
-          Write-Host "Terraform Version: $terraformVersion ($terraformVersionShort)"
-          Write-Host "Self Hosted Agents: $selfHostedAgents ($selfhostedAgentsShort)"
+          Write-Host "Infrastructure As Code: $infrastructureAsCode"
+          Write-Host "Version Control System: $versionControlSystem"
+          Write-Host "Operating System: $operatingSystem"
+          Write-Host "Terraform Version: $terraformVersion"
+          Write-Host "Self Hosted Agents: $selfHostedAgents"
           Write-Host "Local Deploy Azure Resources: $localDeployAzureResources"
           Write-Host "Run Number: $runNumber"
+          Write-Host "Starter Module: $starterModule"
           Write-Host "Regions: $regions"
           Write-Host "Location: $location"
           Write-Host "Location 2: $location2"
 
-          $uniqueId = "$versionControlSystemShort$infrastructureAsCodeShort$selfhostedAgentsShort$operatingSystemShort$terraformVersionShort$runNumber".ToLower()
+          $uniqueId = $shortName
           echo "UNIQUE_ID=$uniqueId" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
 
           Write-Host "Unique ID: $uniqueId"
@@ -217,7 +192,7 @@ jobs:
           $Inputs = @{}
           $Inputs["iac_type"] = $infrastructureAsCode
           $Inputs["bootstrap_module_name"] = "alz_$versionControlSystemMapped"
-          $Inputs["starter_module_name"] = "test"
+          $Inputs["starter_module_name"] =  $starterModule
           $Inputs["bootstrap_location"] = $location
           if($regions -eq "multi") {
             $Inputs["starter_locations"] = @($location, $location2)
@@ -288,8 +263,8 @@ jobs:
           Write-Host "Runner IP Address: $myIp"
 
           # Get Inputs
-          $versionControlSystem = "${{ matrix.vcs }}"
-          $infrastructureAsCode = "${{ matrix.iac }}"
+          $versionControlSystem = "${{ matrix.versionControlSystem }}"
+          $infrastructureAsCode = "${{ matrix.infrastructureAsCode }}"
 
           # Install the Module
           Write-Host "Installing the Accelerator PowerShell Module"
@@ -351,10 +326,10 @@ jobs:
 
       - name: Run Pipelines or Actions
         run: |
-          $infrastructureAsCode = "${{ matrix.iac }}"
+          $infrastructureAsCode = "${{ matrix.infrastructureAsCode }}"
 
           # Get Inputs
-          $versionControlSystem = "${{ matrix.vcs }}"
+          $versionControlSystem = "${{ matrix.versionControlSystem }}"
           $versionControlSystemOrganisationName = "${{ vars.VCS_ORGANIZATION }}"
           $uniqueId = $ENV:UNIQUE_ID
 
@@ -417,7 +392,7 @@ jobs:
           Write-Host "Runner IP Address: $myIp"
 
           # Get Inputs
-          $versionControlSystem = "${{ matrix.vcs }}"
+          $versionControlSystem = "${{ matrix.versionControlSystem }}"
 
           Write-Host "Installing the Accelerator PowerShell Module"
           ${{ env.POWERSHELL_MODULE_FOLDER }}/actions_bootstrap_for_e2e_tests.ps1 | Out-String | Write-Verbose

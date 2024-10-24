@@ -10,7 +10,7 @@ module "resource_names" {
 module "architecture_definition" {
   count                        = local.has_architecture_definition ? 1 : 0
   source                       = "../../modules/template_architecture_definition"
-  starter_module_folder_path   = local.starter_module_folder_path
+  starter_module_folder_path   = local.starter_root_module_folder_path
   architecture_definition_name = local.architecture_definition_name
 }
 

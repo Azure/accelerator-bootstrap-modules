@@ -14,3 +14,5 @@ jobs:
       id-token: write
       contents: read
       pull-requests: write
+    with:
+      root_module_folder_relative_path: '${root_module_folder_relative_path}'
