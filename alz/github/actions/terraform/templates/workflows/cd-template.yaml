@@ -64,7 +64,7 @@ jobs:
           $rootModuleFolder = "$${{inputs.root_module_folder_relative_path}}"
           New-Item -Path . -Name $stagingDirectory -ItemType "directory"
           Copy-Item -Path "./*" -Exclude @(".git", ".terraform", ".github",  $stagingDirectory) -Recurse -Destination "./$stagingDirectory"
-          
+
           $rootModuleFolderTerraformFolder = Join-Path -Path "./$stagingDirectory" -ChildPath $rootModuleFolder -AdditionalChildPath ".terraform"
           if(Test-Path -Path $rootModuleFolderTerraformFolder) {
             Remove-Item -Path $rootModuleFolderTerraformFolder -Recurse -Force
