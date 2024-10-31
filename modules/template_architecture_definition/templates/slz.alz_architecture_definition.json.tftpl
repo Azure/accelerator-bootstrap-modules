@@ -2,7 +2,7 @@
   "name": "${architecture_definition_name}",
   "management_groups": [
     {
-      "archetypes": [${root_archetypes}],
+      "archetypes": [${root_archetypes}, "global"],
       "display_name": "Sovereign Landing Zone",
       "exists": false,
       "id": "${root_management_group_id}",
@@ -51,7 +51,7 @@
       "parent_id": "${landing_zone_management_group_id}"
     },
     {
-      "archetypes": [${confidential_corp_archetypes}],
+      "archetypes": [${confidential_corp_archetypes}, "confidential"],
       "display_name": "Confidential Corp",
       "exists": false,
       "id": "${confidential_corp_management_group_id}",
@@ -65,7 +65,7 @@
       "parent_id": "${landing_zone_management_group_id}"
     },
     {
-      "archetypes": [${confidential_online_archetypes}],
+      "archetypes": [${confidential_online_archetypes}, "confidential"],
       "display_name": "Confidential Online",
       "exists": false,
       "id": "${confidential_online_management_group_id}",
