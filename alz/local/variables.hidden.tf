@@ -86,7 +86,8 @@ variable "custom_role_definitions_terraform" {
           "Microsoft.Management/managementGroups/write",
           "Microsoft.Management/managementGroups/subscriptions/read",
           "Microsoft.Authorization/*/read",
-          "Microsoft.Resources/deployments/write"
+          "Microsoft.Resources/deployments/write",
+          "Microsoft.Resources/deployments/exportTemplate/action"
         ]
         not_actions = []
       }
@@ -99,7 +100,8 @@ variable "custom_role_definitions_terraform" {
           "Microsoft.Management/managementGroups/read",
           "Microsoft.Management/managementGroups/subscriptions/read",
           "Microsoft.Authorization/*/read",
-          "Microsoft.Resources/deployments/write"
+          "Microsoft.Resources/deployments/write",
+          "Microsoft.Resources/deployments/exportTemplate/action"
         ]
         not_actions = []
       }
@@ -110,7 +112,8 @@ variable "custom_role_definitions_terraform" {
       permissions = {
         actions = [
           "*",
-          "Microsoft.Resources/deployments/write"
+          "Microsoft.Resources/deployments/write",
+          "Microsoft.Resources/deployments/exportTemplate/action"
         ]
         not_actions = []
       }
@@ -121,7 +124,8 @@ variable "custom_role_definitions_terraform" {
       permissions = {
         actions = [
           "*/read",
-          "Microsoft.Resources/deployments/write"
+          "Microsoft.Resources/deployments/write",
+          "Microsoft.Resources/deployments/exportTemplate/action"
         ]
         not_actions = []
       }
