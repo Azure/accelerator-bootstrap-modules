@@ -11,18 +11,6 @@ locals {
   # Customer has provided a custom architecture definition
   has_architecture_definition_override = local.architecture_definition_override_path != ""
 
-  slz_architecture_definition_name = "slz"
-  fsi_architecture_definition_name = "fsi"
-
-  # SLZ archetypes
-  slz_global = ["\"global\""]
-
-  # FSI archetypes
-  fsi_root = ["\"fsi_root\""]
-
-  # SLZ/FSI confidential archetypes
-  confidential = ["\"confidential\""]
-
   # ALZ archetypes
   alz_root           = ["\"root\""]
   alz_platform       = ["\"platform\""]
@@ -36,9 +24,7 @@ locals {
   alz_identity       = ["\"identity\""]
 
   # management group layered archetypes
-  root = (local.enable_alz ?
-    (var.architecture_definition_name == local.slz_architecture_definition_name ? concat(local.slz_global, local.alz_root) : concat(local.fsi_root, local.alz_root))
-  : (var.architecture_definition_name == local.fsi_architecture_definition_name ? local.fsi_root : local.slz_global))
+  root                = local.enable_alz ? local.alz_root : []
   platform            = local.enable_alz ? local.alz_platform : []
   landing_zone        = local.enable_alz ? local.alz_landing_zone : []
   decommissioned      = local.enable_alz ? local.alz_decommissioned : []
@@ -48,8 +34,8 @@ locals {
   management          = local.enable_alz ? local.alz_management : []
   connectivity        = local.enable_alz ? local.alz_connectivity : []
   identity            = local.enable_alz ? local.alz_identity : []
-  confidential_corp   = local.enable_alz ? concat(local.confidential, local.alz_corp) : local.confidential
-  confidential_online = local.enable_alz ? concat(local.confidential, local.alz_online) : local.confidential
+  confidential_corp   = local.enable_alz ? local.alz_corp : []
+  confidential_online = local.enable_alz ? local.alz_online : []
 
   template_vars = {
     architecture_definition_name            = var.architecture_definition_name
@@ -80,5 +66,10 @@ locals {
     confidential_online_archetypes = join(", ", local.confidential_online)
   }
 
-  template_file = templatefile(local.template_file_path, local.template_vars)
+  unclean_templated_file_content = templatefile(local.template_file_path, local.template_vars)
+
+  # Templated file contents could have malformed json due hard-coded archetypes in the template file. 
+  # This fixes commas in the json at beginning and end of arrays, and two consecutive commas in the arrays.
+  # Occurs when there are no archetypes in the array that is being used to replace the template variable.
+  template_file = replace(replace(replace(local.unclean_templated_file_content, "/\\[\\s*,\\s*/", "["), "/,\\s*\\]/", "]"), "/\\,\\s*,/", ",")
 }
