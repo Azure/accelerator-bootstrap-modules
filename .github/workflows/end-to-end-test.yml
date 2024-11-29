@@ -140,7 +140,8 @@ jobs:
             "westeurope",
             "westus2",
             "westus3",
-            "australiaeast"
+            "australiaeast",
+            "swedencentral"
           )
 
           $locationsSingleAvailabilityZone = @(
