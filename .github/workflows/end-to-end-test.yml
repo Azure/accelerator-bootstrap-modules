@@ -140,7 +140,8 @@ jobs:
             "westeurope",
             "westus2",
             "westus3",
-            "australiaeast"
+            "australiaeast",
+            "swedencentral"
           )
 
           $locationsSingleAvailabilityZone = @(
@@ -215,6 +216,9 @@ jobs:
             $Inputs["use_separate_repository_for_templates"] = "true"
             $Inputs["use_self_hosted_runners"] = $enableSelfHostedAgents
             $Inputs["use_runner_group"] = "true"
+            if($location -eq "swedencentral") {
+              $Inputs["runner_container_zone_support"] = "false"
+            }
           }
 
           if($versionControlSystem -eq "azuredevops") {
@@ -226,6 +230,9 @@ jobs:
             $Inputs["azure_devops_create_project"] = "true"
             $Inputs["azure_devops_project_name"] = "alz-test-$uniqueId"
             $Inputs["use_self_hosted_agents"] = $enableSelfHostedAgents
+            if($location -eq "swedencentral") {
+              $Inputs["agent_container_zone_support"] = "false"
+            }
           }
 
           if($versionControlSystem -eq "local") {
@@ -238,6 +245,7 @@ jobs:
           $Inputs["subscription_id_connectivity"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
           $Inputs["subscription_id_identity"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
           $Inputs["subscription_id_management"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
+
           $Inputs["parent_management_group_display_name"] = "Tenant Root Group"
           $Inputs["child_management_group_display_name"] = "E2E Test"
           $Inputs["resource_group_location"] = $location

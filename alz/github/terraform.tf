@@ -7,7 +7,7 @@ terraform {
     }
     azapi = {
       source  = "azure/azapi"
-      version = "~> 1.13"
+      version = "~> 2.0"
     }
     github = {
       source  = "integrations/github"
