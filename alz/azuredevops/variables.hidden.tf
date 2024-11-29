@@ -58,6 +58,12 @@ variable "agent_container_memory_max" {
   default     = 4
 }
 
+variable "agent_container_zone_support" {
+  description = "The container zone support"
+  type        = bool
+  default     = true
+}
+
 variable "built_in_configurartion_file_names" {
   description = "Built-in configuration file name"
   type        = list(string)

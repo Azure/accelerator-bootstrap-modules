@@ -16,3 +16,20 @@ data "http" "ip" {
     min_delay_ms = 500
   }
 }
+
+module "regions" {
+  source                    = "Azure/avm-utl-regions/azurerm"
+  version                   = "0.3.0"
+  use_cached_data           = false
+  availability_zones_filter = false
+  recommended_filter        = false
+}
+
+locals {
+  regions = { for region in module.regions.regions_by_name : region.name => {
+    display_name = region.display_name
+    zones        = region.zones == null ? [] : region.zones
+    }
+  }
+  bootstrap_location_zones = local.regions[var.azure_location].zones
+}

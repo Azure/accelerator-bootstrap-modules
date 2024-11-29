@@ -94,6 +94,12 @@ variable "runner_container_memory_max" {
   default     = 4
 }
 
+variable "runner_container_zone_support" {
+  description = "The container zone support"
+  type        = bool
+  default     = true
+}
+
 variable "runner_name_environment_variable" {
   description = "The runner name environment variable supplied to the container"
   type        = string
