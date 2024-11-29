@@ -250,8 +250,6 @@ jobs:
           $Inputs["child_management_group_display_name"] = "E2E Test"
           $Inputs["resource_group_location"] = $location
 
-          
-
           # Bicep
           if($infrastructureAsCode -eq "bicep") {
             $Inputs["Prefix"] = $uniqueId
