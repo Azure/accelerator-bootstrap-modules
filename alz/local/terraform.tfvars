@@ -1,0 +1,7 @@
+iac_type                     = "terraform"
+module_folder_path           = "testing"
+subscription_id_connectivity = "b857908d-3f5c-4477-91c1-0fbd08df4e88"
+subscription_id_identity     = "b857908d-3f5c-4477-91c1-0fbd08df4e88"
+subscription_id_management   = "b857908d-3f5c-4477-91c1-0fbd08df4e88"
+bootstrap_location           = "uksouth"
+service_name                 = "testtest"

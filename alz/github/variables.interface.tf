@@ -17,16 +17,28 @@ variable "root_parent_management_group_id" {
 variable "subscription_id_connectivity" {
   description = "The identifier of the Connectivity Subscription"
   type        = string
+  validation {
+    condition     = can(regex("^[0-9a-fA-F-]{36}$", var.subscription_id_connectivity))
+    error_message = "The bootstrap subscription ID must be a valid GUID"
+  }
 }
 
 variable "subscription_id_identity" {
   description = "The identifier of the Identity Subscription"
   type        = string
+  validation {
+    condition     = can(regex("^[0-9a-fA-F-]{36}$", var.subscription_id_identity))
+    error_message = "The bootstrap subscription ID must be a valid GUID"
+  }
 }
 
 variable "subscription_id_management" {
   description = "The identifier of the Management Subscription"
   type        = string
+  validation {
+    condition     = can(regex("^[0-9a-fA-F-]{36}$", var.subscription_id_management))
+    error_message = "The bootstrap subscription ID must be a valid GUID"
+  }
 }
 
 variable "configuration_file_path" {
@@ -54,6 +66,6 @@ variable "on_demand_folder_artifact_name" {
 }
 
 variable "bootstrap_location" {
-  description = "Azure Deployment location for the bootstrap resources (e.g. storage account, identities, etc)|4|azure_location"
+  description = "Azure Deployment location for the bootstrap resources (e.g. storage account, identities, etc)"
   type        = string
 }
