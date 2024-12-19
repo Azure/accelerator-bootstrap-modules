@@ -1,15 +1,14 @@
 locals {
   # Determine template architecture definition inputs from starter module tfvars
-  starter_module_tfvars                 = jsondecode(file("${var.starter_module_folder_path}/terraform.tfvars.json"))
-  default_prefix                        = local.starter_module_tfvars.default_prefix
-  default_postfix                       = local.starter_module_tfvars.default_postfix
-  enable_alz                            = local.starter_module_tfvars.apply_alz_archetypes_via_architecture_definition_template
-  architecture_definition_override_path = local.starter_module_tfvars.architecture_definition_override_path
-  default_template_file_path            = "${path.module}/templates/${var.architecture_definition_name}.alz_architecture_definition.json.tftpl"
-  template_file_path                    = local.starter_module_tfvars.architecture_definition_template_path != "" ? local.starter_module_tfvars.architecture_definition_template_path : local.default_template_file_path
+  starter_module_tfvars           = jsondecode(file("${var.starter_module_folder_path}/terraform.tfvars.json"))
+  default_prefix                  = local.starter_module_tfvars.default_prefix
+  default_postfix                 = local.starter_module_tfvars.default_postfix
+  top_level_management_group_name = local.starter_module_tfvars.top_level_management_group_name
+  default_template_file_path      = "${path.module}/templates/${var.architecture_definition_name}.alz_architecture_definition.json.tftpl"
+  template_file_path              = var.architecture_definition_template_path != "" ? var.architecture_definition_template_path : local.default_template_file_path
 
   # Customer has provided a custom architecture definition
-  has_architecture_definition_override = local.architecture_definition_override_path != ""
+  has_architecture_definition_override = var.architecture_definition_override_path != ""
 
   # ALZ archetypes
   alz_root           = ["\"root\""]
@@ -24,21 +23,22 @@ locals {
   alz_identity       = ["\"identity\""]
 
   # management group layered archetypes
-  root                = local.enable_alz ? local.alz_root : []
-  platform            = local.enable_alz ? local.alz_platform : []
-  landing_zone        = local.enable_alz ? local.alz_landing_zone : []
-  decommissioned      = local.enable_alz ? local.alz_decommissioned : []
-  sandboxes           = local.enable_alz ? local.alz_sandboxes : []
-  corp                = local.enable_alz ? local.alz_corp : []
-  online              = local.enable_alz ? local.alz_online : []
-  management          = local.enable_alz ? local.alz_management : []
-  connectivity        = local.enable_alz ? local.alz_connectivity : []
-  identity            = local.enable_alz ? local.alz_identity : []
-  confidential_corp   = local.enable_alz ? local.alz_corp : []
-  confidential_online = local.enable_alz ? local.alz_online : []
+  root                = var.apply_alz_archetypes_via_architecture_definition_template ? local.alz_root : []
+  platform            = var.apply_alz_archetypes_via_architecture_definition_template ? local.alz_platform : []
+  landing_zone        = var.apply_alz_archetypes_via_architecture_definition_template ? local.alz_landing_zone : []
+  decommissioned      = var.apply_alz_archetypes_via_architecture_definition_template ? local.alz_decommissioned : []
+  sandboxes           = var.apply_alz_archetypes_via_architecture_definition_template ? local.alz_sandboxes : []
+  corp                = var.apply_alz_archetypes_via_architecture_definition_template ? local.alz_corp : []
+  online              = var.apply_alz_archetypes_via_architecture_definition_template ? local.alz_online : []
+  management          = var.apply_alz_archetypes_via_architecture_definition_template ? local.alz_management : []
+  connectivity        = var.apply_alz_archetypes_via_architecture_definition_template ? local.alz_connectivity : []
+  identity            = var.apply_alz_archetypes_via_architecture_definition_template ? local.alz_identity : []
+  confidential_corp   = var.apply_alz_archetypes_via_architecture_definition_template ? local.alz_corp : []
+  confidential_online = var.apply_alz_archetypes_via_architecture_definition_template ? local.alz_online : []
 
   template_vars = {
     architecture_definition_name            = var.architecture_definition_name
+    top_level_management_group_name         = local.top_level_management_group_name
     root_management_group_id                = "${local.default_prefix}${local.default_postfix}"
     platform_management_group_id            = "${local.default_prefix}-platform${local.default_postfix}"
     landing_zone_management_group_id        = "${local.default_prefix}-landingzones${local.default_postfix}"
