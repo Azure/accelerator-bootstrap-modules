@@ -11,7 +11,7 @@ terraform {
     }
     azuredevops = {
       source  = "microsoft/azuredevops"
-      version = "~> 1.1"
+      version = "1.4"
     }
     random = {
       source  = "hashicorp/random"
