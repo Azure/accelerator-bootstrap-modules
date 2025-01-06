@@ -11,7 +11,7 @@ terraform {
     }
     azuredevops = {
       source  = "microsoft/azuredevops"
-      version = "~> 1.1"
+      version = "1.4"
     }
     random = {
       source  = "hashicorp/random"
@@ -38,4 +38,3 @@ provider "azuredevops" {
   personal_access_token = var.azure_devops_personal_access_token
   org_service_url       = module.azure_devops.organization_url
 }
-
