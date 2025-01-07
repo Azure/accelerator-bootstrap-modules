@@ -10,7 +10,7 @@ variable "additional_folders_path" {
   default     = []
 }
 
-variable "built_in_configurartion_file_names" {
+variable "built_in_configuration_file_names" {
   description = "Built-in configuration file name"
   type        = list(string)
   default     = ["config.yaml", "config-hub-and-spoke-vnet.yaml", "config-virtual-wan.yaml"]

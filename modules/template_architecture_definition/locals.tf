@@ -1,9 +1,9 @@
 locals {
   # Determine template architecture definition inputs from starter module tfvars
   starter_module_tfvars           = jsondecode(file("${var.starter_module_folder_path}/terraform.tfvars.json"))
-  default_prefix                  = local.starter_module_tfvars.default_prefix
-  default_postfix                 = local.starter_module_tfvars.default_postfix
-  top_level_management_group_name = local.starter_module_tfvars.top_level_management_group_name
+  default_prefix                  = try(local.starter_module_tfvars.default_prefix, "alz")
+  default_postfix                 = try(local.starter_module_tfvars.default_postfix, "")
+  top_level_management_group_name = try(local.starter_module_tfvars.top_level_management_group_name, "alz")
   default_template_file_path      = "${path.module}/templates/${var.architecture_definition_name}.alz_architecture_definition.json.tftpl"
   template_file_path              = var.architecture_definition_template_path != "" ? var.architecture_definition_template_path : local.default_template_file_path
 

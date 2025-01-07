@@ -24,12 +24,12 @@ resource "local_file" "architecture_definition_file" {
 }
 
 module "files" {
-  source                             = "../../modules/files"
-  starter_module_folder_path         = local.starter_module_folder_path
-  additional_files                   = var.additional_files
-  configuration_file_path            = var.configuration_file_path
-  built_in_configurartion_file_names = var.built_in_configurartion_file_names
-  additional_folders_path            = var.additional_folders_path
+  source                            = "../../modules/files"
+  starter_module_folder_path        = local.starter_module_folder_path
+  additional_files                  = var.additional_files
+  configuration_file_path           = var.configuration_file_path
+  built_in_configuration_file_names = var.built_in_configuration_file_names
+  additional_folders_path           = var.additional_folders_path
 }
 
 module "azure" {

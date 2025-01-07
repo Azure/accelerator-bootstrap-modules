@@ -5,7 +5,7 @@ locals {
 locals {
   starter_module_files = { for file in fileset(var.starter_module_folder_path, "**") : file => {
     path = "${var.starter_module_folder_path}/${file}"
-    } if(!local.has_configuration_file || !contains(var.built_in_configurartion_file_names, file)) && !strcontains(file, var.starter_module_folder_path_exclusion)
+    } if(!local.has_configuration_file || !contains(var.built_in_configuration_file_names, file)) && !strcontains(file, var.starter_module_folder_path_exclusion)
   }
 
   additional_folders_files = length(var.additional_folders_path) != 0 ? merge(
