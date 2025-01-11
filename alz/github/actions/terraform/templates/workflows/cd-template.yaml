@@ -101,6 +101,7 @@ jobs:
       ARM_TENANT_ID: "$${{ vars.AZURE_TENANT_ID }}"
       ARM_USE_AZUREAD: true
       ARM_USE_OIDC: true
+      AZAPI_RETRY_GET_AFTER_PUT_MAX_TIME: "60m" # Accounts for eventually consistent management group permissions propagation
 
     steps:
       - name: Download a Build Artifact

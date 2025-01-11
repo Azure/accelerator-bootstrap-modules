@@ -28,6 +28,7 @@ steps:
         $env:ARM_USE_OIDC = "true"
         $env:ARM_CLIENT_ID = $clientId
         $env:ARM_USE_AZUREAD = "true"
+        $env:AZAPI_RETRY_GET_AFTER_PUT_MAX_TIME = "60m" # Accounts for eventually consistent management group permissions propagation
 
         # Run Terraform Apply
         $command = "terraform"
