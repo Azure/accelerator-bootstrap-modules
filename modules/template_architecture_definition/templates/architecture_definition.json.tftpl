@@ -1,0 +1,13 @@
+{
+  "name": "${architecture_definition_name}",
+  "management_groups": [
+    %{ for management_group in management_groups }{
+      "archetypes": ${management_group.archetypes},
+      "display_name": ${management_group.display_name},
+      "id": ${management_group.id},
+      "exists": ${management_group.exists},
+      "parent_id": ${management_group.parent_id}
+    }%{ if management_group != management_groups[length(management_groups) - 1] && length(management_groups) != 0},
+    %{ endif }%{ endfor }
+  ]
+}
