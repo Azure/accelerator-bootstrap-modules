@@ -3,7 +3,7 @@ locals {
   starter_module_tfvars                  = jsondecode(file("${var.starter_module_folder_path}/terraform.tfvars.json"))
   default_prefix                         = try(local.starter_module_tfvars.default_prefix, "alz")
   default_postfix                        = try(local.starter_module_tfvars.default_postfix, "")
-  management_group_configuration         = local.starter_module_tfvars.management_group_configuration  # this input is require, fail if incorrect configuration is provided
+  management_group_configuration         = local.starter_module_tfvars.management_group_configuration # this input is require, fail if incorrect configuration is provided
   platform_management_group_children     = try(local.starter_module_tfvars.platform_management_group_children, {})
   landing_zone_management_group_children = try(local.starter_module_tfvars.landing_zone_management_group_children, {})
   default_template_file_path             = "${path.module}/templates/architecture_definition.json.tftpl"
