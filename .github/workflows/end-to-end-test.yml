@@ -294,7 +294,7 @@ jobs:
               if($infrastructureAsCode -eq "terraform") {
                 $starterModuleOverrideFolderPath = "$starterModuleOverrideFolderPath/templates"
               }
-              Deploy-Accelerator -output "${{ env.TARGET_FOLDER }}" -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "${{ env.BOOTSTRAP_MODULE_FOLDER }}" -starterModuleOverrideFolderPath $starterModuleOverrideFolderPath -starterRelease "${{ env.ALZ_ON_DEMAND_FOLDER_RELEASE_TAG }}" -autoApprove -ErrorAction Stop -Verbose
+              Deploy-Accelerator -output "${{ env.TARGET_FOLDER }}" -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "${{ env.BOOTSTRAP_MODULE_FOLDER }}" -starterModuleOverrideFolderPath $starterModuleOverrideFolderPath -starterRelease "${{ env.ALZ_ON_DEMAND_FOLDER_RELEASE_TAG }}" -autoApprove -skipAlzModuleVersionRequirementsCheck -ErrorAction Stop -Verbose
 
               if ($LastExitCode -eq 0) {
                 $success = $true
