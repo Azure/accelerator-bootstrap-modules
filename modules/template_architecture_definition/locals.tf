@@ -93,7 +93,7 @@ locals {
     },
     {
       "archetypes" : jsonencode(local.platform_archtypes),
-      "display_name" : jsonencode(local.platform_display_name, ""),
+      "display_name" : jsonencode(local.platform_display_name),
       "exists" : false,
       "id" : jsonencode(local.platform_management_group_id),
       "parent_id" : jsonencode(local.root_management_group_id)
@@ -198,4 +198,21 @@ locals {
   }
 
   template_file = templatefile(local.template_file_path, local.template_vars)
+
+  # Validate management group configuration
+  management_groups_validation_map = {
+    "root": {"id": local.root_management_group_id, "display_name": local.root_display_name},
+    "platform": {"id": local.platform_management_group_id, "display_name": local.platform_display_name},
+    "landing_zone": {"id": local.landing_zone_management_group_id, "display_name": local.landing_zone_display_name},
+    "decommissioned": {"id": local.decommissioned_management_group_id, "display_name": local.decommissioned_display_name},
+    "sandbox": {"id": local.sandbox_management_group_id, "display_name": local.sandbox_display_name},
+    "management": {"id": local.management_management_group_id, "display_name": local.management_display_name},
+    "connectivity": {"id": local.connectivity_management_group_id, "display_name": local.connectivity_display_name},
+    "identity": {"id": local.identity_management_group_id, "display_name": local.identity_display_name},
+    "corp": {"id": local.corp_management_group_id, "display_name": local.corp_display_name},
+    "online": {"id": local.online_management_group_id, "display_name": local.online_display_name},
+    "confidential_corp": {"id": local.confidential_corp_management_group_id, "display_name": local.confidential_corp_display_name},
+    "confidential_online": {"id": local.confidential_online_management_group_id, "display_name": local.confidential_online_display_name}
+  }
+  management_groups_validation = [for k, v in local.management_groups_validation_map : k if v.id == "" || v.display_name == "" ]
 }
