@@ -93,7 +93,7 @@ locals {
     },
     {
       "archetypes" : jsonencode(local.platform_archtypes),
-      "display_name" : jsonencode(try(local.platform_display_name, "")),
+      "display_name" : jsonencode(local.platform_display_name, ""),
       "exists" : false,
       "id" : jsonencode(local.platform_management_group_id),
       "parent_id" : jsonencode(local.root_management_group_id)
