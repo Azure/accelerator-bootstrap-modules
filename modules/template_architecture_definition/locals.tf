@@ -17,7 +17,7 @@ locals {
   alz_platform_archtype       = ["platform"]
   alz_landing_zone_archtype   = ["landing_zones"]
   alz_decommissioned_archtype = ["decommissioned"]
-  alz_sandboxes_archtype      = ["sandboxes"]
+  alz_sandboxes_archtype      = ["sandbox"]
   alz_management_archtype     = ["management"]
   alz_connectivity_archtype   = ["connectivity"]
   alz_identity_archtype       = ["identity"]
