@@ -225,7 +225,7 @@ variable "custom_role_definitions_terraform" {
     }
     alz_subscription_owner = {
       name        = "Azure Landing Zones Subscription Owner ({{service_name}}-{{environment_name}})"
-      description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing in platfrom subscriptions."
+      description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing in platform subscriptions."
       permissions = {
         actions = [
           "*",
@@ -311,7 +311,7 @@ variable "custom_role_definitions_bicep" {
     }
     alz_subscription_owner = {
       name        = "Azure Landing Zones Subscription Owner ({{service_name}}-{{environment_name}})"
-      description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing in platfrom subscriptions."
+      description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing in platform subscriptions."
       permissions = {
         actions = [
           "*",
