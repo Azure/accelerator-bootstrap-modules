@@ -86,86 +86,86 @@ locals {
   alz_management_groups = [
     {
       "archetypes" : jsonencode(local.root_archtypes),
-      "display_name" : jsonencode(local.root_display_name),
+      "display_name" : local.root_display_name,
       "exists" : false,
-      "id" : jsonencode(local.root_management_group_id),
+      "id" : local.root_management_group_id,
       "parent_id" : jsonencode(null)
     },
     {
       "archetypes" : jsonencode(local.platform_archtypes),
-      "display_name" : jsonencode(local.platform_display_name),
+      "display_name" : local.platform_display_name,
       "exists" : false,
-      "id" : jsonencode(local.platform_management_group_id),
+      "id" : local.platform_management_group_id,
       "parent_id" : jsonencode(local.root_management_group_id)
     },
     {
       "archetypes" : jsonencode(local.landingzones_archtypes),
-      "display_name" : jsonencode(local.landing_zone_display_name),
+      "display_name" : local.landing_zone_display_name,
       "exists" : false,
-      "id" : jsonencode(local.landing_zone_management_group_id),
+      "id" : local.landing_zone_management_group_id,
       "parent_id" : jsonencode(local.root_management_group_id)
     },
     {
       "archetypes" : jsonencode(local.sandbox_archtypes),
-      "display_name" : jsonencode(local.sandbox_display_name),
+      "display_name" : local.sandbox_display_name,
       "exists" : false,
-      "id" : jsonencode(local.sandbox_management_group_id),
+      "id" : local.sandbox_management_group_id,
       "parent_id" : jsonencode(local.root_management_group_id)
     },
     {
       "archetypes" : jsonencode(local.decommissioned_archtypes),
-      "display_name" : jsonencode(local.decommissioned_display_name),
+      "display_name" : local.decommissioned_display_name,
       "exists" : false,
-      "id" : jsonencode(local.decommissioned_management_group_id),
+      "id" : local.decommissioned_management_group_id,
       "parent_id" : jsonencode(local.root_management_group_id)
     },
     {
       "archetypes" : jsonencode(local.management_archtypes),
-      "display_name" : jsonencode(local.management_display_name),
+      "display_name" : local.management_display_name,
       "exists" : false,
-      "id" : jsonencode(local.management_management_group_id),
+      "id" : local.management_management_group_id,
       "parent_id" : jsonencode(local.platform_management_group_id)
     },
     {
       "archetypes" : jsonencode(local.connectivity_archtypes),
-      "display_name" : jsonencode(local.connectivity_display_name),
+      "display_name" : local.connectivity_display_name,
       "exists" : false,
-      "id" : jsonencode(local.connectivity_management_group_id),
+      "id" : local.connectivity_management_group_id,
       "parent_id" : jsonencode(local.platform_management_group_id)
     },
     {
       "archetypes" : jsonencode(local.identity_archtypes),
-      "display_name" : jsonencode(local.identity_display_name),
+      "display_name" : local.identity_display_name,
       "exists" : false,
-      "id" : jsonencode(local.identity_management_group_id),
+      "id" : local.identity_management_group_id,
       "parent_id" : jsonencode(local.platform_management_group_id)
     },
     {
       "archetypes" : jsonencode(local.corp_archtypes),
-      "display_name" : jsonencode(local.corp_display_name),
+      "display_name" : local.corp_display_name,
       "exists" : false,
-      "id" : jsonencode(local.corp_management_group_id),
+      "id" : local.corp_management_group_id,
       "parent_id" : jsonencode(local.landing_zone_management_group_id)
     },
     {
       "archetypes" : jsonencode(local.online_archtypes),
-      "display_name" : jsonencode(local.online_display_name),
+      "display_name" : local.online_display_name,
       "exists" : false,
-      "id" : jsonencode(local.online_management_group_id),
+      "id" : local.online_management_group_id,
       "parent_id" : jsonencode(local.landing_zone_management_group_id)
     },
     {
       "archetypes" : jsonencode(local.confidential_corp_archtypes),
-      "display_name" : jsonencode(local.confidential_corp_display_name),
+      "display_name" : local.confidential_corp_display_name,
       "exists" : false,
-      "id" : jsonencode(local.confidential_corp_management_group_id),
+      "id" : local.confidential_corp_management_group_id,
       "parent_id" : jsonencode(local.landing_zone_management_group_id)
     },
     {
       "archetypes" : jsonencode(local.confidential_online_archtypes),
-      "display_name" : jsonencode(local.confidential_online_display_name),
+      "display_name" : local.confidential_online_display_name,
       "exists" : false,
-      "id" : jsonencode(local.confidential_online_management_group_id),
+      "id" : local.confidential_online_management_group_id,
       "parent_id" : jsonencode(local.landing_zone_management_group_id)
     }
   ]
@@ -173,9 +173,9 @@ locals {
   platform_management_groups = [for k, v in local.platform_management_group_children :
     {
       "archetypes" : jsonencode(try(v.archetypes, [])),
-      "display_name" : jsonencode(try(v.display_name, "")),
+      "display_name" : try(v.display_name, ""),
       "exists" : false,
-      "id" : jsonencode(try(templatestring(v.id, local.management_group_format_variables), "")),
+      "id" : try(templatestring(v.id, local.management_group_format_variables), ""),
       "parent_id" : jsonencode(local.platform_management_group_id)
     }
   ]
@@ -183,9 +183,9 @@ locals {
   landing_zone_management_groups = [for k, v in local.landing_zone_management_group_children :
     {
       "archetypes" : jsonencode(try(v.archetypes, [])),
-      "display_name" : jsonencode(try(v.display_name, "")),
+      "display_name" : try(v.display_name, ""),
       "exists" : false,
-      "id" : jsonencode(try(templatestring(v.id, local.management_group_format_variables), "")),
+      "id" : try(templatestring(v.id, local.management_group_format_variables), ""),
       "parent_id" : jsonencode(local.landing_zone_management_group_id)
     }
   ]
