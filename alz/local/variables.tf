@@ -1,3 +1,130 @@
+variable "iac_type" {
+  description = "The type of infrastructure as code to use for the deployment. (e.g. 'terraform' or `bicep)"
+  type        = string
+}
+
+variable "module_folder_path" {
+  description = "The folder for the starter modules"
+  type        = string
+}
+
+variable "root_parent_management_group_id" {
+  description = "The root parent management group ID. This will default to the Tenant Root Group ID if not supplied"
+  type        = string
+  default     = ""
+}
+
+variable "subscription_id_connectivity" {
+  description = "The identifier of the Connectivity Subscription"
+  type        = string
+  validation {
+    condition     = can(regex("^[0-9a-fA-F-]{36}$", var.subscription_id_connectivity))
+    error_message = "The bootstrap subscription ID must be a valid GUID"
+  }
+}
+
+variable "subscription_id_identity" {
+  description = "The identifier of the Identity Subscription"
+  type        = string
+  validation {
+    condition     = can(regex("^[0-9a-fA-F-]{36}$", var.subscription_id_identity))
+    error_message = "The bootstrap subscription ID must be a valid GUID"
+  }
+}
+
+variable "subscription_id_management" {
+  description = "The identifier of the Management Subscription"
+  type        = string
+  validation {
+    condition     = can(regex("^[0-9a-fA-F-]{36}$", var.subscription_id_management))
+    error_message = "The bootstrap subscription ID must be a valid GUID"
+  }
+}
+
+variable "configuration_file_path" {
+  description = "The name of the configuration file"
+  type        = string
+  default     = ""
+}
+
+variable "starter_module_name" {
+  description = "The name of the starter module"
+  type        = string
+  default     = ""
+}
+
+variable "bootstrap_location" {
+  description = "Azure Deployment location for the bootstrap resources (e.g. storage account, identities, etc)"
+  type        = string
+  default     = ""
+}
+
+variable "on_demand_folder_repository" {
+  description = "The repository to use for the on-demand folders"
+  type        = string
+  default     = ""
+}
+
+variable "on_demand_folder_artifact_name" {
+  description = "The branch to use for the on-demand folders"
+  type        = string
+  default     = ""
+}
+
+variable "target_directory" {
+  description = "The target directory to create the landing zone files in. (e.g. 'c:\\landingzones\\my_landing_zone')"
+  type        = string
+  default     = ""
+}
+
+variable "create_bootstrap_resources_in_azure" {
+  description = "Whether to create resources in Azure (e.g. resource group, storage account, identities, etc.)"
+  type        = bool
+  default     = true
+}
+
+variable "bootstrap_subscription_id" {
+  description = "Azure Subscription ID for the bootstrap resources (e.g. storage account, identities, etc). Leave empty to use the az login subscription"
+  type        = string
+  default     = ""
+  validation {
+    condition     = var.bootstrap_subscription_id == "" ? true : can(regex("^[0-9a-fA-F-]{36}$", var.bootstrap_subscription_id))
+    error_message = "The bootstrap subscription ID must be a valid GUID"
+  }
+}
+
+variable "service_name" {
+  description = "Used to build up the default resource names (e.g. rg-<service_name>-mgmt-uksouth-001)"
+  type        = string
+  default     = "alz"
+  validation {
+    condition     = can(regex("^[a-z0-9]+$", var.service_name))
+    error_message = "The service name must only contain lowercase letters and numbers"
+  }
+}
+
+variable "environment_name" {
+  description = "Used to build up the default resource names (e.g. rg-alz-<environment_name>-uksouth-001)"
+  type        = string
+  default     = "mgmt"
+  validation {
+    condition     = can(regex("^[a-z0-9]+$", var.environment_name))
+    error_message = "The environment name must only contain lowercase letters and numbers"
+  }
+}
+
+variable "postfix_number" {
+  description = "Used to build up the default resource names (e.g. rg-alz-mgmt-uksouth-<postfix_number>)"
+  type        = number
+  default     = 1
+}
+
+variable "grant_permissions_to_current_user" {
+  description = "Grant permissions to the current user on the bootstrap resources in addition to the user assinged managed identities."
+  type        = bool
+  default     = true
+}
+
 variable "additional_files" {
   description = "Additional files to upload to the repository. This must be specified as a comma-separated list of absolute file paths (e.g. c:\\config\\config.yaml or /home/user/config/config.yaml)"
   type        = list(string)
@@ -56,7 +183,7 @@ variable "default_target_directory" {
 variable "storage_account_replication_type" {
   description = "Controls the redundancy for the storage account"
   type        = string
-  default     = "GZRS"
+  default     = "ZRS"
   validation {
     condition     = var.storage_account_replication_type == "ZRS" || var.storage_account_replication_type == "GZRS" || var.storage_account_replication_type == "RAGZRS"
     error_message = "Invalid storage account replication type. Valid values are ZRS, GZRS and RAGZRS."
