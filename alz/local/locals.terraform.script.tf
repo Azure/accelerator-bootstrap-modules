@@ -12,6 +12,9 @@ if($null -eq $env:ARM_SUBSCRIPTION_ID -or $env:ARM_SUBSCRIPTION_ID -eq "") {
     Write-Verbose "Environment variable ARM_SUBSCRIPTION_ID set to $subscriptionId"
 }
 
+# Set the azapi provider get timeout env var
+$env:AZAPI_RETRY_GET_AFTER_PUT_MAX_TIME = "60m" # Accounts for eventually consistent management group permissions propagation
+
 # Run the Terraform plan
 terraform `
   -chdir="${var.root_module_folder_relative_path}" `
