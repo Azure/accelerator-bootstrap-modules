@@ -2,7 +2,7 @@ locals {
   # Determine template architecture definition inputs from starter module tfvars
   starter_module_tfvars                  = jsondecode(file("${var.starter_module_folder_path}/terraform.tfvars.json"))
   default_prefix                         = try(local.starter_module_tfvars.default_prefix, "alz")
-  default_postfix                        = try(local.starter_module_tfvars.default_postfix, "")
+  optional_postfix                       = try(local.starter_module_tfvars.optional_postfix, "")
   management_group_configuration         = try(local.starter_module_tfvars.management_group_configuration, {})
   platform_management_group_children     = try(local.starter_module_tfvars.platform_management_group_children, {})
   landing_zone_management_group_children = try(local.starter_module_tfvars.landing_zone_management_group_children, {})
@@ -54,7 +54,7 @@ locals {
 
   management_group_format_variables = {
     default_prefix  = local.default_prefix
-    default_postfix = local.default_postfix
+    optional_postfix = local.optional_postfix
   }
 
   root_management_group_id                = try(templatestring(local.management_group_configuration.root.id, local.management_group_format_variables), "")
