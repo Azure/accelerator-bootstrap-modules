@@ -53,7 +53,7 @@ locals {
   confidential_online_archtypes = var.apply_alz_archetypes_via_architecture_definition_template ? concat(local.alz_online_archtype, local.config_confidential_online_archtypes) : local.config_confidential_online_archtypes
 
   management_group_format_variables = {
-    default_prefix  = local.default_prefix
+    default_prefix   = local.default_prefix
     optional_postfix = local.optional_postfix
   }
 
