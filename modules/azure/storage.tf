@@ -9,7 +9,7 @@ resource "azurerm_storage_account" "alz" {
   shared_access_key_enabled       = false
   public_network_access_enabled   = var.use_private_networking && var.use_self_hosted_agents && !var.allow_storage_access_from_my_ip ? false : true
   lifecycle {
-    ignore_changes = [ queue_properties, static_website ]
+    ignore_changes = [queue_properties, static_website]
   }
 }
 
