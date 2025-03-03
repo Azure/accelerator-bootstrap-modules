@@ -12,7 +12,7 @@ parameters:
   - name: terraform_cli_version
     displayName: Terraform CLI Version
     type: string
-    default: '1.10.5'
+    default: 'latest'
 
 lockBehavior: sequential
 
