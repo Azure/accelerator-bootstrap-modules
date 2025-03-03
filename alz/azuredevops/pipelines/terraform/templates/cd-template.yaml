@@ -27,7 +27,7 @@ stages:
                   displayName: Checkout Terraform Module
                 - template: helpers/terraform-installer.yaml
                   parameters:
-                    terraformVersion: 'latest'
+                    terraformVersion: '1.10.5'
                 - template: helpers/terraform-init.yaml
                   parameters:
                     serviceConnection: '${service_connection_name_plan}'
@@ -94,7 +94,7 @@ stages:
                     targetPath: '$(Build.SourcesDirectory)'
                 - template: helpers/terraform-installer.yaml
                   parameters:
-                    terraformVersion: 'latest'
+                    terraformVersion: '1.10.5'
                 - template: helpers/terraform-init.yaml
                   parameters:
                     serviceConnection: '${service_connection_name_apply}'
