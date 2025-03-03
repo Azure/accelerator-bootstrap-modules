@@ -5,6 +5,12 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      terraform_cli_version:
+        description: 'Terraform CLI Version'
+        required: true
+        default: '1.10.5'
+        type: string
 
 jobs:
   validate_and_plan:
@@ -16,3 +22,4 @@ jobs:
       pull-requests: write
     with:
       root_module_folder_relative_path: '${root_module_folder_relative_path}'
+      terraform_cli_version: $${{ inputs.terraform_cli_version }}

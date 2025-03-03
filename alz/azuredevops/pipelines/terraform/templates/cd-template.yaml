@@ -4,6 +4,8 @@ parameters:
     default: 'apply'
   - name: root_module_folder_relative_path
     default: '.'
+  - name: terraform_cli_version
+    default: 'latest'
 
 stages:
   - stage: plan
@@ -27,7 +29,7 @@ stages:
                   displayName: Checkout Terraform Module
                 - template: helpers/terraform-installer.yaml
                   parameters:
-                    terraformVersion: '1.10.5'
+                    terraformVersion: $${{ parameters.terraform_cli_version }}
                 - template: helpers/terraform-init.yaml
                   parameters:
                     serviceConnection: '${service_connection_name_plan}'
@@ -94,7 +96,7 @@ stages:
                     targetPath: '$(Build.SourcesDirectory)'
                 - template: helpers/terraform-installer.yaml
                   parameters:
-                    terraformVersion: '1.10.5'
+                    terraformVersion: $${{ parameters.terraform_cli_version }}
                 - template: helpers/terraform-init.yaml
                   parameters:
                     serviceConnection: '${service_connection_name_apply}'
