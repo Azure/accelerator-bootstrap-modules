@@ -61,6 +61,6 @@ resource "local_file" "alz" {
 
 resource "local_file" "command" {
   count    = var.iac_type == "terraform" ? 1 : 0
-  content  = var.create_bootstrap_resources_in_azure ? local.command_with_azure_resources : local.command_without_azure_resources
+  content  = local.command_final
   filename = "${local.target_directory}/scripts/deploy-local.ps1"
 }
