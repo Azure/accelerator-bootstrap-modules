@@ -62,9 +62,12 @@ $arguments += "-chdir=$root_module_folder_relative_path"
 $arguments += "show"
 $arguments += "tfplan"
 
+
+$runType = $destroy ? "DESTROY" : "CREATE OR UPDATE"
 if($auto_approve) {
+  Write-Host "Auto-approving the run to $runType the resources."
+} else {
   Write-Host ""
-  $runType = $destroy ? "DESTROY" : "CREATE OR UPDATE"
   $deployApproved = Read-Host -Prompt "Type 'yes' and hit Enter to $runType the resources."
   Write-Host ""
 
