@@ -3,7 +3,7 @@ param(
   [string]$root_module_folder_relative_path = "${root_module_folder_relative_path}",
   [string]$remote_state_resource_group_name = "${remote_state_resource_group_name}",
   [string]$remote_state_storage_account_name = "${remote_state_storage_account_name}",
-  [string]$remote_state_container_name = "${remote_state_container_name}",
+  [string]$remote_state_storage_container_name = "${remote_state_storage_container_name}",
   [switch]$auto_approve
 )
 
@@ -23,7 +23,7 @@ if($null -eq $env:ARM_SUBSCRIPTION_ID -or $env:ARM_SUBSCRIPTION_ID -eq "") {
 
 # Initialize the Terraform configuration
 $use_remote_state = $false
-if($remote_state_resource_group_name -ne "" -and $remote_state_storage_account_name -ne "" -and $remote_state_container_name -ne "") {
+if($remote_state_resource_group_name -ne "" -and $remote_state_storage_account_name -ne "" -and $remote_state_storage_container_name -ne "") {
   $use_remote_state = $true
 } else {
   $use_remote_state = $false
@@ -36,7 +36,7 @@ $arguments += "init"
 if($use_remote_state) {
   $arguments += "-backend-config=resource_group_name=$remote_state_resource_group_name"
   $arguments += "-backend-config=storage_account_name=$remote_state_storage_account_name"
-  $arguments += "-backend-config=container_name=$remote_state_container_name"
+  $arguments += "-backend-config=container_name=$remote_state_storage_container_name"
   $arguments += "-backend-config=key=terraform.tfstate"
   $arguments += "-backend-config=use_azuread_auth=true"
 }
