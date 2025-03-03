@@ -3,7 +3,8 @@ param(
   [string]$root_module_folder_relative_path = "${root_module_folder_relative_path}",
   [string]$remote_state_resource_group_name = "${remote_state_resource_group_name}",
   [string]$remote_state_storage_account_name = "${remote_state_storage_account_name}",
-  [string]$remote_state_container_name = "${remote_state_container_name}"
+  [string]$remote_state_container_name = "${remote_state_container_name}",
+  [switch]$auto_approve
 )
 
 # Check and Set Subscription ID
@@ -61,14 +62,16 @@ $arguments += "-chdir=$root_module_folder_relative_path"
 $arguments += "show"
 $arguments += "tfplan"
 
-Write-Host ""
-$runType = $destroy ? "DESTROY" : "CREATE OR UPDATE"
-$deployApproved = Read-Host -Prompt "Type 'yes' and hit Enter to $runType the resources."
-Write-Host ""
+if($auto_approve) {
+  Write-Host ""
+  $runType = $destroy ? "DESTROY" : "CREATE OR UPDATE"
+  $deployApproved = Read-Host -Prompt "Type 'yes' and hit Enter to $runType the resources."
+  Write-Host ""
 
-if($deployApproved -ne "yes") {
-  Write-Error "Deployment was not approved. Exiting..."
-  exit 1
+  if($deployApproved -ne "yes") {
+    Write-Error "Deployment was not approved. Exiting..."
+    exit 1
+  }
 }
 
 # Apply the Terraform plan
