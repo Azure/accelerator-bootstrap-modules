@@ -6,5 +6,5 @@ locals {
     remote_state_storage_container_name = var.create_bootstrap_resources_in_azure ? local.resource_names.storage_container : ""
   }
 
-  command_final = templatefile("${path.module}/scripts/terraform-deploy-local.ps1", local.command_replacements)
+  command_final = templatefile("${path.module}/templates/terraform-deploy-local.ps1", local.command_replacements)
 }
