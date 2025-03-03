@@ -22,6 +22,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_wrapper: false
+          terraform_version: "1.10.5"
 
       - name: Terraform Format Check
         run: |
@@ -72,6 +73,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_wrapper: false
+          terraform_version: "1.10.5"
 
       - name: Terraform Init
         run: |
