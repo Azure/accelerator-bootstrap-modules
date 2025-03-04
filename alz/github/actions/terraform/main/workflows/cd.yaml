@@ -14,6 +14,11 @@ on:
         options:
           - 'apply'
           - 'destroy'
+      terraform_cli_version:
+        description: 'Terraform CLI Version'
+        required: true
+        default: 'latest'
+        type: string
 
 jobs:
   plan_and_apply:
@@ -25,3 +30,4 @@ jobs:
     with:
       terraform_action: $${{ inputs.terraform_action }}
       root_module_folder_relative_path: '${root_module_folder_relative_path}'
+      terraform_cli_version: $${{ inputs.terraform_cli_version }}

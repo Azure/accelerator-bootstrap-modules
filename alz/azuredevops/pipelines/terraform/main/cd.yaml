@@ -18,6 +18,10 @@ parameters:
     values:
       - 'apply'
       - 'destroy'
+  - name: terraform_cli_version
+    displayName: Terraform CLI Version
+    type: string
+    default: 'latest'
 
 lockBehavior: sequential
 
@@ -26,3 +30,4 @@ extends:
   parameters:
     terraform_action: $${{ parameters.terraform_action }}
     root_module_folder_relative_path: ${root_module_folder_relative_path}
+    terraform_cli_version: $${{ coalesce(parameters.terraform_cli_version, 'latest') }}

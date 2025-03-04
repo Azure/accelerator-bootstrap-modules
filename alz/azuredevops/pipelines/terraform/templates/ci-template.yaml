@@ -2,6 +2,8 @@
 parameters:
   - name: root_module_folder_relative_path
     default: '.'
+  - name: terraform_cli_version
+    default: 'latest'
 
 stages:
   - stage: validate
@@ -18,7 +20,7 @@ stages:
         steps:
           - template: helpers/terraform-installer.yaml
             parameters:
-              terraformVersion: 'latest'
+              terraformVersion: $${{ parameters.terraform_cli_version }}
           - pwsh: |
               terraform `
               -chdir="$${{ parameters.root_module_folder_relative_path }}" `
@@ -51,7 +53,7 @@ stages:
                   displayName: Checkout Terraform Module
                 - template: helpers/terraform-installer.yaml
                   parameters:
-                    terraformVersion: 'latest'
+                    terraformVersion: $${{ parameters.terraform_cli_version }}
                 - template: helpers/terraform-init.yaml
                   parameters:
                     serviceConnection: '${service_connection_name_plan}'
