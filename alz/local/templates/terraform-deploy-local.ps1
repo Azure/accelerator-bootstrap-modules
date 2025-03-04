@@ -61,7 +61,8 @@ $arguments = @()
 $arguments += "-chdir=$root_module_folder_relative_path"
 $arguments += "show"
 $arguments += "tfplan"
-
+Write-Host "Running: $command $arguments"
+& $command $arguments
 
 $runType = $destroy ? "DESTROY" : "CREATE OR UPDATE"
 if($auto_approve) {
@@ -83,6 +84,8 @@ $arguments = @()
 $arguments += "-chdir=$root_module_folder_relative_path"
 $arguments += "apply"
 $arguments += "tfplan"
+Write-Host "Running: $command $arguments"
+& $command $arguments
 
 # Check and Unset Subscription ID
 if($wasSubscriptionIdSet) {
