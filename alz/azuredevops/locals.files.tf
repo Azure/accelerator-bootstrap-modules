@@ -86,7 +86,7 @@ locals {
   }
 
   architecture_definition_file = local.has_architecture_definition ? {
-    "lib/architecture_definitions/${local.architecture_definition_name}.alz_architecture_definition.json" = {
+    "${var.root_module_folder_relative_path}/lib/architecture_definitions/${local.architecture_definition_name}.alz_architecture_definition.json" = {
       content = module.architecture_definition[0].architecture_definition_json
     }
   } : {}
