@@ -93,10 +93,5 @@ variable "create_branch_policies" {
 }
 
 variable "repository_visibility" {
-  type    = string
-  default = "private"
-  validation {
-    condition     = contains(["private", "public", "internal"], var.repository_visibility)
-    error_message = "The repository visibility must be either of (private|public|internal)"
-  }
+  type = string
 }
