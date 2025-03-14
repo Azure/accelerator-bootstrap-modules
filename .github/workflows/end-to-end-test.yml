@@ -80,7 +80,7 @@ jobs:
           inlineScript: |
             az provider list --query "[?registrationState=='Registered' && registrationPolicy=='RegistrationRequired'].namespace" -o tsv | while read namespace; do
               echo "Unregistering $namespace"
-              az provider unregister --namespace $namespace
+              az provider unregister --namespace $namespace --wait
             done
 
   e2e-test:
