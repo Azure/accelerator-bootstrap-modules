@@ -34,5 +34,14 @@ provider "azurerm" {
       data_plane_available = false
     }
   }
-  storage_use_azuread = true
+  storage_use_azuread             = true
+  resource_provider_registrations = "none"
+  resource_providers_to_register = [
+    "Microsoft.ContainerInstance",
+    "Microsoft.ContainerRegistry",
+    "Microsoft.ManagedIdentity",
+    "Microsoft.Management",
+    "Microsoft.Network",
+    "Microsoft.Storage"
+  ]
 }
