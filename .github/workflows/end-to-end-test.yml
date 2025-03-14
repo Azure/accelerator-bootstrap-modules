@@ -68,22 +68,22 @@ jobs:
           Write-Host (ConvertTo-Json $matrix -Depth 10)
           Write-Output "matrix=$matrixJson" >> $env:GITHUB_OUTPUT
         shell: pwsh
-      - name: Azure login
+      - name: Azure Login
         uses: azure/login@v2
         with:
           client-id: ${{ vars.ARM_CLIENT_ID }}
           tenant-id: ${{ vars.ARM_TENANT_ID }}
           subscription-id: ${{ vars.ARM_SUBSCRIPTION_ID }}
           enable-AzPSSession: true
-      - name: Unregister Azure Resource Providers
-        uses: azure/cli@v2
-        with:
-          azcliversion: latest
-          inlineScript: |
-            az provider list --query "[?registrationState=='Registered' && registrationPolicy=='RegistrationRequired'].namespace" -o tsv | while read namespace; do
-              echo "Unregistering $namespace"
-              az provider unregister --namespace $namespace --wait
-            done
+      - name: Unregister Resource Providers
+        run: |
+          $resourceProviders = az provider list --query "[?registrationState=='Registered' && registrationPolicy=='RegistrationRequired']"| ConvertFrom-Json
+
+          $resourceProviders | ForEach-Object -Parallel {
+              Write-Host "Unregistering Resource Provider: $($_.namespace)"
+              az provider unregister --namespace $_.namespace --wait
+          } -ThrottleLimit 10
+        shell: pwsh
 
   e2e-test:
     needs: define-matrix
