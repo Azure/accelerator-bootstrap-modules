@@ -34,6 +34,7 @@ $arguments = @()
 $arguments += "-chdir=$root_module_folder_relative_path"
 $arguments += "init"
 if($use_remote_state) {
+  $arguments += "-migrate-state"
   $arguments += "-backend-config=resource_group_name=$remote_state_resource_group_name"
   $arguments += "-backend-config=storage_account_name=$remote_state_storage_account_name"
   $arguments += "-backend-config=container_name=$remote_state_storage_container_name"
