@@ -48,6 +48,8 @@ env:
 jobs:
   define-matrix:
     name: Define Matrix
+    environment: ${{ github.event_name == 'schedule' && 'CSUTFAUTO' || 'CSUTF' }}
+    if: "${{ github.repository == 'Azure/accelerator-bootstrap-modules' && (contains(github.event.pull_request.labels.*.name, 'PR: Safe to test 🧪') || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') }}"
     runs-on: ubuntu-latest
 
     outputs:
