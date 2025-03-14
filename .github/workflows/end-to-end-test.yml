@@ -77,7 +77,7 @@ jobs:
           enable-AzPSSession: true
       - name: Unregister Resource Providers
         run: |
-          $resourceProviders = az provider list --query "[?registrationState=='Registered' && registrationPolicy=='RegistrationRequired']"| ConvertFrom-Json
+          $resourceProviders = az provider list --query "[?registrationState=='Registered' && registrationPolicy=='RegistrationRequired' && namespace!='Microsoft.Network']" | ConvertFrom-Json
 
           $resourceProviders | ForEach-Object -Parallel {
               Write-Host "Unregistering Resource Provider: $($_.namespace)"
