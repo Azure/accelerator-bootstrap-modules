@@ -80,7 +80,12 @@ jobs:
           $resourceProviders = az provider list --query "[?registrationState=='Registered' && registrationPolicy=='RegistrationRequired' && namespace!='Microsoft.Network']" | ConvertFrom-Json
 
           $resourceProviders | ForEach-Object -Parallel {
-              az provider unregister --namespace $_.namespace --wait --verbose
+              Try {
+                  Write-Host "Unregistering Resource Provider: $($_.namespace)"
+                  az provider unregister --namespace $_.namespace --wait 
+              } Catch {
+                  Write-Host "Failed to unregister Resource Provider: $($_.namespace)"
+              }
           } -ThrottleLimit 10
 
           az provider list --query "[?registrationState=='Registered' && registrationPolicy=='RegistrationRequired']"
