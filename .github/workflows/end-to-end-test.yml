@@ -337,6 +337,7 @@ jobs:
           $infrastructureAsCode = "${{ matrix.infrastructureAsCode }}"
 
           # Get Inputs
+          $planOnly = "{{ matrix.planOnly }}"
           $versionControlSystem = "${{ matrix.versionControlSystem }}"
           $versionControlSystemOrganisationName = "${{ vars.VCS_ORGANIZATION }}"
           $uniqueId = $ENV:UNIQUE_ID
@@ -352,14 +353,17 @@ jobs:
               -skipDestroy `
               -personalAccessToken "${{ secrets.VCS_TOKEN_GITHUB }}" `
               -iac $infrastructureAsCode
+            
 
-            Write-Host "Running GitHub Actions Test for CD"
-            ${{ env.BOOTSTRAP_MODULE_FOLDER }}/.github/tests/scripts/github-action-run.ps1 `
-              -organizationName $versionControlSystemOrganisationName `
-              -repositoryName $repositoryName `
-              -workflowFileName "cd.yaml" `
-              -personalAccessToken "${{ secrets.VCS_TOKEN_GITHUB }}"`
-              -iac $infrastructureAsCode
+            if($planOnly -eq "false") {
+              Write-Host "Running GitHub Actions Test for CD"
+              ${{ env.BOOTSTRAP_MODULE_FOLDER }}/.github/tests/scripts/github-action-run.ps1 `
+                -organizationName $versionControlSystemOrganisationName `
+                -repositoryName $repositoryName `
+                -workflowFileName "cd.yaml" `
+                -personalAccessToken "${{ secrets.VCS_TOKEN_GITHUB }}"`
+                -iac $infrastructureAsCode
+            }
           }
 
           if($versionControlSystem -eq "azuredevops") {
@@ -374,13 +378,15 @@ jobs:
               -personalAccessToken "${{ secrets.VCS_TOKEN_AZURE_DEVOPS }}"`
               -iac $infrastructureAsCode
 
-            Write-Host "Running Azure DevOps Pipelines Test for CD"
-            ${{ env.BOOTSTRAP_MODULE_FOLDER }}/.github/tests/scripts/azuredevops-pipeline-run.ps1 `
-              -organizationName $versionControlSystemOrganisationName `
-              -projectName $projectName `
-              -pipelineNamePart "Continuous Delivery" `
-              -personalAccessToken "${{ secrets.VCS_TOKEN_AZURE_DEVOPS }}"`
-              -iac $infrastructureAsCode
+            if($planOnly -eq "false") {
+              Write-Host "Running Azure DevOps Pipelines Test for CD"
+              ${{ env.BOOTSTRAP_MODULE_FOLDER }}/.github/tests/scripts/azuredevops-pipeline-run.ps1 `
+                -organizationName $versionControlSystemOrganisationName `
+                -projectName $projectName `
+                -pipelineNamePart "Continuous Delivery" `
+                -personalAccessToken "${{ secrets.VCS_TOKEN_AZURE_DEVOPS }}"`
+                -iac $infrastructureAsCode
+            }
           }
 
         shell: pwsh

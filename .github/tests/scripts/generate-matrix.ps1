@@ -6,40 +6,44 @@ $combinations = [ordered]@{
   azuredevops_bicep = [ordered]@{
     versionControlSystem = @("azuredevops")
     infrastructureAsCode = @("bicep")
-    agentType = @("public", "private", "none")
+    agentType = @("private")
     operatingSystem = @("ubuntu")
     starterModule = @("test")
     regions = @("multi")
+    planOnly = @("false")
     terraformVersion = @("latest")
     deployAzureResources = @("true")
   }
   github_bicep = [ordered]@{
     versionControlSystem = @("github")
     infrastructureAsCode = @("bicep")
-    agentType = @("public", "private", "none")
+    agentType = @("private")
     operatingSystem = @("ubuntu")
     starterModule = @("test")    
     regions = @("multi")    
+    planOnly = @("false")
     terraformVersion = @("latest")
     deployAzureResources = @("true")
   }
   azuredevops_terraform = [ordered]@{
     versionControlSystem = @("azuredevops")
     infrastructureAsCode = @("terraform")
-    agentType = @("public", "private", "none")
+    agentType = @("private")
     operatingSystem = @("ubuntu")
     starterModule = @("test_nested")
     regions = @("multi")
+    planOnly = @("false")
     terraformVersion = @("latest")
     deployAzureResources = @("true")
   }
   github_terraform = [ordered]@{
     versionControlSystem = @("github")
     infrastructureAsCode = @("terraform")
-    agentType = @("public", "private", "none")
+    agentType = @("private")
     operatingSystem = @("ubuntu")
     starterModule = @("test_nested")
     regions = @("multi")
+    planOnly = @("false")
     terraformVersion = @("latest")
     deployAzureResources = @("true")
   }
@@ -50,6 +54,7 @@ $combinations = [ordered]@{
     operatingSystem = @("ubuntu", "windows", "macos")
     starterModule = @("test")    
     regions = @("multi")    
+    planOnly = @("false")
     terraformVersion = @("latest")
     deployAzureResources = @("true")
   }
@@ -60,6 +65,7 @@ $combinations = [ordered]@{
     operatingSystem = @("ubuntu", "windows", "macos")
     starterModule = @("test")    
     regions = @("multi")    
+    planOnly = @("false")
     terraformVersion = @("1.5.0")
     deployAzureResources = @("false")
   }
@@ -70,6 +76,7 @@ $combinations = [ordered]@{
     operatingSystem = @("ubuntu")
     starterModule = @("test")    
     regions = @("single")    
+    planOnly = @("false")
     terraformVersion = @("latest")
     deployAzureResources = @("false")
   }
@@ -78,8 +85,9 @@ $combinations = [ordered]@{
     infrastructureAsCode = @("terraform")
     agentType = @("none")
     operatingSystem = @("ubuntu")
-    starterModule = @("complete", "complete_multi_region", "sovereign_landing_zone", "basic", "hubnetworking")
+    starterModule = @("platform_landing_zone", "microsoft_cloud_for_industry/sovereign_landing_zone", "microsoft_cloud_for_industry/financial_services_landing_zone")
     regions = @("multi")
+    planOnly = @("false")
     terraformVersion = @("latest")
     deployAzureResources = @("false")
   }
@@ -90,8 +98,53 @@ $combinations = [ordered]@{
     operatingSystem = @("ubuntu")
     starterModule = @("complete")    
     regions = @("multi")    
+    planOnly = @("false")
     terraformVersion = @("latest")
     deployAzureResources = @("false")
+  }
+  azuredevops_bicep_stm = [ordered]@{
+    versionControlSystem = @("azuredevops")
+    infrastructureAsCode = @("bicep")
+    agentType = @("private")
+    operatingSystem = @("ubuntu")
+    starterModule = @("platform_landing_zone", "microsoft_cloud_for_industry/sovereign_landing_zone", "microsoft_cloud_for_industry/financial_services_landing_zone")
+    regions = @("multi")
+    planOnly = @("true")
+    terraformVersion = @("latest")
+    deployAzureResources = @("true")
+  }
+  github_bicep_stm = [ordered]@{
+    versionControlSystem = @("github")
+    infrastructureAsCode = @("bicep")
+    agentType = @("private")
+    operatingSystem = @("ubuntu")
+    starterModule = @("platform_landing_zone", "microsoft_cloud_for_industry/sovereign_landing_zone", "microsoft_cloud_for_industry/financial_services_landing_zone")
+    regions = @("multi")    
+    planOnly = @("true")
+    terraformVersion = @("latest")
+    deployAzureResources = @("true")
+  }
+  azuredevops_terraform_stm = [ordered]@{
+    versionControlSystem = @("azuredevops")
+    infrastructureAsCode = @("terraform")
+    agentType = @("private")
+    operatingSystem = @("ubuntu")
+    starterModule = @("platform_landing_zone", "microsoft_cloud_for_industry/sovereign_landing_zone", "microsoft_cloud_for_industry/financial_services_landing_zone")
+    regions = @("multi")
+    planOnly = @("true")
+    terraformVersion = @("latest")
+    deployAzureResources = @("true")
+  }
+  github_terraform_stm = [ordered]@{
+    versionControlSystem = @("github")
+    infrastructureAsCode = @("terraform")
+    agentType = @("private")
+    operatingSystem = @("ubuntu")
+    starterModule = @("platform_landing_zone", "microsoft_cloud_for_industry/sovereign_landing_zone", "microsoft_cloud_for_industry/financial_services_landing_zone")
+    regions = @("multi")
+    planOnly = @("true")
+    terraformVersion = @("latest")
+    deployAzureResources = @("true")
   }
 }
 
