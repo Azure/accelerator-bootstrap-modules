@@ -332,10 +332,6 @@ variable "storage_account_replication_type" {
   description = "Controls the redundancy for the storage account"
   type        = string
   default     = "ZRS"
-  validation {
-    condition     = var.storage_account_replication_type == "ZRS" || var.storage_account_replication_type == "GZRS" || var.storage_account_replication_type == "RAGZRS"
-    error_message = "Invalid storage account replication type. Valid values are ZRS, GZRS and RAGZRS."
-  }
 }
 
 variable "bicep_config_file_path" {
