@@ -201,6 +201,7 @@ jobs:
             $Inputs["starter_locations"] = @($location)
           }
           $Inputs["bootstrap_subscription_id"] = ""
+          $Inputs["management_group_configuration"] = "{}"
           $Inputs["service_name"] = "alz"
           $Inputs["environment_name"] = $uniqueId
           $Inputs["postfix_number"] = "1"
