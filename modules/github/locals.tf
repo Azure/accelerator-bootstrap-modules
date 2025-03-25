@@ -1,5 +1,6 @@
 locals {
-  organization_url = startswith(lower(var.organization_name), "https://") || startswith(lower(var.organization_name), "http://") ? var.organization_name : "https://github.com/${var.organization_name}"
+  organization_domain = trimsuffix((startswith(lower(var.organization_name), "https://") || startswith(lower(var.organization_name), "http://") ? var.organization_domain : "https://${var.organization_domain}"), "/")
+  organization_url    = "${var.organization_domain}/${var.organization_name}"
 }
 
 locals {
