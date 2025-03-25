@@ -76,15 +76,43 @@ variable "github_personal_access_token" {
   sensitive   = true
 }
 
+variable "github_organization_scheme" {
+  description = "The scheme of your GitHub organization. E.g. 'https' or 'http'"
+  type        = string
+  default     = "https"
+  validation {
+    condition     = can(regex("^(https|http)$", var.github_organization_scheme))
+    error_message = "The scheme must be either 'https' or 'http'"
+  }
+}
+
 variable "github_organization_domain_name" {
   description = "The domain name of your GitHub organization. E.g. 'my-enterprise.ghe.com'"
   type        = string
   default     = "github.com"
+  validation {
+    condition     = can(regex("^[a-zA-Z0-9.-]+$", var.github_organization_domain_name))
+    error_message = "The domain name must only contain letters, numbers, dots, and dashes"
+  }
+}
+
+variable "github_api_domain_name" {
+  description = "The domain name of your GitHub api endpoint. E.g. 'api.my-enterprise.ghe.com'. This is only required if not using the default `api.` prefix"
+  type        = string
+  default     = ""
+  validation {
+    condition     = var.github_api_domain_name == "" || can(regex("^[a-zA-Z0-9.-]+$", var.github_api_domain_name))
+    error_message = "The api domain name must only contain letters, numbers, dots, and dashes"
+  }
 }
 
 variable "github_organization_name" {
   description = "The name of your GitHub organization. This is the section of the url after 'github.com'. E.g. enter 'my-org' for 'https://github.com/my-org'"
   type        = string
+  validation {
+    condition     = can(regex("^[a-zA-Z0-9-]+$", var.github_organization_name))
+    error_message = "The organization name must only contain letters, numbers, and dashes"
+  }
 }
 
 variable "use_separate_repository_for_templates" {

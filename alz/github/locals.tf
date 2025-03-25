@@ -22,7 +22,7 @@ locals {
 
 locals {
   use_runner_group                   = var.use_runner_group && module.github.organization_plan == local.enterprise_plan && var.use_self_hosted_runners
-  runner_organization_repository_url = local.use_runner_group ? module.github.organization_url : "${module.github.organization_url}/${module.github.repository_names.module}"
+  runner_organization_repository_url = local.use_runner_group ? local.github_organization_url : "${local.github_organization_url}/${module.github.repository_names.module}"
 }
 
 locals {
@@ -116,4 +116,9 @@ locals {
 locals {
   architecture_definition_name = var.architecture_definition_name
   has_architecture_definition  = var.architecture_definition_name != null && var.architecture_definition_name != ""
+}
+
+locals {
+  github_organization_url = "${var.github_organization_scheme}://${var.github_organization_domain_name}/${var.github_organization_name}"
+  github_api_base_url     = var.github_api_domain_name == "" ? "${var.github_organization_scheme}://api.${var.github_organization_domain_name}/" : "${var.github_organization_scheme}://${var.github_api_domain_name}/"
 }

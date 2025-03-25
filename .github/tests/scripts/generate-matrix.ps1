@@ -18,8 +18,8 @@ $combinations = [ordered]@{
     infrastructureAsCode = @("bicep")
     agentType = @("public", "private", "none")
     operatingSystem = @("ubuntu")
-    starterModule = @("test")    
-    regions = @("multi")    
+    starterModule = @("test")
+    regions = @("multi")
     terraformVersion = @("latest")
     deployAzureResources = @("true")
   }
@@ -48,8 +48,8 @@ $combinations = [ordered]@{
     infrastructureAsCode = @("terraform")
     agentType = @("none")
     operatingSystem = @("ubuntu", "windows", "macos")
-    starterModule = @("test")    
-    regions = @("multi")    
+    starterModule = @("test")
+    regions = @("multi")
     terraformVersion = @("latest")
     deployAzureResources = @("true")
   }
@@ -58,8 +58,8 @@ $combinations = [ordered]@{
     infrastructureAsCode = @("terraform")
     agentType = @("none")
     operatingSystem = @("ubuntu", "windows", "macos")
-    starterModule = @("test")    
-    regions = @("multi")    
+    starterModule = @("test")
+    regions = @("multi")
     terraformVersion = @("1.5.0")
     deployAzureResources = @("false")
   }
@@ -68,8 +68,8 @@ $combinations = [ordered]@{
     infrastructureAsCode = @("terraform")
     agentType = @("none")
     operatingSystem = @("ubuntu")
-    starterModule = @("test")    
-    regions = @("single")    
+    starterModule = @("test")
+    regions = @("single")
     terraformVersion = @("latest")
     deployAzureResources = @("false")
   }
@@ -78,7 +78,7 @@ $combinations = [ordered]@{
     infrastructureAsCode = @("terraform")
     agentType = @("none")
     operatingSystem = @("ubuntu")
-    starterModule = @("complete", "complete_multi_region", "sovereign_landing_zone", "basic", "hubnetworking")
+    starterModule = @("platform_landing_zone", "sovereign_landing_zone", "financial_services_landing_zone")
     regions = @("multi")
     terraformVersion = @("latest")
     deployAzureResources = @("false")
@@ -88,8 +88,8 @@ $combinations = [ordered]@{
     infrastructureAsCode = @("bicep")
     agentType = @("none")
     operatingSystem = @("ubuntu")
-    starterModule = @("complete")    
-    regions = @("multi")    
+    starterModule = @("complete")
+    regions = @("multi")
     terraformVersion = @("latest")
     deployAzureResources = @("false")
   }
@@ -124,9 +124,9 @@ function Get-MatrixRecursively {
   }
 
   $combination = [ordered]@{}
-  
+
   $name = ""
-  
+
   foreach($key in $indexes.Keys) {
     $combinationValue = $definition[$key][$indexes[$key].current]
     $combination[$key] = $combinationValue
