@@ -76,6 +76,12 @@ variable "github_personal_access_token" {
   sensitive   = true
 }
 
+variable "github_organization_domain_name" {
+  description = "The domain name of your GitHub organization. E.g. 'my-enterprise.ghe.com'"
+  type        = string
+  default     = "github.com"
+}
+
 variable "github_organization_name" {
   description = "The name of your GitHub organization. This is the section of the url after 'github.com'. E.g. enter 'my-org' for 'https://github.com/my-org'"
   type        = string

@@ -75,6 +75,7 @@ module "azure" {
 
 module "github" {
   source                                       = "../../modules/github"
+  organization_domain                          = var.github_organization_domain_name
   organization_name                            = var.github_organization_name
   environments                                 = local.environments
   repository_name                              = local.resource_names.version_control_system_repository
