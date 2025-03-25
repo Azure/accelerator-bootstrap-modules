@@ -250,7 +250,7 @@ jobs:
           $Inputs["child_management_group_display_name"] = "E2E Test"
           $Inputs["resource_group_location"] = $location
 
-          if($starterModule -eq "financial_services_landing_zone") {}
+          if($starterModule -eq "financial_services_landing_zone") {
             $Inputs["management_group_configuration"] = @{
               root = @{
                 id = "${default_prefix}${optional_postfix}"
