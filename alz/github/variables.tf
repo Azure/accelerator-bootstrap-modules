@@ -101,7 +101,7 @@ variable "github_api_domain_name" {
   type        = string
   default     = ""
   validation {
-    condition     = can(regex("^[a-zA-Z0-9.-]+$", var.github_api_domain_name))
+    condition     = var.github_api_domain_name == "" || can(regex("^[a-zA-Z0-9.-]+$", var.github_api_domain_name))
     error_message = "The api domain name must only contain letters, numbers, dots, and dashes"
   }
 }
