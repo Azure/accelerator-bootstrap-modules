@@ -1,8 +1,3 @@
-variable "organization_domain" {
-  type    = string
-  default = "github.com"
-}
-
 variable "organization_name" {
   type = string
 }

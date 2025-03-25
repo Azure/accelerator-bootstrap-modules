@@ -1,9 +1,4 @@
 locals {
-  organization_domain = trimsuffix((startswith(lower(var.organization_name), "https://") || startswith(lower(var.organization_name), "http://") ? var.organization_domain : "https://${var.organization_domain}"), "/")
-  organization_url    = "${local.organization_domain}/${var.organization_name}"
-}
-
-locals {
   apply_key = "apply"
 }
 

@@ -38,6 +38,7 @@ provider "azurerm" {
 }
 
 provider "github" {
-  token = var.github_personal_access_token
-  owner = var.github_organization_name
+  token    = var.github_personal_access_token
+  owner    = var.github_organization_name
+  base_url = local.github_api_base_url
 }

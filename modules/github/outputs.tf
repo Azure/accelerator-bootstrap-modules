@@ -1,7 +1,3 @@
-output "organization_url" {
-  value = local.organization_url
-}
-
 output "subjects" {
   value = local.oidc_subjects
 }
