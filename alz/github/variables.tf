@@ -398,6 +398,9 @@ variable "custom_role_definitions_terraform" {
           "Microsoft.Management/managementGroups/read",
           "Microsoft.Management/managementGroups/subscriptions/delete",
           "Microsoft.Management/managementGroups/subscriptions/write",
+          "Microsoft.Management/managementGroups/settings/read",
+          "Microsoft.Management/managementGroups/settings/write",
+          "Microsoft.Management/managementGroups/settings/delete",
           "Microsoft.Management/managementGroups/write",
           "Microsoft.Management/managementGroups/subscriptions/read",
           "Microsoft.Authorization/*/read",
@@ -414,6 +417,7 @@ variable "custom_role_definitions_terraform" {
         actions = [
           "Microsoft.Management/managementGroups/read",
           "Microsoft.Management/managementGroups/subscriptions/read",
+          "Microsoft.Management/managementGroups/settings/read",
           "Microsoft.Authorization/*/read",
           "Microsoft.Resources/deployments/write",
           "Microsoft.Resources/deployments/exportTemplate/action"
@@ -468,6 +472,9 @@ variable "custom_role_definitions_bicep" {
           "Microsoft.Management/managementGroups/read",
           "Microsoft.Management/managementGroups/subscriptions/delete",
           "Microsoft.Management/managementGroups/subscriptions/write",
+          "Microsoft.Management/managementGroups/settings/read",
+          "Microsoft.Management/managementGroups/settings/write",
+          "Microsoft.Management/managementGroups/settings/delete",
           "Microsoft.Management/managementGroups/write",
           "Microsoft.Management/managementGroups/subscriptions/read",
           "Microsoft.Authorization/policyDefinitions/write",
@@ -494,6 +501,7 @@ variable "custom_role_definitions_bicep" {
         actions = [
           "Microsoft.Management/managementGroups/read",
           "Microsoft.Management/managementGroups/subscriptions/read",
+          "Microsoft.Management/managementGroups/settings/read",
           "Microsoft.Authorization/*/read",
           "Microsoft.Authorization/policyDefinitions/write",
           "Microsoft.Authorization/policySetDefinitions/write",
