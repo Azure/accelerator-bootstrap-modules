@@ -2,7 +2,7 @@ locals {
   approvers = [for user in data.github_organization.alz.users : {
     login = user.login
     email = user.email
-  } if contains(values(var.approvers), user.email)]
+  } if contains(var.approvers, user.email)]
   invalid_approvers = setsubtract(var.approvers, local.approvers[*].email)
 }
 
