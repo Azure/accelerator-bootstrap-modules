@@ -1,5 +1,5 @@
 locals {
-  approvers = [for user in data.github_organization.this.users : {
+  approvers = [for user in data.github_organization.alz.users : {
     login = user.login
     email = user.email
   } if contains(values(var.approvers), user.email)]
