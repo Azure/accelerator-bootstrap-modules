@@ -189,7 +189,7 @@ variable "allow_storage_access_from_my_ip" {
 }
 
 variable "apply_approvers" {
-  description = "Apply stage approvers to the action / pipeline, must be a list of SPNs separate by a comma (e.g. abcdef@microsoft.com,ghijklm@microsoft.com)"
+  description = "Apply stage approvers to the action / pipeline, must be a list of emails or usernames separated by a comma (e.g. abcdef@microsoft.com,ghijklm@microsoft.com)"
   type        = list(string)
   default     = []
 }
