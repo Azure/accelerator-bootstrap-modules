@@ -380,9 +380,19 @@ variable "custom_role_definitions_terraform" {
           "Microsoft.Management/managementGroups/settings/read",
           "Microsoft.Management/managementGroups/settings/write",
           "Microsoft.Management/managementGroups/settings/delete",
+          "Microsoft.Authorization/policyDefinitions/write",
+          "Microsoft.Authorization/policySetDefinitions/write",
+          "Microsoft.Authorization/policyAssignments/write",
+          "Microsoft.Authorization/roleDefinitions/write",
           "Microsoft.Authorization/*/read",
+          "Microsoft.Resources/deployments/whatIf/action",
           "Microsoft.Resources/deployments/write",
-          "Microsoft.Resources/deployments/exportTemplate/action"
+          "Microsoft.Resources/deployments/validate/action",
+          "Microsoft.Resources/deployments/read",
+          "Microsoft.Resources/deployments/operationStatuses/read",
+          "Microsoft.Authorization/roleAssignments/write",
+          "Microsoft.Authorization/roleAssignments/delete",
+          "Microsoft.Insights/diagnosticSettings/write"
         ]
         not_actions = []
       }
