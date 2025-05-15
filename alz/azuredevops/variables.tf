@@ -385,11 +385,8 @@ variable "custom_role_definitions_terraform" {
           "Microsoft.Authorization/policyAssignments/write",
           "Microsoft.Authorization/roleDefinitions/write",
           "Microsoft.Authorization/*/read",
-          "Microsoft.Resources/deployments/whatIf/action",
           "Microsoft.Resources/deployments/write",
-          "Microsoft.Resources/deployments/validate/action",
-          "Microsoft.Resources/deployments/read",
-          "Microsoft.Resources/deployments/operationStatuses/read",
+          "Microsoft.Resources/deployments/exportTemplate/action",
           "Microsoft.Authorization/roleAssignments/write",
           "Microsoft.Authorization/roleAssignments/delete",
           "Microsoft.Insights/diagnosticSettings/write"
