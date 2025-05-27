@@ -251,19 +251,19 @@ variable "resource_names" {
 variable "runner_container_image_repository" {
   description = "The container image repository to use for GitHub Runner"
   type        = string
-  default     = "https://github.com/Azure/terraform-azurerm-avm-ptn-cicd-agents-and-runners"
+  default     = "https://github.com/Azure/avm-container-images-cicd-agents-and-runners"
 }
 
 variable "runner_container_image_tag" {
   description = "The container image tag to use for GitHub Runner"
   type        = string
-  default     = "8ff4b85"
+  default     = "a593eab"
 }
 
 variable "runner_container_image_folder" {
   description = "The folder containing the Dockerfile for the container image"
   type        = string
-  default     = "container-images/github-runner"
+  default     = "github-runner-aci"
 }
 
 variable "runner_container_image_dockerfile" {
