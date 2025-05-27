@@ -20,12 +20,10 @@ $success = $false
 do {
     $retryCount++
     try {
-        $myIp = Invoke-RestMethod -Uri http://ipinfo.io/json | Select-Object -ExpandProperty ip
-        Write-Host "Runner IP Address: $myIp"
 
         Write-Host "Running Terraform Destroy"
         $starterModuleOverrideFolderPath = $env:STARTER_MODULE_FOLDER
-        if($infrastructureAsCode -eq "terraform") { 
+        if($infrastructureAsCode -eq "terraform") {
           $starterModuleOverrideFolderPath = "$starterModuleOverrideFolderPath/templates"
         }
         Deploy-Accelerator -output "$($env:TARGET_FOLDER)" -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "$($env:BOOTSTRAP_MODULE_FOLDER)" -starterModuleOverrideFolderPath $starterModuleOverrideFolderPath -starterRelease "$($env.ALZ_ON_DEMAND_FOLDER_RELEASE_TAG)" -autoApprove -skipAlzModuleVersionRequirementsCheck -destroy -ErrorAction Stop
