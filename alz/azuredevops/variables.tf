@@ -192,19 +192,19 @@ variable "additional_folders_path" {
 variable "agent_container_image_repository" {
   description = "The container image repository to use for Azure DevOps Agents"
   type        = string
-  default     = "https://github.com/Azure/terraform-azurerm-avm-ptn-cicd-agents-and-runners"
+  default     = "https://github.com/Azure/avm-container-images-cicd-agents-and-runners"
 }
 
 variable "agent_container_image_tag" {
   description = "The container image tag to use for Azure DevOps Agents"
   type        = string
-  default     = "8ff4b85"
+  default     = "39b9059"
 }
 
 variable "agent_container_image_folder" {
   description = "The folder containing the Dockerfile for the container image"
   type        = string
-  default     = "container-images/azure-devops-agent"
+  default     = "azure-devops-agent-aci"
 }
 
 variable "agent_container_image_dockerfile" {
