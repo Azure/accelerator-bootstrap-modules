@@ -257,7 +257,7 @@ variable "runner_container_image_repository" {
 variable "runner_container_image_tag" {
   description = "The container image tag to use for GitHub Runner"
   type        = string
-  default     = "a593eab"
+  default     = "7b1b016"
 }
 
 variable "runner_container_image_folder" {
