@@ -198,7 +198,7 @@ variable "agent_container_image_repository" {
 variable "agent_container_image_tag" {
   description = "The container image tag to use for Azure DevOps Agents"
   type        = string
-  default     = "7b1b016"
+  default     = "39b9059"
 }
 
 variable "agent_container_image_folder" {
