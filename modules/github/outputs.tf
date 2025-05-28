@@ -3,7 +3,7 @@ output "subjects" {
 }
 
 output "issuer" {
-  value = "https://token.actions.githubusercontent.com"
+  value = var.domain_name == "github.com" ? "https://token.actions.githubusercontent.com" : "https://token.actions.${var.domain_name}"
 }
 
 output "organization_users" {
