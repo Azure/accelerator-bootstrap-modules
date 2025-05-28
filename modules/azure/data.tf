@@ -19,7 +19,7 @@ data "http" "ip" {
 
 module "regions" {
   source                    = "Azure/avm-utl-regions/azurerm"
-  version                   = "0.3.0"
+  version                   = "0.5.2"
   use_cached_data           = false
   availability_zones_filter = false
   recommended_filter        = false
