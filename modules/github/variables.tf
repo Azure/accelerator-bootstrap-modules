@@ -95,3 +95,7 @@ variable "use_self_hosted_runners" {
 variable "create_branch_policies" {
   type = bool
 }
+
+variable "repository_visibility" {
+  type = string
+}
