@@ -55,7 +55,7 @@ jobs:
 
     steps:
       - name: Checkout Bootstrap Modules
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           path: ${{ env.BOOTSTRAP_MODULE_FOLDER }}
       - name: Generate Matrix
@@ -83,19 +83,19 @@ jobs:
         run: env | sort
 
       - name: Checkout Bootstrap Modules
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           path: ${{ env.BOOTSTRAP_MODULE_FOLDER }}
 
       - name: Checkout PowerShell Module
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: ${{ env.POWERSHELL_MODULE_REPOSITORY }}
           ref: ${{ env.ALZ_POWERSHELL_BRANCH }}
           path: ${{ env.POWERSHELL_MODULE_FOLDER }}
 
       - name: Checkout Starter Modules for Bicep
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         if: ${{ matrix.infrastructureAsCode == 'bicep' }}
         with:
           repository: ${{ env.BICEP_STARTER_MODULE_REPOSITORY }}
@@ -103,7 +103,7 @@ jobs:
           path: ${{ env.STARTER_MODULE_FOLDER }}
 
       - name: Checkout Starter Modules for Terraform
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         if: ${{ matrix.infrastructureAsCode == 'terraform' }}
         with:
           repository: ${{ env.TERRAFORM_STARTER_MODULE_REPOSITORY }}
@@ -111,7 +111,7 @@ jobs:
           path: ${{ env.STARTER_MODULE_FOLDER }}
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
         with:
           terraform_version: ${{ matrix.terraformVersion }}
           terraform_wrapper: false
@@ -513,7 +513,7 @@ jobs:
         shell: pwsh
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
         with:
           terraform_version: "latest"
           terraform_wrapper: false
