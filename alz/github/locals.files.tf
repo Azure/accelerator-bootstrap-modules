@@ -1,6 +1,7 @@
 locals {
   self_hosted_runner_name = local.use_runner_group ? "group: ${local.resource_names.version_control_system_runner_group}" : "self-hosted"
   runner_name             = var.use_self_hosted_runners ? local.self_hosted_runner_name : "ubuntu-latest"
+  repository_name_templates = var.use_separate_repository_for_templates ? local.resource_names.version_control_system_repository_templates : local.resource_names.version_control_system_repository
 }
 
 locals {
@@ -47,7 +48,7 @@ locals {
     {
       content = templatefile("${local.pipeline_files_directory_path}/${pipeline_file}", {
         organization_name                = var.github_organization_name
-        repository_name_templates        = local.resource_names.version_control_system_repository_templates
+        repository_name_templates        = local.repository_name_templates
         ci_template_path                 = "${local.target_folder_name}/${local.ci_template_file_name}"
         cd_template_path                 = "${local.target_folder_name}/${local.cd_template_file_name}"
         script_files                     = local.script_files
@@ -62,7 +63,7 @@ locals {
     {
       content = templatefile("${local.pipeline_template_files_directory_path}/${pipeline_template_file}", {
         organization_name                            = var.github_organization_name
-        repository_name_templates                    = local.resource_names.version_control_system_repository_templates
+        repository_name_templates                    = local.repository_name_templates
         runner_name                                  = local.runner_name
         environment_name_plan                        = local.resource_names.version_control_system_environment_plan
         environment_name_apply                       = local.resource_names.version_control_system_environment_apply
