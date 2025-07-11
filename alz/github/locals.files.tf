@@ -1,6 +1,6 @@
 locals {
-  self_hosted_runner_name = local.use_runner_group ? "group: ${local.resource_names.version_control_system_runner_group}" : "self-hosted"
-  runner_name             = var.use_self_hosted_runners ? local.self_hosted_runner_name : "ubuntu-latest"
+  self_hosted_runner_name   = local.use_runner_group ? "group: ${local.resource_names.version_control_system_runner_group}" : "self-hosted"
+  runner_name               = var.use_self_hosted_runners ? local.self_hosted_runner_name : "ubuntu-latest"
   repository_name_templates = var.use_separate_repository_for_templates ? local.resource_names.version_control_system_repository_templates : local.resource_names.version_control_system_repository
 }
 
