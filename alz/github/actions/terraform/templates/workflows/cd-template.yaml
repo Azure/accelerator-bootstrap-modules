@@ -41,7 +41,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_wrapper: false
-          terraform_version: $${{ inputs.terraform_cli_versions }}
+          terraform_version: $${{ inputs.terraform_cli_version }}
 
       - name: Terraform Init
         run: |
@@ -118,7 +118,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_wrapper: false
-          terraform_version: $${{ inputs.terraform_cli_versions }}
+          terraform_version: $${{ inputs.terraform_cli_version }}
 
       - name: Terraform Init
         run: |
