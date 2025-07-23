@@ -46,7 +46,7 @@ resource "github_team" "alz" {
 
 resource "github_team_membership" "alz" {
   for_each = var.create_team ? { for approver in local.approvers : approver.login => approver } : {}
-  team_id  = github_team.alz.id
+  team_id  = local.team_id
   username = each.value.login
   role     = "member"
 }
