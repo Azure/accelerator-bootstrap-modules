@@ -54,6 +54,14 @@ variable "approvers" {
   type = list(string)
 }
 
+variable "create_team" {
+  type = bool
+}
+
+variable "existing_team_name" {
+  type = string
+}
+
 variable "team_name" {
   type = string
 }
