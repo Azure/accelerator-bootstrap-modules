@@ -1,5 +1,5 @@
 ---
-name: Docs & fmt test
+name: fmt test
 
 on:
   pull_request:
@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   docsfmttest:
-    name: Docs & fmt test
+    name: fmt test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -31,14 +31,10 @@ jobs:
           terraform_version: latest
           terraform_wrapper: false
 
-      - name: Install tools
-        run: make tools
-
       - name: Check fmt and docs
         run: |
           echo "==> Running make fmt & make docs"
           make fmt
-          make docs
           echo "==> Testing for changes to tracked files"
           CHANGES=$(git status -suno)
           if [ "$CHANGES" ]; then

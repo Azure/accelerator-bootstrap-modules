@@ -91,6 +91,8 @@ module "github" {
   backend_azure_storage_account_name           = local.resource_names.storage_account
   backend_azure_storage_account_container_name = local.resource_names.storage_container
   approvers                                    = var.apply_approvers
+  create_team                                  = var.apply_approval_team_creation_enabled
+  existing_team_name                           = var.apply_approval_existing_team_name
   team_name                                    = local.resource_names.version_control_system_team
   runner_group_name                            = local.resource_names.version_control_system_runner_group
   use_runner_group                             = local.use_runner_group

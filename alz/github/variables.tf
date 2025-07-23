@@ -194,6 +194,18 @@ variable "apply_approvers" {
   default     = []
 }
 
+variable "apply_approval_team_creation_enabled" {
+  description = "Controls whether to create a team for approvals."
+  type        = bool
+  default     = true
+}
+
+variable "apply_approval_existing_team_name" {
+  description = "The name of an existing team to use for approvals. Only required if 'apply_approval_team_creation_enabled' is 'false'. If this is left null and `apply_approval_team_creation_enabled` is `false`, the module will not set any team for approvals."
+  type        = string
+  default     = null
+}
+
 variable "create_branch_policies" {
   description = "Controls whether to create branch policies for the repositories"
   type        = bool

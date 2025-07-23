@@ -32,6 +32,6 @@ resource "github_branch_protection" "alz" {
   required_pull_request_reviews {
     dismiss_stale_reviews           = true
     restrict_dismissals             = true
-    required_approving_review_count = length(var.approvers) > 1 ? 1 : 0
+    required_approving_review_count = local.approver_count > 1 ? 1 : 0
   }
 }
