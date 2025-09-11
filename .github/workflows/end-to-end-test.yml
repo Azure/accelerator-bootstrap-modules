@@ -242,11 +242,20 @@ jobs:
 
           $Inputs["apply_approvers"] = @()
           $Inputs["root_parent_management_group_id"] = ""
-          $Inputs["subscription_ids"] = @{
-            management = "${{ vars.ARM_SUBSCRIPTION_ID }}"
-            connectivity = "${{ vars.ARM_SUBSCRIPTION_ID }}"
-            identity = "${{ vars.ARM_SUBSCRIPTION_ID }}"
-            security = "${{ vars.ARM_SUBSCRIPTION_ID }}"
+
+          if($infrastructureAsCode -eq "terraform") {
+            $Inputs["subscription_ids"] = @{
+              management = "${{ vars.ARM_SUBSCRIPTION_ID }}"
+              connectivity = "${{ vars.ARM_SUBSCRIPTION_ID }}"
+              identity = "${{ vars.ARM_SUBSCRIPTION_ID }}"
+              security = "${{ vars.ARM_SUBSCRIPTION_ID }}"
+            }
+          }
+
+          if($infrastructureAsCode -eq "bicep") {
+            $Inputs["subscription_id_connectivity"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
+            $Inputs["subscription_id_identity"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
+            $Inputs["subscription_id_management"] = "${{ vars.ARM_SUBSCRIPTION_ID }}"
           }
 
           $Inputs["parent_management_group_display_name"] = "Tenant Root Group"
