@@ -486,3 +486,28 @@ variable "apply_alz_archetypes_via_architecture_definition_template" {
   default     = true
   description = "Toggles assignment of ALZ policies. True to deploy, otherwise false. (e.g true)"
 }
+
+variable "storage_account_blob_soft_delete_retention_days" {
+  type    = number
+  default = 7
+}
+
+variable "storage_account_blob_soft_delete_enabled" {
+  type    = bool
+  default = true
+}
+
+variable "storage_account_container_soft_delete_retention_days" {
+  type    = number
+  default = 7
+}
+
+variable "storage_account_container_soft_delete_enabled" {
+  type    = bool
+  default = true
+}
+
+variable "storage_account_blob_versioning_enabled" {
+  type    = bool
+  default = true
+}
