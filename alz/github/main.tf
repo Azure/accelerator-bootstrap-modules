@@ -71,6 +71,11 @@ module "azure" {
   container_registry_dockerfile_repository_folder_url       = local.runner_container_instance_dockerfile_url
   custom_role_definitions                                   = var.iac_type == "terraform" ? local.custom_role_definitions_terraform : local.custom_role_definitions_bicep
   role_assignments                                          = var.iac_type == "terraform" ? var.role_assignments_terraform : var.role_assignments_bicep
+  storage_account_blob_soft_delete_enabled                  = var.storage_account_blob_soft_delete_enabled
+  storage_account_blob_soft_delete_retention_days           = var.storage_account_blob_soft_delete_retention_days
+  storage_account_blob_versioning_enabled                   = var.storage_account_blob_versioning_enabled
+  storage_account_container_soft_delete_enabled             = var.storage_account_container_soft_delete_enabled
+  storage_account_container_soft_delete_retention_days      = var.storage_account_container_soft_delete_retention_days
 }
 
 module "github" {

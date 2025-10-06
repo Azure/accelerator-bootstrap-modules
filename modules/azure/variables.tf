@@ -280,3 +280,28 @@ variable "additional_role_assignment_principal_ids" {
   type    = map(string)
   default = {}
 }
+
+variable "storage_account_blob_soft_delete_retention_days" {
+  type    = number
+  default = 7
+}
+
+variable "storage_account_blob_soft_delete_enabled" {
+  type    = bool
+  default = true
+}
+
+variable "storage_account_container_soft_delete_retention_days" {
+  type    = number
+  default = 7
+}
+
+variable "storage_account_container_soft_delete_enabled" {
+  type    = bool
+  default = true
+}
+
+variable "storage_account_blob_versioning_enabled" {
+  type    = bool
+  default = true
+}
