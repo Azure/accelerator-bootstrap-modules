@@ -30,6 +30,11 @@ jobs:
       PARAMETERS_FILE_NAME: parameters.json
 
     steps:
+      - name: Show inputs
+        run: |
+          Write-Host '$${{ toJson(inputs) }}'
+        shell: pwsh
+
       - name: Checkout Bicep Module
         uses: actions/checkout@v4
 
@@ -107,6 +112,11 @@ jobs:
       PARAMETERS_FILE_NAME: parameters.json
 
     steps:
+      - name: Show inputs
+        run: |
+          Write-Host '$${{ toJson(inputs) }}'
+        shell: pwsh
+
       - name: Checkout Bicep Module
         uses: actions/checkout@v4
 
