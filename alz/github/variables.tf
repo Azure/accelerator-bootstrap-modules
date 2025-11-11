@@ -243,39 +243,39 @@ variable "module_folder_path_relative" {
 }
 
 variable "resource_names" {
-  type        = map(string)
+  type = object({
+    resource_group_state                                        = optional(string, "rg-{{service_name}}-{{environment_name}}-state-{{azure_location}}-{{postfix_number}}")
+    resource_group_identity                                     = optional(string, "rg-{{service_name}}-{{environment_name}}-identity-{{azure_location}}-{{postfix_number}}")
+    resource_group_agents                                       = optional(string, "rg-{{service_name}}-{{environment_name}}-agents-{{azure_location}}-{{postfix_number}}")
+    resource_group_network                                      = optional(string, "rg-{{service_name}}-{{environment_name}}-network-{{azure_location}}-{{postfix_number}}")
+    user_assigned_managed_identity_plan                         = optional(string, "id-{{service_name}}-{{environment_name}}-{{azure_location}}-plan-{{postfix_number}}")
+    user_assigned_managed_identity_apply                        = optional(string, "id-{{service_name}}-{{environment_name}}-{{azure_location}}-apply-{{postfix_number}}")
+    user_assigned_managed_identity_federated_credentials_prefix = optional(string, "{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}")
+    storage_account                                             = optional(string, "sto{{service_name_short}}{{environment_name_short}}{{azure_location_short}}{{postfix_number}}{{random_string}}")
+    storage_container                                           = optional(string, "{{environment_name}}-tfstate")
+    container_instance_01                                       = optional(string, "aci-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}")
+    container_instance_02                                       = optional(string, "aci-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number_plus_1}}")
+    container_instance_managed_identity                         = optional(string, "id-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-aci")
+    runner_01                                                   = optional(string, "runner-{{service_name}}-{{environment_name}}-{{postfix_number}}")
+    runner_02                                                   = optional(string, "runner-{{service_name}}-{{environment_name}}-{{postfix_number_plus_1}}")
+    version_control_system_repository                           = optional(string, "{{service_name}}-{{environment_name}}")
+    version_control_system_repository_templates                 = optional(string, "{{service_name}}-{{environment_name}}-templates")
+    version_control_system_environment_plan                     = optional(string, "{{service_name}}-{{environment_name}}-plan")
+    version_control_system_environment_apply                    = optional(string, "{{service_name}}-{{environment_name}}-apply")
+    version_control_system_team                                 = optional(string, "{{service_name}}-{{environment_name}}-approvers")
+    version_control_system_runner_group                         = optional(string, "{{service_name}}-{{environment_name}}")
+    virtual_network                                             = optional(string, "vnet-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}")
+    public_ip                                                   = optional(string, "pip-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}")
+    nat_gateway                                                 = optional(string, "nat-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}")
+    subnet_container_instances                                  = optional(string, "subnet-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-aci")
+    subnet_private_endpoints                                    = optional(string, "subnet-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-pe")
+    storage_account_private_endpoint                            = optional(string, "pe-{{service_name}}-{{environment_name}}-{{azure_location}}-sto-{{postfix_number}}")
+    container_registry                                          = optional(string, "acr{{service_name}}{{environment_name}}{{azure_location_short}}{{postfix_number}}{{random_string}}")
+    container_registry_private_endpoint                         = optional(string, "pe-{{service_name}}-{{environment_name}}-{{azure_location}}-acr-{{postfix_number}}")
+    container_image_name                                        = optional(string, "github-runner")
+  })
   description = "Overrides for resource names"
-  default = {
-    resource_group_state                                        = "rg-{{service_name}}-{{environment_name}}-state-{{azure_location}}-{{postfix_number}}"
-    resource_group_identity                                     = "rg-{{service_name}}-{{environment_name}}-identity-{{azure_location}}-{{postfix_number}}"
-    resource_group_agents                                       = "rg-{{service_name}}-{{environment_name}}-agents-{{azure_location}}-{{postfix_number}}"
-    resource_group_network                                      = "rg-{{service_name}}-{{environment_name}}-network-{{azure_location}}-{{postfix_number}}"
-    user_assigned_managed_identity_plan                         = "id-{{service_name}}-{{environment_name}}-{{azure_location}}-plan-{{postfix_number}}"
-    user_assigned_managed_identity_apply                        = "id-{{service_name}}-{{environment_name}}-{{azure_location}}-apply-{{postfix_number}}"
-    user_assigned_managed_identity_federated_credentials_prefix = "{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}"
-    storage_account                                             = "sto{{service_name_short}}{{environment_name_short}}{{azure_location_short}}{{postfix_number}}{{random_string}}"
-    storage_container                                           = "{{environment_name}}-tfstate"
-    container_instance_01                                       = "aci-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}"
-    container_instance_02                                       = "aci-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number_plus_1}}"
-    container_instance_managed_identity                         = "id-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-aci"
-    runner_01                                                   = "runner-{{service_name}}-{{environment_name}}-{{postfix_number}}"
-    runner_02                                                   = "runner-{{service_name}}-{{environment_name}}-{{postfix_number_plus_1}}"
-    version_control_system_repository                           = "{{service_name}}-{{environment_name}}"
-    version_control_system_repository_templates                 = "{{service_name}}-{{environment_name}}-templates"
-    version_control_system_environment_plan                     = "{{service_name}}-{{environment_name}}-plan"
-    version_control_system_environment_apply                    = "{{service_name}}-{{environment_name}}-apply"
-    version_control_system_team                                 = "{{service_name}}-{{environment_name}}-approvers"
-    version_control_system_runner_group                         = "{{service_name}}-{{environment_name}}"
-    virtual_network                                             = "vnet-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}"
-    public_ip                                                   = "pip-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}"
-    nat_gateway                                                 = "nat-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}"
-    subnet_container_instances                                  = "subnet-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-aci"
-    subnet_private_endpoints                                    = "subnet-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-pe"
-    storage_account_private_endpoint                            = "pe-{{service_name}}-{{environment_name}}-{{azure_location}}-sto-{{postfix_number}}"
-    container_registry                                          = "acr{{service_name}}{{environment_name}}{{azure_location_short}}{{postfix_number}}{{random_string}}"
-    container_registry_private_endpoint                         = "pe-{{service_name}}-{{environment_name}}-{{azure_location}}-acr-{{postfix_number}}"
-    container_image_name                                        = "github-runner"
-  }
+  default     = {}
 }
 
 variable "runner_container_image_repository" {
