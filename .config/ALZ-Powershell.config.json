@@ -33,6 +33,12 @@
                 "release_artifact_name": "accelerator.zip",
                 "release_artifact_root_path": ".",
                 "release_artifact_config_file": "accelerator/.config/ALZ-Powershell-Auto.config.json"
+            },
+            "bicep-avm": {
+                "url": "https://github.com/Azure/alz-bicep-accelerator",
+                "release_artifact_name": "starter_modules.zip",
+                "release_artifact_root_path": ".",
+                "release_artifact_config_file": ".config/ALZ-Powershell.config.json"
             }
         }
     },

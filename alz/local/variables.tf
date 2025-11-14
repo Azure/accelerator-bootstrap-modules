@@ -1,5 +1,5 @@
 variable "iac_type" {
-  description = "The type of infrastructure as code to use for the deployment. (e.g. 'terraform' or `bicep)"
+  description = "The type of infrastructure as code to use for the deployment. (e.g. 'terraform', 'bicep-avm', or 'bicep')"
   type        = string
 }
 
@@ -448,8 +448,9 @@ variable "role_assignments_bicep" {
 }
 
 variable "bicep_config_file_path" {
-  type    = string
-  default = "accelerator/.config/ALZ-Powershell-Auto.config.json"
+  type        = string
+  description = "The path to the Bicep configuration file. If not provided, will auto-detect based on iac_type."
+  default     = null
 }
 
 variable "bicep_parameters_file_path" {
