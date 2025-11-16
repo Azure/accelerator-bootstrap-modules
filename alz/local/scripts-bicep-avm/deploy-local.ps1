@@ -18,6 +18,23 @@ if ($deployApproved -ne "yes") {
 }
 
 %{ for script_file in script_files ~}
+%{ if try(script_file.networkType, "") != "" ~}
+# Running deployment stack for ${script_file.displayName} (Network Type: ${script_file.networkType})
+if ($env:NETWORK_TYPE -eq "${script_file.networkType}") {
+    & (Join-Path $scriptRoot 'bicep-deploy.ps1') `
+        -name "${script_file.name}" `
+        -displayName "${script_file.displayName}" `
+        -templateFilePath "${script_file.templateFilePath}" `
+        -templateParametersFilePath "${script_file.templateParametersFilePath}" `
+        -managementGroupId ${script_file.managementGroupIdVariable} `
+        -subscriptionId ${script_file.subscriptionIdVariable} `
+        -resourceGroupName ${script_file.resourceGroupNameVariable} `
+        -location $env:LOCATION `
+        -deploymentType "${script_file.deploymentType}"
+} else {
+    Write-Host "Skipping ${script_file.displayName} - Network Type is $env:NETWORK_TYPE, requires ${script_file.networkType}" -ForegroundColor Yellow
+}
+%{ else ~}
 # Running deployment stack for ${script_file.displayName}
 & (Join-Path $scriptRoot 'bicep-deploy.ps1') `
     -name "${script_file.name}" `
@@ -29,5 +46,6 @@ if ($deployApproved -ne "yes") {
     -resourceGroupName ${script_file.resourceGroupNameVariable} `
     -location $env:LOCATION `
     -deploymentType "${script_file.deploymentType}"
+%{ endif ~}
 
 %{ endfor ~}

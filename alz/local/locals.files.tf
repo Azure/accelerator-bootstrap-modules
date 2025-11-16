@@ -30,6 +30,7 @@ locals {
     deploymentType             = script_file.deploymentType
     firstRunWhatIf             = local.is_classic_bicep ? format("%s%s", "$", script_file.firstRunWhatIf) : null
     group                      = script_file.group
+    networkType                = try(script_file.networkType, "")
   } if !local.is_classic_bicep || try(script_file.networkType, "") == "" || try(script_file.networkType, "") == local.networking_type } : {}
 
   deploy_script_files_parsed = { for deploy_script_file in local.deploy_script_files : "${local.target_folder_name}/${deploy_script_file}" =>
@@ -63,8 +64,27 @@ locals {
     } if local.is_bicep_iac_type ? true : !endswith(key, ".ps1")
   }
 
+  # Replace subscription ID placeholders in .bicepparam files
+  module_files_with_subscriptions = { for key, value in local.module_files : key =>
+    {
+      content = endswith(key, ".bicepparam") ? replace(
+        replace(
+          replace(
+            value.content,
+            "{{your-management-subscription-id}}",
+            try(var.subscription_ids["management"], var.subscription_id_management, "")
+          ),
+          "{{your-connectivity-subscription-id}}",
+          try(var.subscription_ids["connectivity"], var.subscription_id_connectivity, "")
+        ),
+        "{{your-identity-subscription-id}}",
+        try(var.subscription_ids["identity"], var.subscription_id_identity, "")
+      ) : value.content
+    }
+  }
+
   # Build a map of module files with types that are supported
-  module_files_supported = { for key, value in local.module_files : key => value if value.content != "unsupported_file_type" && !endswith(key, "-cache.json") && !endswith(key, local.bicep_config_file_path) }
+  module_files_supported = { for key, value in local.module_files_with_subscriptions : key => value if value.content != "unsupported_file_type" && !endswith(key, "-cache.json") && !endswith(key, local.bicep_config_file_path) }
 
   # Build a list of files to exclude from the repository based on the on-demand folders (only for classic bicep)
   excluded_module_files = local.is_classic_bicep ? distinct(flatten([for exclusion in local.on_demand_folders :
