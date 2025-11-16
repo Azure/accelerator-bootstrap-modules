@@ -1,4 +1,5 @@
 param(
+    [string]$name,
     [string]$displayName,
     [string]$templateFilePath,
     [string]$templateParametersFilePath,
@@ -8,6 +9,12 @@ param(
     [string]$location,
     [string]$deploymentType
 )
+
+# Resolve template paths relative to the script's parent directory (where templates folder is located)
+$scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$templateRoot = Split-Path -Parent $scriptRoot
+$templateFilePath = Join-Path $templateRoot $templateFilePath
+$templateParametersFilePath = Join-Path $templateRoot $templateParametersFilePath
 
 Write-Host "<---------------------------------------------------------------------------->" -ForegroundColor Blue
 Write-Host "Starting deployment stack for $displayName..." -ForegroundColor Blue
@@ -23,35 +30,42 @@ Write-Host "Resource Group Name: $resourceGroupName" -ForegroundColor DarkGray
 Write-Host "Location: $location" -ForegroundColor DarkGray
 Write-Host "Deployment Type: $deploymentType" -ForegroundColor DarkGray
 
-$deploymentPrefix = $env:PREFIX
-$deploymentName = $displayName.Replace(" ", "-")
-$deploymentTimeStamp = Get-Date -Format 'yyyyMMddHHmmss'
-
-$prefixPostFixAndHyphenLength = $deploymentPrefix.Length + $deploymentTimeStamp.Length + 2
-$deploymentNameMaxLength = 61 - $prefixPostFixAndHyphenLength
-
-if($deploymentName.Length -gt $deploymentNameMaxLength) {
-    $deploymentName = $deploymentName.Substring(0, $deploymentNameMaxLength)
-}
-
-$deploymentName = "$deploymentPrefix-$deploymentName-$deploymentTimeStamp"
+$deploymentName = $name
 Write-Host "Deployment Stack Name: $deploymentName"
+Write-Host ""
+
+# Check if template files exist
+if (-not (Test-Path $templateFilePath)) {
+    Write-Error "Template file not found: $templateFilePath"
+    throw "Template file not found: $templateFilePath"
+}
+Write-Host "Template file exists: $templateFilePath" -ForegroundColor Green
+
+if (-not (Test-Path $templateParametersFilePath)) {
+    Write-Error "Template parameters file not found: $templateParametersFilePath"
+    throw "Template parameters file not found: $templateParametersFilePath"
+}
+Write-Host "Template parameters file exists: $templateParametersFilePath" -ForegroundColor Green
+Write-Host ""
 
 $stackParameters = @{
     Name                  = $deploymentName
     TemplateFile          = $templateFilePath
     TemplateParameterFile = $templateParametersFilePath
+    DenySettingsMode      = "None"
+    ActionOnUnmanage      = "DeleteAll"
     Force                 = $true
+    Verbose               = $true
 }
 
 $retryCount = 0
-$retryMax = 30
+$retryMax = 5
 $initialRetryDelay = 20
-$retryDelayIncrement = 10
+$retryDelayIncrement = 5
 $finalSuccess = $false
 
 while ($retryCount -lt $retryMax) {
-    if($retryCount -gt 0) {
+    if ($retryCount -gt 0) {
         $retryDelay = $initialRetryDelay + ($retryCount * $retryDelayIncrement)
         Write-Host "Retrying deployment stack after $retryDelay seconds..." -ForegroundColor Green
         Start-Sleep -Seconds $retryDelay
@@ -105,10 +119,10 @@ while ($retryCount -lt $retryMax) {
     }
 
     Write-Host "Deployment Stack ID: $($result.Id)"
-    Write-Host "Provisioning State: $($result.Properties.ProvisioningState)"
+    Write-Host "Provisioning State: $($result.ProvisioningState)"
 
-    if($result.Properties.ProvisioningState -ne "Succeeded") {
-        Write-Host "Deployment stack provisioning did not succeed. Entering retry loop..." -ForegroundColor Red
+    if ($result.ProvisioningState -ne "succeeded") {
+        Write-Host "Deployment stack provisioning did not succeed. Current state: $($result.ProvisioningState). Entering retry loop..." -ForegroundColor Red
         $retryCount++
     } else {
         $finalSuccess = $true

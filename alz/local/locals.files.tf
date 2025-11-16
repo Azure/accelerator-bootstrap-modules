@@ -15,10 +15,10 @@ locals {
 
   target_folder_name = local.is_bicep_avm ? "scripts-bicep-avm" : "scripts"
 
-  # Get a list of on-demand folders
-  on_demand_folders = local.is_bicep_iac_type ? try(local.starter_module_config.on_demand_folders, []) : []
+  # Get a list of on-demand folders (only for classic bicep, not bicep-avm)
+  on_demand_folders = local.is_classic_bicep ? try(local.starter_module_config.on_demand_folders, []) : []
 
-  networking_type = local.is_classic_bicep && fileexists("${var.module_folder_path}/${var.bicep_parameters_file_path}") ? jsondecode(file("${var.module_folder_path}/${var.bicep_parameters_file_path}")).NETWORK_TYPE : ""
+  networking_type = local.is_bicep_avm ? var.network_type : (local.is_classic_bicep && fileexists("${var.module_folder_path}/${var.bicep_parameters_file_path}") ? jsondecode(file("${var.module_folder_path}/${var.bicep_parameters_file_path}")).NETWORK_TYPE : "")
   script_files = local.is_bicep_iac_type ? { for script_file in local.script_files_all : format("%03d", script_file.order) => {
     name                       = script_file.name
     displayName                = script_file.displayName
@@ -36,12 +36,26 @@ locals {
     {
       content = templatefile("${local.deploy_script_file_directory_path}/${deploy_script_file}", {
         script_files                   = local.script_files
-        on_demand_folders              = local.on_demand_folders
-        on_demand_folder_repository    = var.on_demand_folder_repository
-        on_demand_folder_artifact_name = var.on_demand_folder_artifact_name
+        on_demand_folders              = local.is_classic_bicep ? local.on_demand_folders : []
+        on_demand_folder_repository    = local.is_classic_bicep ? var.on_demand_folder_repository : ""
+        on_demand_folder_artifact_name = local.is_classic_bicep ? var.on_demand_folder_artifact_name : ""
       })
     }
   }
+
+  # Add parameters.json for bicep-avm
+  parameters_json_file = local.is_bicep_avm ? {
+    "${local.target_folder_name}/parameters.json" = {
+      content = templatefile("${local.deploy_script_file_directory_path}/parameters.json.tftpl", {
+        management_group_id          = local.root_parent_management_group_id
+        subscription_id_management   = try(var.subscription_ids["management"], var.subscription_id_management, "")
+        subscription_id_identity     = try(var.subscription_ids["identity"], var.subscription_id_identity, "")
+        subscription_id_connectivity = try(var.subscription_ids["connectivity"], var.subscription_id_connectivity, "")
+        location                     = var.bootstrap_location
+        network_type                 = local.networking_type
+      })
+    }
+  } : {}
 
   module_files = { for key, value in module.files.files : key =>
     {
@@ -52,13 +66,13 @@ locals {
   # Build a map of module files with types that are supported
   module_files_supported = { for key, value in local.module_files : key => value if value.content != "unsupported_file_type" && !endswith(key, "-cache.json") && !endswith(key, local.bicep_config_file_path) }
 
-  # Build a list of files to exclude from the repository based on the on-demand folders
-  excluded_module_files = distinct(flatten([for exclusion in local.on_demand_folders :
+  # Build a list of files to exclude from the repository based on the on-demand folders (only for classic bicep)
+  excluded_module_files = local.is_classic_bicep ? distinct(flatten([for exclusion in local.on_demand_folders :
     [for key, value in local.module_files_supported : key if startswith(key, exclusion.target)]
-  ]))
+  ])) : []
 
   # Filter out the excluded files
   module_files_filtered = { for key, value in local.module_files_supported : key => value if !contains(local.excluded_module_files, key) }
 
-  final_module_files = merge(local.module_files_filtered, local.deploy_script_files_parsed)
+  final_module_files = merge(local.module_files_filtered, local.deploy_script_files_parsed, local.parameters_json_file)
 }

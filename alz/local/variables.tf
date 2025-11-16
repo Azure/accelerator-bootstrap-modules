@@ -77,6 +77,12 @@ variable "bootstrap_location" {
   default     = ""
 }
 
+variable "network_type" {
+  description = "The network type for the deployment (e.g. 'hubNetworking' or 'vwanConnectivity')"
+  type        = string
+  default     = ""
+}
+
 variable "on_demand_folder_repository" {
   description = "The repository to use for the on-demand folders"
   type        = string
