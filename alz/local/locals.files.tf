@@ -52,6 +52,7 @@ locals {
         subscription_id_management   = try(var.subscription_ids["management"], var.subscription_id_management, "")
         subscription_id_identity     = try(var.subscription_ids["identity"], var.subscription_id_identity, "")
         subscription_id_connectivity = try(var.subscription_ids["connectivity"], var.subscription_id_connectivity, "")
+        subscription_id_security     = try(var.subscription_ids["security"], var.subscription_id_security, "")
         location                     = var.bootstrap_location
         network_type                 = local.networking_type
       })
@@ -70,15 +71,19 @@ locals {
       content = endswith(key, ".bicepparam") ? replace(
         replace(
           replace(
-            value.content,
-            "{{your-management-subscription-id}}",
-            try(var.subscription_ids["management"], var.subscription_id_management, "")
+            replace(
+              value.content,
+              "{{your-management-subscription-id}}",
+              try(var.subscription_ids["management"], var.subscription_id_management, "")
+            ),
+            "{{your-connectivity-subscription-id}}",
+            try(var.subscription_ids["connectivity"], var.subscription_id_connectivity, "")
           ),
-          "{{your-connectivity-subscription-id}}",
-          try(var.subscription_ids["connectivity"], var.subscription_id_connectivity, "")
+          "{{your-identity-subscription-id}}",
+          try(var.subscription_ids["identity"], var.subscription_id_identity, "")
         ),
-        "{{your-identity-subscription-id}}",
-        try(var.subscription_ids["identity"], var.subscription_id_identity, "")
+        "{{your-security-subscription-id}}",
+        try(var.subscription_ids["security"], var.subscription_id_security, "")
       ) : value.content
     }
   }

@@ -59,6 +59,16 @@ variable "subscription_id_management" {
   }
 }
 
+variable "subscription_id_security" {
+  description = "DEPRECATED (use subscription_ids instead): The identifier of the Security Subscription"
+  type        = string
+  default     = null
+  validation {
+    condition     = var.subscription_id_security == null || can(regex("^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$", var.subscription_id_security))
+    error_message = "The subscription ID must be a valid GUID"
+  }
+}
+
 variable "configuration_file_path" {
   description = "The name of the configuration file"
   type        = string
@@ -86,6 +96,12 @@ variable "on_demand_folder_artifact_name" {
 variable "bootstrap_location" {
   description = "Azure Deployment location for the bootstrap resources (e.g. storage account, identities, etc)"
   type        = string
+}
+
+variable "network_type" {
+  description = "The network type for the deployment (e.g. 'hubNetworking' or 'vwanConnectivity')"
+  type        = string
+  default     = ""
 }
 
 variable "azure_devops_personal_access_token" {
