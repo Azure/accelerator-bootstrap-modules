@@ -3,6 +3,14 @@ locals {
   resource_names = module.resource_names.resource_names
 }
 
+# Dynamic Bicep Configuration Path
+locals {
+  bicep_config_file_path = var.bicep_config_file_path != null ? var.bicep_config_file_path : (
+    var.iac_type == "bicep-avm" ? ".config/ALZ-Powershell.config.json" :
+    "accelerator/.config/ALZ-Powershell-Auto.config.json"
+  )
+}
+
 locals {
   root_parent_management_group_id = var.root_parent_management_group_id == "" ? data.azurerm_client_config.current.tenant_id : var.root_parent_management_group_id
 }
