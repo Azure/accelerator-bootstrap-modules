@@ -1,0 +1,99 @@
+---
+name: Continuous Integration
+on:
+  workflow_call:
+
+jobs:
+  validate:
+    name: Validate Bicep
+    runs-on:
+      ${runner_name}
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout Bicep Module
+        uses: actions/checkout@v4
+
+      - name: Install Bicep
+        uses: azure/CLI@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az bicep install
+            echo "Bicep version:"
+            az bicep version
+
+      - name: Validate Bicep Files
+        shell: pwsh
+        run: |
+          Write-Host "Validating Bicep files..." -ForegroundColor Cyan
+
+          $bicepFiles = Get-ChildItem -Path . -Filter *.bicep -Recurse | Where-Object { $_.FullName -notlike "*\.bicep\*" }
+
+          $errors = 0
+          foreach ($file in $bicepFiles) {
+            Write-Host "Validating: $($file.FullName)" -ForegroundColor Yellow
+            $result = az bicep build --file $file.FullName 2>&1
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "=== VALIDATION FAILED ===" -ForegroundColor Red
+              Write-Host "File: $($file.FullName)" -ForegroundColor Red
+              Write-Host "Error output:" -ForegroundColor Red
+              Write-Host $result -ForegroundColor Red
+              Write-Host "========================" -ForegroundColor Red
+              $errors++
+            } else {
+              Write-Host "✓ Valid: $($file.FullName)" -ForegroundColor Green
+            }
+          }
+
+          if ($errors -gt 0) {
+            Write-Error "Bicep validation failed with $errors error(s)"
+            exit 1
+          }
+
+          Write-Host ""
+          Write-Host "✓ All Bicep files validated successfully" -ForegroundColor Green
+
+  whatif:
+    name: What If
+    runs-on:
+      ${runner_name}
+    concurrency: ${backend_azure_storage_account_container_name}
+    environment: ${environment_name_plan}
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout Bicep Module
+        uses: actions/checkout@v4
+
+      - name: Install Bicep
+        uses: azure/CLI@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az bicep install
+
+      - name: OIDC Login to Tenant
+        uses: azure/login@v2
+        with:
+          client-id: $${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: $${{ vars.AZURE_TENANT_ID }}
+          subscription-id: $${{ vars.AZURE_SUBSCRIPTION_ID }}
+          enable-AzPSSession: true
+%{ for script_file in script_files ~}
+
+      - name: 'What If: ${script_file.displayName}'
+        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-avm-deploy@main
+        with:
+          displayName: '${script_file.displayName}'
+          templateFilePath: '${script_file.templateFilePath}'
+          templateParametersFilePath: '${script_file.templateParametersFilePath}'
+          managementGroupId: '${script_file.managementGroupIdVariable}'
+          subscriptionId: '${script_file.subscriptionIdVariable}'
+          resourceGroupName: '${script_file.resourceGroupNameVariable}'
+          deploymentType: '${script_file.deploymentType}'
+          whatIfEnabled: 'true'
+%{ endfor ~}
