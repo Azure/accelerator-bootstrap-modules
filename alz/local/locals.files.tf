@@ -47,9 +47,9 @@ locals {
     }
   }
 
-  # Add parameters.json for bicep-avm
+  # Add parameters.json for bicep-avm in root directory
   parameters_json_file = local.is_bicep_avm ? {
-    "${local.target_folder_name}/parameters.json" = {
+    "parameters.json" = {
       content = templatefile("${local.deploy_script_file_directory_path}/parameters.json.tftpl", {
         management_group_id          = local.root_parent_management_group_id
         subscription_id_management   = try(var.subscription_ids["management"], var.subscription_id_management, "")

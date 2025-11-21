@@ -2,11 +2,12 @@
 param()
 
 $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$rootDirectory = Split-Path -Parent $scriptRoot
 $verbose = $PSBoundParameters.Verbose.IsPresent
 Write-Host "Verbose: $verbose"
 
-# Getting the variables from the parameters.json file
-& (Join-Path $scriptRoot 'bicep-get-variables.ps1') -fileName "parameters.json"
+# Getting the variables from the parameters.json file in the root directory
+& (Join-Path $scriptRoot 'bicep-get-variables.ps1') -fileName (Join-Path $rootDirectory "parameters.json")
 
 Write-Host ""
 $deployApproved = Read-Host -Prompt "Type 'yes' and hit Enter to continue with the full deployment"

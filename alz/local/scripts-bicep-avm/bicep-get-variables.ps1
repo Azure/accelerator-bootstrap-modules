@@ -3,7 +3,13 @@ param(
 )
 
 $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Definition
-$parametersPath = Join-Path $scriptRoot $fileName
+
+# If fileName is an absolute path, use it directly; otherwise join with scriptRoot
+if ([System.IO.Path]::IsPathRooted($fileName)) {
+  $parametersPath = $fileName
+} else {
+  $parametersPath = Join-Path $scriptRoot $fileName
+}
 
 Write-Host "Getting variables from $parametersPath"
 $json = Get-Content -Path $parametersPath | ConvertFrom-Json

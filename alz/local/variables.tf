@@ -469,9 +469,21 @@ variable "bicep_config_file_path" {
   default     = null
 }
 
+variable "bicep_avm_config_file_path" {
+  type        = string
+  description = "The path to the Bicep AVM configuration file."
+  default     = ".config/ALZ-Powershell.config.json"
+}
+
 variable "bicep_parameters_file_path" {
   type    = string
   default = "parameters.json"
+}
+
+variable "starter_locations" {
+  type        = list(string)
+  description = "The list of Azure locations for starter module deployments"
+  default     = ["eastus", "westus"]
 }
 
 variable "architecture_definition_name" {
