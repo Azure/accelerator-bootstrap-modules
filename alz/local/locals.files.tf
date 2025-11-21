@@ -10,7 +10,10 @@ locals {
 
   deploy_script_files = local.is_bicep_iac_type ? fileset(local.deploy_script_file_directory_path, "**/*.ps1") : []
 
-  starter_module_config = local.is_bicep_iac_type ? jsondecode(file("${var.module_folder_path}/${local.bicep_config_file_path}")).starter_modules[var.starter_module_name] : null
+  # Select config file based on IAC type
+  config_file_path = local.is_bicep_avm ? var.bicep_avm_config_file_path : local.bicep_config_file_path
+
+  starter_module_config = local.is_bicep_iac_type ? jsondecode(file("${var.module_folder_path}/${local.config_file_path}")).starter_modules[var.starter_module_name] : null
   script_files_all      = local.is_bicep_iac_type ? local.starter_module_config.deployment_files : []
 
   target_folder_name = local.is_bicep_avm ? "scripts-bicep-avm" : "scripts"
@@ -31,7 +34,7 @@ locals {
     firstRunWhatIf             = local.is_classic_bicep ? format("%s%s", "$", script_file.firstRunWhatIf) : null
     group                      = script_file.group
     networkType                = try(script_file.networkType, "")
-  } if !local.is_classic_bicep || try(script_file.networkType, "") == "" || try(script_file.networkType, "") == local.networking_type } : {}
+  } if try(script_file.networkType, "") == "" || try(script_file.networkType, "") == local.networking_type } : {}
 
   deploy_script_files_parsed = { for deploy_script_file in local.deploy_script_files : "${local.target_folder_name}/${deploy_script_file}" =>
     {
@@ -88,16 +91,41 @@ locals {
     }
   }
 
+  # Replace location tokens in .bicepparam files
+  module_files_with_locations = { for key, value in local.module_files_with_subscriptions : key =>
+    {
+      content = endswith(key, ".bicepparam") ? replace(
+        replace(
+          value.content,
+          "{{location-0}}",
+          try(var.starter_locations[0], "eastus")
+        ),
+        "{{location-1}}",
+        try(var.starter_locations[1], "westus")
+      ) : value.content
+    }
+  }
+
   # Build a map of module files with types that are supported
-  module_files_supported = { for key, value in local.module_files_with_subscriptions : key => value if value.content != "unsupported_file_type" && !endswith(key, "-cache.json") && !endswith(key, local.bicep_config_file_path) }
+  module_files_supported = { for key, value in local.module_files_with_locations : key => value if value.content != "unsupported_file_type" && !endswith(key, "-cache.json") && !endswith(key, local.config_file_path) }
 
   # Build a list of files to exclude from the repository based on the on-demand folders (only for classic bicep)
   excluded_module_files = local.is_classic_bicep ? distinct(flatten([for exclusion in local.on_demand_folders :
     [for key, value in local.module_files_supported : key if startswith(key, exclusion.target)]
   ])) : []
 
+  # For bicep-avm, exclude networking folders based on network_type
+  excluded_networking_files = local.is_bicep_avm && local.networking_type != "" ? flatten([
+    local.networking_type == "hubNetworking" ? [for key, value in local.module_files_supported : key if startswith(key, "templates/networking/virtualwan")] : [],
+    local.networking_type == "vwanConnectivity" ? [for key, value in local.module_files_supported : key if startswith(key, "templates/networking/hubnetworking")] : [],
+    local.networking_type == "none" ? [for key, value in local.module_files_supported : key if startswith(key, "templates/networking/")] : []
+  ]) : []
+
+  # Combine all excluded files
+  all_excluded_files = distinct(concat(local.excluded_module_files, local.excluded_networking_files))
+
   # Filter out the excluded files
-  module_files_filtered = { for key, value in local.module_files_supported : key => value if !contains(local.excluded_module_files, key) }
+  module_files_filtered = { for key, value in local.module_files_supported : key => value if !contains(local.all_excluded_files, key) }
 
   final_module_files = merge(local.module_files_filtered, local.deploy_script_files_parsed, local.parameters_json_file)
 }
