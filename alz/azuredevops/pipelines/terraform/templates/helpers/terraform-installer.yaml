@@ -37,6 +37,17 @@ steps:
         }
       }
 
+      $os = ""
+      if ($IsWindows) {
+        $os = "windows"
+      }
+      if($IsLinux) {
+        $os = "linux"
+      }
+      if($IsMacOS) {
+        $os = "darwin"
+      }
+
       $unzipdir = Join-Path -Path $TOOLS_PATH -ChildPath "terraform_$TF_VERSION"
       if (Test-Path $unzipdir) {
         Write-Host "Terraform $TF_VERSION already installed."
@@ -47,17 +58,6 @@ steps:
         }
         Write-Host "##vso[task.setvariable variable=PATH]$env:PATH"
         return
-      }
-
-      $os = ""
-      if ($IsWindows) {
-        $os = "windows"
-      }
-      if($IsLinux) {
-        $os = "linux"
-      }
-      if($IsMacOS) {
-        $os = "darwin"
       }
 
       # Enum values can be seen here: https://learn.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.architecture?view=net-7.0#fields
