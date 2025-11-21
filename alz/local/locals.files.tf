@@ -68,25 +68,33 @@ locals {
     } if local.is_bicep_iac_type ? true : !endswith(key, ".ps1")
   }
 
-  # Replace subscription ID placeholders in .bicepparam files
+  # Replace subscription ID and location placeholders in .bicepparam files
   module_files_with_subscriptions = { for key, value in local.module_files : key =>
     {
       content = endswith(key, ".bicepparam") ? replace(
         replace(
           replace(
             replace(
-              value.content,
-              "{{your-management-subscription-id}}",
-              try(var.subscription_ids["management"], var.subscription_id_management, "")
+              replace(
+                replace(
+                  value.content,
+                  "{{your-management-subscription-id}}",
+                  try(var.subscription_ids["management"], var.subscription_id_management, "")
+                ),
+                "{{your-connectivity-subscription-id}}",
+                try(var.subscription_ids["connectivity"], var.subscription_id_connectivity, "")
+              ),
+              "{{your-identity-subscription-id}}",
+              try(var.subscription_ids["identity"], var.subscription_id_identity, "")
             ),
-            "{{your-connectivity-subscription-id}}",
-            try(var.subscription_ids["connectivity"], var.subscription_id_connectivity, "")
+            "{{your-security-subscription-id}}",
+            try(var.subscription_ids["security"], var.subscription_id_security, "")
           ),
-          "{{your-identity-subscription-id}}",
-          try(var.subscription_ids["identity"], var.subscription_id_identity, "")
+          "{{location-0}}",
+          try(var.starter_locations[0], var.bootstrap_location)
         ),
-        "{{your-security-subscription-id}}",
-        try(var.subscription_ids["security"], var.subscription_id_security, "")
+        "{{location-1}}",
+        try(var.starter_locations[1], var.bootstrap_location)
       ) : value.content
     }
   }

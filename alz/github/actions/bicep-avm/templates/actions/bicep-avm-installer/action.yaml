@@ -1,0 +1,64 @@
+---
+name: Install Bicep and Update AZ PowerShell
+description: Install Bicep, Add to the Path and Update Az PowerShell to latest version
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check Az PowerShell Version
+      run: |
+        $latestVersion = (Find-Module AZ).Version
+        Write-Host "Latest AZ PowerShell Version: $latestVersion"
+        echo "lastestPowerShellAzVersion=$latestVersion" >> $env:GITHUB_ENV
+
+        $installedModule = Get-InstalledModule -Name AZ -ErrorAction SilentlyContinue
+        $installedVersion = $installedModule.Version
+        Write-Host "Installed AZ PowerShell Version: $installedVersion"
+
+        $runPowerShellAzUpgrade = $true
+
+        if($installedVersion -ne $latestVersion) {
+            Write-Host "Az PowerShell is not at the latest version, running upgrade step..."
+        } else {
+            Write-Host "Az PowerShell is already at the latest version, skipping upgrade step..."
+            $runPowerShellAzUpgrade = $false
+        }
+        echo "runPowerShellAzUpgrade=$runPowerShellAzUpgrade" >> $env:GITHUB_ENV
+      shell: pwsh
+
+    - name: Upgrade AZ PowerShell
+      uses: azure/powershell@v2
+      if: $${{ env.runPowerShellAzUpgrade == 'true' }}
+      with:
+        azPSVersion: '$${{ env.lastestPowerShellAzVersion }}'
+        inlineScript: |
+          Write-Host "Attempted Upgrade of AZ PowerShell to $${{ env.lastestPowerShellAzVersion }}"
+
+    - name: Install Bicep
+      run: |
+        $TOOLS_PATH = "$($env:GITHUB_WORKSPACE)/tools"
+        $installDir = Join-Path -Path $TOOLS_PATH -ChildPath "bicep"
+
+        $toolFileName = "bicep"
+        $toolFilePath = Join-Path -Path $installDir -ChildPath $toolFileName
+
+        if(!(Test-Path $installDir)) {
+          New-Item -ItemType Directory -Path $installDir | Out-String | Write-Verbose
+        }
+
+        $url = "https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64"
+
+        Invoke-WebRequest -Uri $url -OutFile "$toolFilePath" | Out-String | Write-Verbose
+
+        $isExecutable = $(test -x $toolFilePath; 0 -eq $LASTEXITCODE)
+        if(!($isExecutable)) {
+          chmod +x $toolFilePath
+        }
+
+        $env:PATH = "$($installDir):$env:PATH"
+        echo "$installDir" >> $env:GITHUB_PATH
+
+        bicep --version
+
+        Write-Host "Installed Latest Bicep Version"
+      shell: pwsh

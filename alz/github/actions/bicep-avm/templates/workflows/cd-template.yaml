@@ -1,0 +1,155 @@
+---
+name: Continuous Delivery
+on:
+  workflow_call:
+    inputs:
+      skip_what_if:
+        default: false
+        type: boolean
+%{ for script_file in script_files ~}
+      ${script_file.name}:
+        type: boolean
+        default: true
+%{ endfor ~}
+
+jobs:
+  whatif:
+    name: What If
+    runs-on:
+      ${runner_name}
+    concurrency: ${backend_azure_storage_account_container_name}
+    environment: ${environment_name_plan}
+    permissions:
+      id-token: write
+      contents: read
+    if: $${{ !inputs.skip_what_if }}
+    env:
+      PARAMETERS_FILE_NAME: parameters.json
+
+    steps:
+      - name: Show inputs
+        run: |
+          Write-Host '$${{ toJson(inputs) }}'
+        shell: pwsh
+
+      - name: Checkout Bicep Module
+        uses: actions/checkout@v4
+
+      - name: Get Bicep AVM Variables
+        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-avm-variables@main
+        with:
+          parameters_file_name: $${{ env.PARAMETERS_FILE_NAME }}
+
+      - name: Install Bicep and Update Az Module
+        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-avm-installer@main
+
+      - name: OIDC Login to Tenant
+        uses: azure/login@v2
+        with:
+          client-id: $${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: $${{ vars.AZURE_TENANT_ID }}
+          subscription-id: $${{ vars.AZURE_SUBSCRIPTION_ID }}
+          enable-AzPSSession: true
+
+%{ for script_file in script_files ~}
+%{ if try(script_file.networkType, "") != "" ~}
+      - name: 'Plan: ${script_file.displayName} (Network Type: ${script_file.networkType})'
+        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-avm-deploy@main
+        if: $${{ inputs.${script_file.name} && env.NETWORK_TYPE == '${script_file.networkType}' }}
+        with:
+          displayName: '${script_file.displayName}'
+          templateFilePath: '${script_file.templateFilePath}'
+          templateParametersFilePath: '${script_file.templateParametersFilePath}'
+          managementGroupId: '${script_file.managementGroupIdVariable}'
+          subscriptionId: '${script_file.subscriptionIdVariable}'
+          resourceGroupName: '${script_file.resourceGroupNameVariable}'
+          location: '$${{ env.LOCATION }}'
+          deploymentType: '${script_file.deploymentType}'
+          networkType: '${script_file.networkType}'
+          whatIfEnabled: 'true'
+%{ else ~}
+      - name: 'Plan: ${script_file.displayName}'
+        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-avm-deploy@main
+        if: $${{ inputs.${script_file.name} }}
+        with:
+          displayName: '${script_file.displayName}'
+          templateFilePath: '${script_file.templateFilePath}'
+          templateParametersFilePath: '${script_file.templateParametersFilePath}'
+          managementGroupId: '${script_file.managementGroupIdVariable}'
+          subscriptionId: '${script_file.subscriptionIdVariable}'
+          resourceGroupName: '${script_file.resourceGroupNameVariable}'
+          location: '$${{ env.LOCATION }}'
+          deploymentType: '${script_file.deploymentType}'
+          whatIfEnabled: 'true'
+%{ endif ~}
+%{ endfor ~}
+
+  deploy:
+    name: Deploy
+    needs: whatif
+    if: $${{ always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
+    runs-on:
+      ${runner_name}
+    concurrency: ${backend_azure_storage_account_container_name}
+    environment: ${environment_name_apply}
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      PARAMETERS_FILE_NAME: parameters.json
+
+    steps:
+      - name: Show inputs
+        run: |
+          Write-Host '$${{ toJson(inputs) }}'
+        shell: pwsh
+
+      - name: Checkout Bicep Module
+        uses: actions/checkout@v4
+
+      - name: Get Bicep AVM Variables
+        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-avm-variables@main
+        with:
+          parameters_file_name: $${{ env.PARAMETERS_FILE_NAME }}
+
+      - name: Install Bicep and Update Az Module
+        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-avm-installer@main
+
+      - name: OIDC Login to Tenant
+        uses: azure/login@v2
+        with:
+          client-id: $${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: $${{ vars.AZURE_TENANT_ID }}
+          subscription-id: $${{ vars.AZURE_SUBSCRIPTION_ID }}
+          enable-AzPSSession: true
+
+%{ for script_file in script_files ~}
+%{ if try(script_file.networkType, "") != "" ~}
+      - name: 'Deploy: ${script_file.displayName} (Network Type: ${script_file.networkType})'
+        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-avm-deploy@main
+        if: $${{ inputs.${script_file.name} && env.NETWORK_TYPE == '${script_file.networkType}' }}
+        with:
+          displayName: '${script_file.displayName}'
+          templateFilePath: '${script_file.templateFilePath}'
+          templateParametersFilePath: '${script_file.templateParametersFilePath}'
+          managementGroupId: '${script_file.managementGroupIdVariable}'
+          subscriptionId: '${script_file.subscriptionIdVariable}'
+          resourceGroupName: '${script_file.resourceGroupNameVariable}'
+          location: '$${{ env.LOCATION }}'
+          deploymentType: '${script_file.deploymentType}'
+          networkType: '${script_file.networkType}'
+%{ else ~}
+      - name: 'Deploy: ${script_file.displayName}'
+        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-avm-deploy@main
+        if: $${{ inputs.${script_file.name} }}
+        with:
+          displayName: '${script_file.displayName}'
+          templateFilePath: '${script_file.templateFilePath}'
+          templateParametersFilePath: '${script_file.templateParametersFilePath}'
+          managementGroupId: '${script_file.managementGroupIdVariable}'
+          subscriptionId: '${script_file.subscriptionIdVariable}'
+          resourceGroupName: '${script_file.resourceGroupNameVariable}'
+          location: '$${{ env.LOCATION }}'
+          deploymentType: '${script_file.deploymentType}'
+%{ endif ~}
+%{ endfor ~}

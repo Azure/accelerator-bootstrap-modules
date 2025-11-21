@@ -419,6 +419,16 @@ variable "bicep_config_file_path" {
   default = "accelerator/.config/ALZ-Powershell-Auto.config.json"
 }
 
+variable "bicep_avm_config_file_path" {
+  type    = string
+  default = ".config/ALZ-Powershell.config.json"
+}
+
+variable "starter_locations" {
+  type    = list(string)
+  default = ["eastus", "westus"]
+}
+
 variable "bicep_parameters_file_path" {
   type    = string
   default = "parameters.json"
@@ -540,6 +550,10 @@ variable "custom_role_definitions_bicep" {
           "Microsoft.Resources/deployments/validate/action",
           "Microsoft.Resources/deployments/read",
           "Microsoft.Resources/deployments/operationStatuses/read",
+          "Microsoft.Resources/deploymentStacks/read",
+          "Microsoft.Resources/deploymentStacks/write",
+          "Microsoft.Resources/deploymentStacks/delete",
+          "Microsoft.Resources/deploymentStacks/validate/action",
           "Microsoft.Authorization/roleAssignments/write",
           "Microsoft.Authorization/roleAssignments/delete",
           "Microsoft.Insights/diagnosticSettings/write"
@@ -563,7 +577,9 @@ variable "custom_role_definitions_bicep" {
           "Microsoft.Insights/diagnosticSettings/write",
           "Microsoft.Insights/diagnosticSettings/read",
           "Microsoft.Resources/deployments/whatIf/action",
-          "Microsoft.Resources/deployments/write"
+          "Microsoft.Resources/deployments/write",
+          "Microsoft.Resources/deploymentStacks/read",
+          "Microsoft.Resources/deploymentStacks/validate/action"
         ]
         not_actions = []
       }
@@ -575,7 +591,11 @@ variable "custom_role_definitions_bicep" {
         actions = [
           "*",
           "Microsoft.Resources/deployments/whatIf/action",
-          "Microsoft.Resources/deployments/write"
+          "Microsoft.Resources/deployments/write",
+          "Microsoft.Resources/deploymentStacks/read",
+          "Microsoft.Resources/deploymentStacks/write",
+          "Microsoft.Resources/deploymentStacks/delete",
+          "Microsoft.Resources/deploymentStacks/validate/action"
         ]
         not_actions = []
       }

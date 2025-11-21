@@ -1,0 +1,39 @@
+---
+name: Get Bicep AVM Variables
+description: Get Variables from parameters.json file
+inputs:
+  parameters_file_name:
+    description: 'The name of the parameters file'
+    required: true
+    default: 'parameters.json'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get Variables from parameters.json
+      uses: azure/powershell@v2
+      with:
+        azPSVersion: 'latest'
+        inlineScript: |
+          $parametersFilePath = $env:PARAMETERS_FILE_NAME
+
+          if (-not (Test-Path $parametersFilePath)) {
+            Write-Error "Parameters file not found: $parametersFilePath"
+            throw "Parameters file not found: $parametersFilePath"
+          }
+
+          Write-Host "Reading parameters from: $parametersFilePath" -ForegroundColor Cyan
+
+          $parameters = Get-Content -Path $parametersFilePath -Raw | ConvertFrom-Json
+
+          foreach ($property in $parameters.PSObject.Properties) {
+            $envVarName = $property.Name
+            $envVarValue = $property.Value
+            Write-Host "Setting environment variable: $envVarName = $envVarValue" -ForegroundColor Green
+            "$envVarName=$envVarValue" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          }
+
+          Write-Host ""
+          Write-Host "✓ All parameters loaded from $parametersFilePath" -ForegroundColor Green
+      env:
+        PARAMETERS_FILE_NAME: $${{ inputs.parameters_file_name }}
