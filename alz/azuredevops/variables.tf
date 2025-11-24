@@ -468,13 +468,7 @@ variable "custom_role_definitions_terraform" {
       description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing in platform subscriptions."
       permissions = {
         actions = [
-          "*",
-          "Microsoft.Resources/deployments/whatIf/action",
-          "Microsoft.Resources/deployments/write",
-          "Microsoft.Resources/deploymentStacks/read",
-          "Microsoft.Resources/deploymentStacks/write",
-          "Microsoft.Resources/deploymentStacks/delete",
-          "Microsoft.Resources/deploymentStacks/validate/action"
+          "*"
         ]
         not_actions = []
       }
@@ -524,11 +518,11 @@ variable "custom_role_definitions_bicep" {
           "Microsoft.Management/managementGroups/read",
           "Microsoft.Management/managementGroups/subscriptions/delete",
           "Microsoft.Management/managementGroups/subscriptions/write",
-          "Microsoft.Management/managementGroups/write",
-          "Microsoft.Management/managementGroups/subscriptions/read",
           "Microsoft.Management/managementGroups/settings/read",
           "Microsoft.Management/managementGroups/settings/write",
           "Microsoft.Management/managementGroups/settings/delete",
+          "Microsoft.Management/managementGroups/write",
+          "Microsoft.Management/managementGroups/subscriptions/read",
           "Microsoft.Authorization/policyDefinitions/write",
           "Microsoft.Authorization/policySetDefinitions/write",
           "Microsoft.Authorization/policyAssignments/write",
@@ -539,6 +533,10 @@ variable "custom_role_definitions_bicep" {
           "Microsoft.Resources/deployments/validate/action",
           "Microsoft.Resources/deployments/read",
           "Microsoft.Resources/deployments/operationStatuses/read",
+          "Microsoft.Resources/deploymentStacks/read",
+          "Microsoft.Resources/deploymentStacks/write",
+          "Microsoft.Resources/deploymentStacks/delete",
+          "Microsoft.Resources/deploymentStacks/validate/action",
           "Microsoft.Authorization/roleAssignments/write",
           "Microsoft.Authorization/roleAssignments/delete",
           "Microsoft.Insights/diagnosticSettings/write"
@@ -562,7 +560,9 @@ variable "custom_role_definitions_bicep" {
           "Microsoft.Insights/diagnosticSettings/write",
           "Microsoft.Insights/diagnosticSettings/read",
           "Microsoft.Resources/deployments/whatIf/action",
-          "Microsoft.Resources/deployments/write"
+          "Microsoft.Resources/deployments/write",
+          "Microsoft.Resources/deploymentStacks/read",
+          "Microsoft.Resources/deploymentStacks/validate/action"
         ]
         not_actions = []
       }
@@ -572,9 +572,7 @@ variable "custom_role_definitions_bicep" {
       description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing in platform subscriptions."
       permissions = {
         actions = [
-          "*",
-          "Microsoft.Resources/deployments/whatIf/action",
-          "Microsoft.Resources/deployments/write"
+            "*"
         ]
         not_actions = []
       }
@@ -596,6 +594,7 @@ variable "custom_role_definitions_bicep" {
           "Microsoft.Network/*/write",
           "Microsoft.Resources/deployments/whatIf/action",
           "Microsoft.Resources/deployments/write",
+          "Microsoft.Resources/deploymentStacks/read",
           "Microsoft.SecurityInsights/onboardingStates/write"
         ]
         not_actions = []
