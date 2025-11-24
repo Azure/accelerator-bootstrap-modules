@@ -26,6 +26,10 @@ inputs:
   deploymentType:
     description: 'The deployment type (managementGroup, subscription, resourceGroup)'
     required: true
+  firstRunWhatIf:
+    description: 'Run a what-if on the first run'
+    required: false
+    default: 'false'
   networkType:
     description: 'The network type filter'
     required: false
@@ -45,6 +49,22 @@ runs:
         inlineScript: |
           $deploymentType = $env:DEPLOYMENT_TYPE
           $whatIfEnabled = $env:WHAT_IF_ENABLED -eq 'true'
+
+          # Check if we should skip what-if for first deployment
+          $firstDeploymentString = $env:firstDeployment
+          $firstDeployment = $true
+          if($firstDeploymentString -eq "") {
+            $firstDeployment = $false
+          } else {
+            $firstDeployment = [System.Convert]::ToBoolean($firstDeploymentString)
+          }
+
+          $firstRunWhatIf = [System.Convert]::ToBoolean($env:FIRST_RUN_WHAT_IF)
+
+          if($whatIfEnabled -and $firstDeployment -and !$firstRunWhatIf) {
+            Write-Warning "Skipping the What-If check as the deployment is dependent on resources that do not exist yet..."
+            exit 0
+          }
 
           # Generate deployment name with timestamp (matching classic bicep pattern)
           $deploymentPrefix = "alz"
@@ -255,4 +275,5 @@ runs:
         RESOURCE_GROUP_NAME: $${{ inputs.resourceGroupName }}
         LOCATION: $${{ inputs.location }}
         DEPLOYMENT_TYPE: $${{ inputs.deploymentType }}
+        FIRST_RUN_WHAT_IF: $${{ inputs.firstRunWhatIf }}
         WHAT_IF_ENABLED: $${{ inputs.whatIfEnabled }}

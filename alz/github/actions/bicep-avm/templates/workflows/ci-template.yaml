@@ -71,6 +71,11 @@ jobs:
           tenant-id: $${{ vars.AZURE_TENANT_ID }}
           subscription-id: $${{ vars.AZURE_SUBSCRIPTION_ID }}
           enable-AzPSSession: true
+
+      - name: Check for First Deployment
+        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-avm-first-deployment-check@main
+        with:
+          managementGroupId: $${{ env.MANAGEMENT_GROUP_ID }}
 %{ for script_file in script_files ~}
 
       - name: 'What If: ${script_file.displayName}'
@@ -84,5 +89,6 @@ jobs:
           resourceGroupName: '${script_file.resourceGroupNameVariable}'
           location: '$${{ env.LOCATION }}'
           deploymentType: '${script_file.deploymentType}'
+          firstRunWhatIf: '${script_file.firstRunWhatIf}'
           whatIfEnabled: 'true'
 %{ endfor ~}

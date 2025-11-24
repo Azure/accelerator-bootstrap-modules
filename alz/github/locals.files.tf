@@ -37,7 +37,7 @@ locals {
     subscriptionIdVariable     = try("$${{ env.${script_file.subscriptionId} }}", "")
     resourceGroupNameVariable  = try("$${{ env.${script_file.resourceGroupName} }}", "")
     deploymentType             = script_file.deploymentType
-    firstRunWhatIf             = local.is_classic_bicep ? script_file.firstRunWhatIf : null
+    firstRunWhatIf             = script_file.firstRunWhatIf
     group                      = script_file.group
     networkType                = try(script_file.networkType, "")
   } if try(script_file.networkType, "") == "" || try(script_file.networkType, "") == local.networking_type } : {}

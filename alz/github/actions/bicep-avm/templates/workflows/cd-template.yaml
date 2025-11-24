@@ -51,6 +51,11 @@ jobs:
           subscription-id: $${{ vars.AZURE_SUBSCRIPTION_ID }}
           enable-AzPSSession: true
 
+      - name: Check for First Deployment
+        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-avm-first-deployment-check@main
+        with:
+          managementGroupId: $${{ env.MANAGEMENT_GROUP_ID }}
+
 %{ for script_file in script_files ~}
 %{ if try(script_file.networkType, "") != "" ~}
       - name: 'Plan: ${script_file.displayName} (Network Type: ${script_file.networkType})'
@@ -65,6 +70,7 @@ jobs:
           resourceGroupName: '${script_file.resourceGroupNameVariable}'
           location: '$${{ env.LOCATION }}'
           deploymentType: '${script_file.deploymentType}'
+          firstRunWhatIf: '${script_file.firstRunWhatIf}'
           networkType: '${script_file.networkType}'
           whatIfEnabled: 'true'
 %{ else ~}
@@ -80,6 +86,7 @@ jobs:
           resourceGroupName: '${script_file.resourceGroupNameVariable}'
           location: '$${{ env.LOCATION }}'
           deploymentType: '${script_file.deploymentType}'
+          firstRunWhatIf: '${script_file.firstRunWhatIf}'
           whatIfEnabled: 'true'
 %{ endif ~}
 %{ endfor ~}
