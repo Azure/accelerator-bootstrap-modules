@@ -57,21 +57,21 @@ stages:
                     azurePowerShellVersion: LatestVersion
                     ScriptType: "InlineScript"
                     Inline: |
-                      $managementGroupId = "$$(MANAGEMENT_GROUP_ID)"
-                      $intRootMgId = "$$managementGroupId-int-root"
+                      $managementGroupId = $env:MANAGEMENT_GROUP_ID
+                      $intRootMgId = "$managementGroupId-int-root"
                       $managementGroups = Get-AzManagementGroup
-                      $intRootMg = $$managementGroups | Where-Object { $$.Name -eq $$intRootMgId }
+                      $intRootMg = $managementGroups | Where-Object { $_.Name -eq $intRootMgId }
 
-                      $firstDeployment = $$true
+                      $firstDeployment = $true
 
-                      if($$intRootMg -eq $$null) {
-                        Write-Warning "Cannot find the $$intRootMgId Management Group, so assuming this is the first deployment. We must skip what-if for some deployments since their dependent resources do not exist yet."
+                      if($intRootMg -eq $null) {
+                        Write-Warning "Cannot find the $intRootMgId Management Group, so assuming this is the first deployment. We must skip what-if for some deployments since their dependent resources do not exist yet."
                       } else {
-                        Write-Host "Found the $$intRootMgId Management Group, so assuming this is not the first deployment."
-                        $$firstDeployment = $$false
+                        Write-Host "Found the $intRootMgId Management Group, so assuming this is not the first deployment."
+                        $firstDeployment = $false
                       }
 
-                      Write-Host "##vso[task.setvariable variable=FIRST_DEPLOYMENT;]$$firstDeployment"
+                      Write-Host "##vso[task.setvariable variable=FIRST_DEPLOYMENT;]$firstDeployment"
 
                 - template: ./helpers/bicep-avm-installer.yaml
                   parameters:
@@ -155,21 +155,21 @@ stages:
                     azurePowerShellVersion: LatestVersion
                     ScriptType: "InlineScript"
                     Inline: |
-                      $managementGroupId = "$$(MANAGEMENT_GROUP_ID)"
-                      $intRootMgId = "$$managementGroupId-int-root"
+                      $managementGroupId = $env:MANAGEMENT_GROUP_ID
+                      $intRootMgId = "$managementGroupId-int-root"
                       $managementGroups = Get-AzManagementGroup
-                      $intRootMg = $$managementGroups | Where-Object { $$.Name -eq $$intRootMgId }
+                      $intRootMg = $managementGroups | Where-Object { $_.Name -eq $intRootMgId }
 
-                      $firstDeployment = $$true
+                      $firstDeployment = $true
 
-                      if($$intRootMg -eq $$null) {
-                        Write-Warning "Cannot find the $$intRootMgId Management Group, so assuming this is the first deployment."
+                      if($intRootMg -eq $null) {
+                        Write-Warning "Cannot find the $intRootMgId Management Group, so assuming this is the first deployment."
                       } else {
-                        Write-Host "Found the $$intRootMgId Management Group, so assuming this is not the first deployment."
-                        $$firstDeployment = $$false
+                        Write-Host "Found the $intRootMgId Management Group, so assuming this is not the first deployment."
+                        $firstDeployment = $false
                       }
 
-                      Write-Host "##vso[task.setvariable variable=FIRST_DEPLOYMENT;]$$firstDeployment"
+                      Write-Host "##vso[task.setvariable variable=FIRST_DEPLOYMENT;]$firstDeployment"
 
                 - template: ./helpers/bicep-avm-installer.yaml
                   parameters:

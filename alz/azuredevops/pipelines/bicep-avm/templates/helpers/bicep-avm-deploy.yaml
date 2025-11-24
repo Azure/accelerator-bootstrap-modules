@@ -41,7 +41,7 @@ steps:
       ScriptType: 'InlineScript'
       Inline: |
         $deploymentType = "$${{ parameters.deploymentType }}"
-        $whatIfEnabled = $${{ parameters.whatIfEnabled }}
+        $whatIfEnabled = [System.Convert]::ToBoolean("$${{ parameters.whatIfEnabled }}")
 
         # Check if we should skip what-if for first deployment
         $firstDeploymentString = $env:FIRST_DEPLOYMENT
