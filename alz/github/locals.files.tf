@@ -107,28 +107,35 @@ locals {
     }
   }
 
-  # Replace subscription ID and location placeholders in .bicepparam files
+  # Build a map of module files with subscription ID replacements
   module_files_with_subscriptions = { for key, value in local.module_files : key =>
     {
-      content = endswith(key, ".bicepparam") ? replace(
+      content = replace(
         replace(
           replace(
             replace(
-              replace(
-                replace(
-                  value.content,
-                  "{{your-management-subscription-id}}",
-                  try(var.subscription_ids["management"], var.subscription_id_management, "")
-                ),
-                "{{your-connectivity-subscription-id}}",
-                try(var.subscription_ids["connectivity"], var.subscription_id_connectivity, "")
-              ),
-              "{{your-identity-subscription-id}}",
-              try(var.subscription_ids["identity"], var.subscription_id_identity, "")
+              value.content,
+              "{{your-management-subscription-id}}",
+              try(var.subscription_ids["management"], var.subscription_id_management, "")
             ),
-            "{{your-security-subscription-id}}",
-            try(var.subscription_ids["security"], var.subscription_id_security, "")
+            "{{your-connectivity-subscription-id}}",
+            try(var.subscription_ids["connectivity"], var.subscription_id_connectivity, "")
           ),
+          "{{your-identity-subscription-id}}",
+          try(var.subscription_ids["identity"], var.subscription_id_identity, "")
+        ),
+        "{{your-security-subscription-id}}",
+        try(var.subscription_ids["security"], var.subscription_id_security, "")
+      )
+    }
+  }
+
+  # Replace location tokens in .bicepparam files
+  module_files_with_locations = { for key, value in local.module_files_with_subscriptions : key =>
+    {
+      content = endswith(key, ".bicepparam") ? replace(
+        replace(
+          value.content,
           "{{location-0}}",
           try(var.starter_locations[0], var.bootstrap_location)
         ),
@@ -145,7 +152,7 @@ locals {
   } : {}
 
   # Build a map of module files with types that are supported
-  module_files_supported = { for key, value in local.module_files_with_subscriptions : key => value if value.content != "unsupported_file_type" && !endswith(key, "-cache.json") && !endswith(key, local.config_file_path) }
+  module_files_supported = { for key, value in local.module_files_with_locations : key => value if value.content != "unsupported_file_type" && !endswith(key, "-cache.json") && !endswith(key, local.config_file_path) }
 
   # Build a list of files to exclude from the repository based on the on-demand folders
   excluded_module_files = distinct(flatten([for exclusion in local.on_demand_folders :

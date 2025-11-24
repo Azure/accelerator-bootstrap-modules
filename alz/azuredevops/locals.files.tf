@@ -134,6 +134,21 @@ locals {
     }
   }
 
+  # Replace location tokens in .bicepparam files
+  module_files_with_locations = { for key, value in local.module_files_with_subscriptions : key =>
+    {
+      content = endswith(key, ".bicepparam") ? replace(
+        replace(
+          value.content,
+          "{{location-0}}",
+          try(var.starter_locations[0], "eastus")
+        ),
+        "{{location-1}}",
+        try(var.starter_locations[1], "westus")
+      ) : value.content
+    }
+  }
+
   architecture_definition_file = local.has_architecture_definition ? {
     "${var.root_module_folder_relative_path}/lib/architecture_definitions/${local.architecture_definition_name}.alz_architecture_definition.json" = {
       content = module.architecture_definition[0].architecture_definition_json
@@ -141,7 +156,7 @@ locals {
   } : {}
 
   # Build a map of module files with types that are supported
-  module_files_supported = { for key, value in local.module_files_with_subscriptions : key => value if value.content != "unsupported_file_type" && !endswith(key, "-cache.json") && !endswith(key, var.bicep_config_file_path) }
+  module_files_supported = { for key, value in local.module_files_with_locations : key => value if value.content != "unsupported_file_type" && !endswith(key, "-cache.json") && !endswith(key, var.bicep_config_file_path) }
 
   # Build a list of files to exclude from the repository based on the on-demand folders
   excluded_module_files = distinct(flatten([for exclusion in local.on_demand_folders :

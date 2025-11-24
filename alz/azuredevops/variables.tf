@@ -719,3 +719,9 @@ variable "storage_account_blob_versioning_enabled" {
   type    = bool
   default = true
 }
+
+variable "starter_locations" {
+  type        = list(string)
+  description = "The list of Azure locations for starter module deployments"
+  default     = ["eastus", "westus"]
+}
