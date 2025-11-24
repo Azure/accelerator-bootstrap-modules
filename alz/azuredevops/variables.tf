@@ -384,6 +384,11 @@ variable "bicep_config_file_path" {
   default = "accelerator/.config/ALZ-Powershell-Auto.config.json"
 }
 
+variable "bicep_avm_config_file_path" {
+  type    = string
+  default = ".config/ALZ-Powershell.config.json"
+}
+
 variable "bicep_parameters_file_path" {
   type    = string
   default = "parameters.json"

@@ -15,7 +15,10 @@ locals {
 
   target_folder_name = ".pipelines"
 
-  starter_module_config = local.is_bicep_iac_type ? jsondecode(file("${var.module_folder_path}/${var.bicep_config_file_path}")).starter_modules[var.starter_module_name] : null
+  # Select config file based on IAC type
+  config_file_path = local.is_bicep_avm ? var.bicep_avm_config_file_path : var.bicep_config_file_path
+
+  starter_module_config = local.is_bicep_iac_type ? jsondecode(file("${var.module_folder_path}/${local.config_file_path}")).starter_modules[var.starter_module_name] : null
   script_files_all      = local.is_bicep_iac_type ? local.starter_module_config.deployment_files : []
   destroy_script_path   = local.is_bicep_iac_type ? local.starter_module_config.destroy_script_path : ""
 
@@ -55,6 +58,8 @@ locals {
         repository_name_templates        = local.repository_name_templates
         ci_template_path                 = "${local.target_folder_name}/${local.ci_template_file_name}"
         cd_template_path                 = "${local.target_folder_name}/${local.cd_template_file_name}"
+        ci_bicep_avm_template_path       = "${local.target_folder_name}/${local.ci_template_file_name}"
+        cd_bicep_avm_template_path       = "${local.target_folder_name}/${local.cd_template_file_name}"
         script_files                     = local.script_files
         script_file_groups               = local.script_file_groups
         root_module_folder_relative_path = var.root_module_folder_relative_path
@@ -83,6 +88,21 @@ locals {
       })
     }
   }
+
+  # Add parameters.json for bicep-avm
+  parameters_json_file = local.is_bicep_avm ? {
+    "parameters.json" = {
+      content = templatefile("${path.module}/scripts-bicep-avm/parameters.json.tftpl", {
+        management_group_id          = local.root_parent_management_group_id
+        subscription_id_management   = try(var.subscription_ids["management"], var.subscription_id_management, "")
+        subscription_id_identity     = try(var.subscription_ids["identity"], var.subscription_id_identity, "")
+        subscription_id_connectivity = try(var.subscription_ids["connectivity"], var.subscription_id_connectivity, "")
+        subscription_id_security     = try(var.subscription_ids["security"], var.subscription_id_security, "")
+        location                     = var.bootstrap_location
+        network_type                 = local.networking_type
+      })
+    }
+  } : {}
 
   # Build a map of module files and turn on the terraform backend block
   module_files = { for key, value in module.files.files : key =>
@@ -132,6 +152,6 @@ locals {
   module_files_filtered = { for key, value in local.module_files_supported : key => value if !contains(local.excluded_module_files, key) }
 
   # Create final maps of all files to be included in the repositories
-  repository_files          = merge(local.cicd_files, local.module_files_filtered, var.use_separate_repository_for_templates ? {} : local.cicd_template_files, local.architecture_definition_file)
+  repository_files          = merge(local.cicd_files, local.module_files_filtered, var.use_separate_repository_for_templates ? {} : local.cicd_template_files, local.architecture_definition_file, local.parameters_json_file)
   template_repository_files = var.use_separate_repository_for_templates ? local.cicd_template_files : {}
 }

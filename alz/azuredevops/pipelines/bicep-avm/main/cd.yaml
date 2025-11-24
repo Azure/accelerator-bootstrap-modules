@@ -1,0 +1,33 @@
+---
+trigger:
+  branches:
+    include:
+      - main
+
+parameters:
+  - name: skip_what_if
+    displayName: 'Skip What If Check?'
+    type: boolean
+    default: false
+%{ for script_file in script_files ~}
+  - name: ${script_file.name}
+    displayName: 'Run Step: ${script_file.displayName}'
+    type: boolean
+    default: true
+%{ endfor ~}
+
+resources:
+  repositories:
+    - repository: templates
+      type: git
+      name: ${project_name}/${repository_name_templates}
+
+lockBehavior: sequential
+
+extends:
+  template: ${cd_bicep_avm_template_path}@templates
+  parameters:
+    skip_what_if: $${{ parameters.skip_what_if }}
+%{ for script_file in script_files ~}
+    ${script_file.name}: $${{ parameters['${script_file.name}'] }}
+%{ endfor ~}

@@ -1,0 +1,261 @@
+---
+parameters:
+  - name: displayName
+    type: string
+  - name: serviceConnection
+    type: string
+  - name: templateFilePath
+    type: string
+  - name: templateParametersFilePath
+    type: string
+  - name: managementGroupId
+    type: string
+    default: ''
+  - name: subscriptionId
+    type: string
+    default: ''
+  - name: resourceGroupName
+    type: string
+    default: ''
+  - name: location
+    type: string
+  - name: deploymentType
+    type: string
+  - name: firstRunWhatIf
+    type: boolean
+    default: true
+  - name: networkType
+    type: string
+    default: ''
+  - name: whatIfEnabled
+    type: boolean
+    default: false
+
+steps:
+  - task: AzurePowerShell@5
+    displayName: '$${{ parameters.displayName }}'
+    inputs:
+      azureSubscription: $${{ parameters.serviceConnection }}
+      azurePowerShellVersion: 'LatestVersion'
+      pwsh: true
+      ScriptType: 'InlineScript'
+      Inline: |
+        $deploymentType = "$${{ parameters.deploymentType }}"
+        $whatIfEnabled = $${{ parameters.whatIfEnabled }}
+
+        # Check if we should skip what-if for first deployment
+        $firstDeploymentString = $env:FIRST_DEPLOYMENT
+        $firstDeployment = $true
+        if($firstDeploymentString -eq "") {
+          $firstDeployment = $false
+        } else {
+          $firstDeployment = [System.Convert]::ToBoolean($firstDeploymentString)
+        }
+
+        $firstRunWhatIf = [System.Convert]::ToBoolean("$${{ parameters.firstRunWhatIf }}")
+
+        if($whatIfEnabled -and $firstDeployment -and !$firstRunWhatIf) {
+          Write-Warning "Skipping the What-If check as the deployment is dependent on resources that do not exist yet..."
+          exit 0
+        }
+
+        # Generate deployment name with timestamp (matching classic bicep pattern)
+        $deploymentPrefix = "alz"
+        $deploymentNameBase = "$${{ parameters.displayName }}".Replace(" ", "-")
+        $deploymentTimeStamp = Get-Date -Format 'yyyyMMddHHmmss'
+
+        $prefixPostFixAndHyphenLength = $deploymentPrefix.Length + $deploymentTimeStamp.Length + 2
+        $deploymentNameMaxLength = 61 - $prefixPostFixAndHyphenLength
+
+        if ($deploymentNameBase.Length -gt $deploymentNameMaxLength) {
+          $deploymentNameBase = $deploymentNameBase.Substring(0, $deploymentNameMaxLength)
+        }
+
+        $deploymentName = "$deploymentPrefix-$deploymentNameBase-$deploymentTimeStamp"
+
+        $modeText = if ($whatIfEnabled) { "What-If" } else { "Deployment Stack" }
+
+        Write-Host "================================================" -ForegroundColor Blue
+        Write-Host "Starting $modeText for $deploymentName" -ForegroundColor Blue
+        Write-Host "================================================" -ForegroundColor Blue
+        Write-Host ""
+        Write-Host "Display Name: $${{ parameters.displayName }}" -ForegroundColor DarkGray
+        Write-Host "Deployment Name: $deploymentName" -ForegroundColor DarkGray
+        Write-Host "Template File Path: $${{ parameters.templateFilePath }}" -ForegroundColor DarkGray
+        Write-Host "Template Parameters File Path: $${{ parameters.templateParametersFilePath }}" -ForegroundColor DarkGray
+        Write-Host "Management Group Id: $${{ parameters.managementGroupId }}" -ForegroundColor DarkGray
+        Write-Host "Subscription Id: $${{ parameters.subscriptionId }}" -ForegroundColor DarkGray
+        Write-Host "Resource Group Name: $${{ parameters.resourceGroupName }}" -ForegroundColor DarkGray
+        Write-Host "Location: $${{ parameters.location }}" -ForegroundColor DarkGray
+        Write-Host "Deployment Type: $deploymentType" -ForegroundColor DarkGray
+        Write-Host "What-If Mode: $whatIfEnabled" -ForegroundColor DarkGray
+        Write-Host ""
+
+        # Check if template files exist
+        if (-not (Test-Path "$${{ parameters.templateFilePath }}")) {
+          Write-Error "Template file not found: $${{ parameters.templateFilePath }}"
+          throw "Template file not found: $${{ parameters.templateFilePath }}"
+        }
+        Write-Host "✓ Template file exists: $${{ parameters.templateFilePath }}" -ForegroundColor Green
+
+        if (-not (Test-Path "$${{ parameters.templateParametersFilePath }}")) {
+          Write-Error "Template parameters file not found: $${{ parameters.templateParametersFilePath }}"
+          throw "Template parameters file not found: $${{ parameters.templateParametersFilePath }}"
+        }
+        Write-Host "✓ Template parameters file exists: $${{ parameters.templateParametersFilePath }}" -ForegroundColor Green
+        Write-Host ""
+
+        if ($whatIfEnabled) {
+          # What-If mode - validation only using standard deployment with -WhatIf parameter
+          Write-Host "Running in What-If mode (validation only)" -ForegroundColor Cyan
+          Write-Host ""
+
+          $whatIfParameters = @{
+            DeploymentName        = $deploymentName
+            TemplateFile          = "$${{ parameters.templateFilePath }}"
+            TemplateParameterFile = "$${{ parameters.templateParametersFilePath }}"
+            WhatIf                = $true
+            Verbose               = $true
+          }
+
+          try {
+            switch ($deploymentType) {
+              "managementGroup" {
+                $targetManagementGroupId = "$${{ parameters.managementGroupId }}"
+                if ([string]::IsNullOrWhiteSpace($targetManagementGroupId)) {
+                  $targetManagementGroupId = (Get-AzContext).Tenant.TenantId
+                }
+
+                Write-Host "Running Management Group What-If: $deploymentName" -ForegroundColor Cyan
+                $whatIfParameters.Location = "$${{ parameters.location }}"
+                $whatIfParameters.ManagementGroupId = $targetManagementGroupId
+                $result = New-AzManagementGroupDeployment @whatIfParameters
+              }
+              "subscription" {
+                if (-not [string]::IsNullOrWhiteSpace("$${{ parameters.subscriptionId }}")) {
+                  Write-Host "Setting subscription context to: $${{ parameters.subscriptionId }}" -ForegroundColor Cyan
+                  Select-AzSubscription -SubscriptionId "$${{ parameters.subscriptionId }}" | Out-Null
+                }
+
+                Write-Host "Running Subscription What-If: $deploymentName" -ForegroundColor Cyan
+                $whatIfParameters.Location = "$${{ parameters.location }}"
+                $result = New-AzSubscriptionDeployment @whatIfParameters
+              }
+              "resourceGroup" {
+                if (-not [string]::IsNullOrWhiteSpace("$${{ parameters.subscriptionId }}")) {
+                  Write-Host "Setting subscription context to: $${{ parameters.subscriptionId }}" -ForegroundColor Cyan
+                  Select-AzSubscription -SubscriptionId "$${{ parameters.subscriptionId }}" | Out-Null
+                }
+
+                Write-Host "Running Resource Group What-If: $deploymentName" -ForegroundColor Cyan
+                $whatIfParameters.ResourceGroupName = "$${{ parameters.resourceGroupName }}"
+                $result = New-AzResourceGroupDeployment @whatIfParameters
+              }
+              default {
+                Write-Error "Invalid deployment type: $deploymentType"
+                throw "Invalid deployment type: $deploymentType"
+              }
+            }
+
+            Write-Host ""
+            Write-Host "================================================" -ForegroundColor Green
+            Write-Host "✓ What-If Validation Succeeded: $deploymentName" -ForegroundColor Green
+            Write-Host "================================================" -ForegroundColor Green
+            Write-Host ""
+
+          } catch {
+            Write-Error "What-If validation failed: $($_.Exception.Message)"
+            throw
+          }
+
+        } else {
+          # Deployment Stack mode - actual deployment
+          $stackParameters = @{
+            Name                  = $deploymentName
+            TemplateFile          = "$${{ parameters.templateFilePath }}"
+            TemplateParameterFile = "$${{ parameters.templateParametersFilePath }}"
+            DenySettingsMode      = "None"
+            ActionOnUnmanage      = "DeleteAll"
+            Force                 = $true
+            Verbose               = $true
+          }
+
+          $retryCount = 0
+          $retryMax = 5
+          $initialRetryDelay = 20
+          $retryDelayIncrement = 5
+          $finalSuccess = $false
+
+          while ($retryCount -lt $retryMax) {
+            if ($retryCount -gt 0) {
+              $retryDelay = $initialRetryDelay + ($retryCount * $retryDelayIncrement)
+              Write-Host "Retrying deployment stack after $retryDelay seconds..." -ForegroundColor Yellow
+              Start-Sleep -Seconds $retryDelay
+              Write-Host "Retry attempt $retryCount" -ForegroundColor Yellow
+            }
+
+            $result = $null
+
+            try {
+              switch ($deploymentType) {
+                "managementGroup" {
+                  $targetManagementGroupId = "$${{ parameters.managementGroupId }}"
+                  if ([string]::IsNullOrWhiteSpace($targetManagementGroupId)) {
+                    $targetManagementGroupId = (Get-AzContext).Tenant.TenantId
+                  }
+
+                  Write-Host "Creating Management Group Deployment Stack: $deploymentName" -ForegroundColor Cyan
+                  $result = New-AzManagementGroupDeploymentStack @stackParameters -ManagementGroupId $targetManagementGroupId -Location "$${{ parameters.location }}"
+                }
+                "subscription" {
+                  if (-not [string]::IsNullOrWhiteSpace("$${{ parameters.subscriptionId }}")) {
+                    Write-Host "Setting subscription context to: $${{ parameters.subscriptionId }}" -ForegroundColor Cyan
+                    Select-AzSubscription -SubscriptionId "$${{ parameters.subscriptionId }}" | Out-Null
+                  }
+
+                  Write-Host "Creating Subscription Deployment Stack: $deploymentName" -ForegroundColor Cyan
+                  $result = New-AzSubscriptionDeploymentStack @stackParameters -Location "$${{ parameters.location }}"
+                }
+                "resourceGroup" {
+                  if (-not [string]::IsNullOrWhiteSpace("$${{ parameters.subscriptionId }}")) {
+                    Write-Host "Setting subscription context to: $${{ parameters.subscriptionId }}" -ForegroundColor Cyan
+                    Select-AzSubscription -SubscriptionId "$${{ parameters.subscriptionId }}" | Out-Null
+                  }
+
+                  Write-Host "Creating Resource Group Deployment Stack: $deploymentName" -ForegroundColor Cyan
+                  $result = New-AzResourceGroupDeploymentStack @stackParameters -ResourceGroupName "$${{ parameters.resourceGroupName }}"
+                }
+                default {
+                  Write-Error "Invalid deployment type: $deploymentType"
+                  throw "Invalid deployment type: $deploymentType"
+                }
+              }
+
+              if ($result.ProvisioningState -eq "Succeeded") {
+                $finalSuccess = $true
+                Write-Host ""
+                Write-Host "================================================" -ForegroundColor Green
+                Write-Host "✓ Deployment Stack Succeeded: $deploymentName" -ForegroundColor Green
+                Write-Host "================================================" -ForegroundColor Green
+                Write-Host ""
+                break
+              } else {
+                Write-Warning "Deployment stack finished with state: $($result.ProvisioningState)"
+                $retryCount++
+              }
+            } catch {
+              Write-Warning "Deployment stack failed with error: $($_.Exception.Message)"
+              $retryCount++
+
+              if ($retryCount -ge $retryMax) {
+                Write-Error "Deployment stack failed after $retryMax attempts"
+                throw
+              }
+            }
+          }
+
+          if (-not $finalSuccess) {
+            Write-Error "Deployment stack did not succeed after $retryMax attempts"
+            throw "Deployment stack did not succeed after $retryMax attempts"
+          }
+        }

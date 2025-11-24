@@ -1,0 +1,68 @@
+---
+parameters:
+  - name: serviceConnection
+    type: string
+
+steps:
+  - pwsh: |
+        $latestVersion = (Find-Module AZ).Version
+        Write-Host "Latest AZ PowerShell Version: $latestVersion"
+        echo "##vso[task.setvariable variable=lastestPowerShellAzVersion;]$latestVersion"
+
+        $installedModule = Get-InstalledModule -Name AZ -ErrorAction SilentlyContinue
+        $installedVersion = $installedModule.Version
+        Write-Host "Installed AZ PowerShell Version: $installedVersion"
+
+        $runPowerShellAzUpgrade = $true
+
+        if($installedVersion -ne $latestVersion) {
+            Write-Host "Az PowerShell is not at the latest version, running upgrade step..."
+        } else {
+            Write-Host "Az PowerShell is already at the latest version, skipping upgrade step..."
+            $runPowerShellAzUpgrade = $false
+        }
+        echo "##vso[task.setvariable variable=runPowerShellAzUpgrade;]$runPowerShellAzUpgrade"
+    displayName: Check Az PowerShell Version
+
+  - task: AzurePowerShell@5
+    displayName: "Upgrade AZ PowerShell"
+    condition: and(succeeded(), eq(variables['runPowerShellAzUpgrade'], 'true'))
+    inputs:
+      azureSubscription: $${{ parameters.serviceConnection }}
+      pwsh: true
+      preferredAzurePowerShellVersion: $(lastestPowerShellAzVersion)
+      ScriptType: "InlineScript"
+      Inline: |
+        Write-Host "Attempted Upgrade of AZ PowerShell to $env:lastestPowerShellAzVersion"
+
+  - pwsh: |
+      $TOOLS_PATH = $env:TOOLS_PATH
+      $installDir = Join-Path -Path $TOOLS_PATH -ChildPath "bicep"
+
+      $toolFileName = "bicep"
+      $toolFilePath = Join-Path -Path $installDir -ChildPath $toolFileName
+
+      if(!(Test-Path $installDir)) {
+        New-Item -ItemType Directory -Path $installDir | Out-String | Write-Verbose
+      }
+
+      $url = "https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64"
+
+      Invoke-WebRequest -Uri $url -OutFile "$toolFilePath" | Out-String | Write-Verbose
+
+      $isExecutable = $(test -x $toolFilePath; 0 -eq $LASTEXITCODE)
+        if(!($isExecutable)) {
+          chmod +x $toolFilePath
+      }
+
+      $env:PATH = "$($installDir):$env:PATH"
+
+      Write-Host "##vso[task.setvariable variable=PATH]$env:PATH"
+
+      bicep --version
+
+      Write-Host "Installed Latest Bicep Version"
+
+    displayName: Install Bicep
+    env:
+      TOOLS_PATH: $(Agent.ToolsDirectory)
