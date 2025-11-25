@@ -59,19 +59,17 @@ steps:
           exit 0
         }
 
-        # Generate deployment name with timestamp (matching classic bicep pattern)
+        # Generate deployment name without timestamp for consistent deployment stack names
         $deploymentPrefix = "alz"
         $deploymentNameBase = "$${{ parameters.displayName }}".Replace(" ", "-")
-        $deploymentTimeStamp = Get-Date -Format 'yyyyMMddHHmmss'
 
-        $prefixPostFixAndHyphenLength = $deploymentPrefix.Length + $deploymentTimeStamp.Length + 2
-        $deploymentNameMaxLength = 61 - $prefixPostFixAndHyphenLength
+        $deploymentNameMaxLength = 64 - $deploymentPrefix.Length - 1
 
         if ($deploymentNameBase.Length -gt $deploymentNameMaxLength) {
           $deploymentNameBase = $deploymentNameBase.Substring(0, $deploymentNameMaxLength)
         }
 
-        $deploymentName = "$deploymentPrefix-$deploymentNameBase-$deploymentTimeStamp"
+        $deploymentName = "$deploymentPrefix-$deploymentNameBase"
 
         $modeText = if ($whatIfEnabled) { "What-If" } else { "Deployment Stack" }
 

@@ -104,12 +104,16 @@ locals {
     {
       content = endswith(key, ".bicepparam") ? replace(
         replace(
-          value.content,
-          "{{location-0}}",
-          try(var.starter_locations[0], "eastus")
+          replace(
+            value.content,
+            "{{location-0}}",
+            try(var.starter_locations[0], "eastus")
+          ),
+          "{{location-1}}",
+          try(var.starter_locations[1], "westus")
         ),
-        "{{location-1}}",
-        try(var.starter_locations[1], "westus")
+        "{{your-tenant-root-management-group-id}}",
+        var.root_parent_management_group_id
       ) : value.content
     }
   }
