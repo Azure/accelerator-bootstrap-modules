@@ -23,7 +23,7 @@ $intRootMg = $managementGroups | Where-Object { $_.Name -eq $intRootMgId }
 
 $firstDeployment = $true
 
-if ($null -eq $intRootMg) {
+if($null -eq $intRootMg) {
   Write-Warning "Cannot find the $intRootMgId Management Group, so assuming this is the first deployment. We must skip checking some deployments since their dependent resources do not exist yet."
 } else {
   Write-Host "Found the $intRootMgId Management Group, so assuming this is not the first deployment."

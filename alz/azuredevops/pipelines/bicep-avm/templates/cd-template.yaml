@@ -57,8 +57,22 @@ stages:
                     azurePowerShellVersion: LatestVersion
                     ScriptType: "InlineScript"
                     Inline: |
-                      $managementGroupId = $env:MANAGEMENT_GROUP_ID
-                      $intRootMgId = "$managementGroupId-int-root"
+                      # Read the int-root management group name from the bicepparam file
+                      $intRootParamFile = "templates/core/governance/mgmt-groups/int-root/main.bicepparam"
+                      if (Test-Path $intRootParamFile) {
+                        $paramContent = Get-Content $intRootParamFile -Raw
+                        if ($paramContent -match 'managementGroupName:\s*[''"](\w+)[''"]+') {
+                          $intRootMgId = $matches[1]
+                          Write-Host "Found int-root management group name in param file: $intRootMgId"
+                        } else {
+                          Write-Warning "Could not parse managementGroupName from $intRootParamFile, using default 'alz'"
+                          $intRootMgId = "alz"
+                        }
+                      } else {
+                        Write-Warning "Int-root param file not found at $intRootParamFile, using default 'alz'"
+                        $intRootMgId = "alz"
+                      }
+
                       $managementGroups = Get-AzManagementGroup
                       $intRootMg = $managementGroups | Where-Object { $_.Name -eq $intRootMgId }
 
@@ -155,8 +169,22 @@ stages:
                     azurePowerShellVersion: LatestVersion
                     ScriptType: "InlineScript"
                     Inline: |
-                      $managementGroupId = $env:MANAGEMENT_GROUP_ID
-                      $intRootMgId = "$managementGroupId-int-root"
+                      # Read the int-root management group name from the bicepparam file
+                      $intRootParamFile = "templates/core/governance/mgmt-groups/int-root/main.bicepparam"
+                      if (Test-Path $intRootParamFile) {
+                        $paramContent = Get-Content $intRootParamFile -Raw
+                        if ($paramContent -match 'managementGroupName:\s*[''"](\w+)[''"]+') {
+                          $intRootMgId = $matches[1]
+                          Write-Host "Found int-root management group name in param file: $intRootMgId"
+                        } else {
+                          Write-Warning "Could not parse managementGroupName from $intRootParamFile, using default 'alz'"
+                          $intRootMgId = "alz"
+                        }
+                      } else {
+                        Write-Warning "Int-root param file not found at $intRootParamFile, using default 'alz'"
+                        $intRootMgId = "alz"
+                      }
+
                       $managementGroups = Get-AzManagementGroup
                       $intRootMg = $managementGroups | Where-Object { $_.Name -eq $intRootMgId }
 
