@@ -4,8 +4,12 @@ extends: default
 ignore: |
   **/bicep/**/ci-template.yaml
   **/bicep/**/cd-template.yaml
+  **/bicep-avm/**/ci-template.yaml
+  **/bicep-avm/**/cd-template.yaml
   *bicep-templates.yaml
   **/bicep/**/cd.yaml
+  **/bicep-avm/**/cd.yaml
+  **/bicep-avm/**/ci.yaml
 
 rules:
   # 500 chars should be enough, but don't fail if a line is longer
