@@ -1,10 +1,30 @@
+# When creating a new project, Azure DevOps automatically creates a default repository
+# with the same name as the project. If our repository name matches the project name,
+# we need to rename the default repo first to avoid conflicts.
+resource "azuredevops_git_repository" "default_rename" {
+  count          = var.create_project && var.repository_name == var.project_name ? 1 : 0
+  project_id     = local.project_id
+  name           = "${var.project_name}-default"
+  default_branch = "refs/heads/main"
+
+  lifecycle {
+    ignore_changes = [initialization, default_branch]
+  }
+
+  depends_on = [azuredevops_project.alz]
+}
+
 resource "azuredevops_git_repository" "alz" {
-  depends_on     = [azuredevops_environment.alz]
+  depends_on     = [azuredevops_environment.alz, azuredevops_git_repository.default_rename]
   project_id     = local.project_id
   name           = var.repository_name
   default_branch = local.default_branch
   initialization {
     init_type = "Clean"
+  }
+
+  lifecycle {
+    ignore_changes = [initialization]
   }
 }
 
