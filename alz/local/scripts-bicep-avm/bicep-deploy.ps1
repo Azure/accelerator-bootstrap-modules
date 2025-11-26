@@ -59,9 +59,9 @@ $stackParameters = @{
 }
 
 $retryCount = 0
-$retryMax = 5
+$retryMax = 20
 $initialRetryDelay = 20
-$retryDelayIncrement = 5
+$retryDelayIncrement = 10
 $finalSuccess = $false
 
 while ($retryCount -lt $retryMax) {
