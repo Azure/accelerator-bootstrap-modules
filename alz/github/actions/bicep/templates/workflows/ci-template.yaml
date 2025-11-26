@@ -8,9 +8,7 @@ jobs:
     name: Validate Bicep
     runs-on:
       ${runner_name}
-    environment: ${environment_name_plan}
     permissions:
-      id-token: write
       contents: read
 
     steps:
@@ -20,27 +18,11 @@ jobs:
       - name: Install Bicep and Update Az Module
         uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-installer@main
 
-      - name: Check for Custom Modules
+      - name: Bicep Build & Lint All Modules
         shell: pwsh
-        working-directory: config
-        run: |
-          if (Test-Path -Path ./custom-modules/*)
-          {
-            echo "CUSTOM_MODULES=true" >> $env:GITHUB_ENV
-            echo "Set CUSTOM_MODULES to true"
-          }
-          else
-          {
-            echo "Set CUSTOM_MODULES to false"
-          }
-
-      - name: Bicep Build & Lint All Custom Modules
-        shell: pwsh
-        if: $${{ env.CUSTOM_MODULES == 'true' }}
-        working-directory: config/custom-modules
         run: |
           $output = @()
-          Get-ChildItem -Recurse -Filter '*.bicep' | ForEach-Object {
+          Get-ChildItem -Recurse -Filter '*.bicep' -Exclude '*.bicep' | Where-Object { $_.FullName -notlike "*\.bicep\*" } | ForEach-Object {
               Write-Information "==> Attempting Bicep Build For File: $_" -InformationAction Continue
               $bicepOutput = bicep build $_.FullName 2>&1
               if ($LastExitCode -ne 0)
@@ -79,17 +61,6 @@ jobs:
         with:
           parameters_file_name: $${{ env.PARAMETERS_FILE_NAME }}
 
-%{ for on_demand_folder in on_demand_folders ~}
-      - name: Get On Demand Folder ${on_demand_folder.target}
-        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-on-demand-folder@main
-        with:
-          repository: "${on_demand_folder_repository}"
-          releaseArtifactName: "${on_demand_folder_artifact_name}"
-          releaseVersion: "$${{ env.RELEASE_VERSION }}"
-          sourcePath: "${on_demand_folder.source}"
-          targetPath: "${on_demand_folder.target}"
-
-%{ endfor ~}
       - name: Install Bicep and Update Az Module
         uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-installer@main
 
@@ -101,12 +72,12 @@ jobs:
           subscription-id: $${{ vars.AZURE_SUBSCRIPTION_ID }}
           enable-AzPSSession: true
 
-      - name: First Deployment Check
-        id: firstDeploymentCheck
+      - name: Check for First Deployment
         uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-first-deployment-check@main
         with:
           managementGroupId: $${{ env.MANAGEMENT_GROUP_ID }}
 %{ for script_file in script_files ~}
+
       - name: 'What If: ${script_file.displayName}'
         uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-deploy@main
         with:
@@ -119,6 +90,5 @@ jobs:
           location: '$${{ env.LOCATION }}'
           deploymentType: '${script_file.deploymentType}'
           firstRunWhatIf: '${script_file.firstRunWhatIf}'
-          firstDeployment: '$${{ env.firstDeployment }}'
           whatIfEnabled: 'true'
 %{ endfor ~}

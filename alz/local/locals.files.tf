@@ -1,8 +1,8 @@
 locals {
-  deploy_script_folder_path = local.is_bicep_avm ? "${path.module}/scripts-bicep-avm" : "${path.module}/scripts"
-  is_bicep_iac_type         = contains(["bicep", "bicep-avm"], var.iac_type)
-  is_classic_bicep          = var.iac_type == "bicep"
-  is_bicep_avm              = var.iac_type == "bicep-avm"
+  deploy_script_folder_path = local.is_bicep ? "${path.module}/scripts-bicep" : "${path.module}/scripts"
+  is_bicep_iac_type         = contains(["bicep", "bicep-classic"], var.iac_type)
+  is_bicep_classic          = var.iac_type == "bicep-classic"
+  is_bicep                  = var.iac_type == "bicep"
 }
 
 locals {
@@ -11,17 +11,15 @@ locals {
   deploy_script_files = local.is_bicep_iac_type ? fileset(local.deploy_script_file_directory_path, "**/*.ps1") : []
 
   # Select config file based on IAC type
-  config_file_path = local.is_bicep_avm ? var.bicep_avm_config_file_path : local.bicep_config_file_path
-
-  starter_module_config = local.is_bicep_iac_type ? jsondecode(file("${var.module_folder_path}/${local.config_file_path}")).starter_modules[var.starter_module_name] : null
+  starter_module_config = local.is_bicep_iac_type ? jsondecode(file("${var.module_folder_path}/${var.bicep_config_file_path}")).starter_modules[var.starter_module_name] : null
   script_files_all      = local.is_bicep_iac_type ? local.starter_module_config.deployment_files : []
 
-  target_folder_name = local.is_bicep_avm ? "scripts-bicep-avm" : "scripts"
+  target_folder_name = local.is_bicep ? "scripts-bicep" : "scripts"
 
-  # Get a list of on-demand folders (only for classic bicep, not bicep-avm)
-  on_demand_folders = local.is_classic_bicep ? try(local.starter_module_config.on_demand_folders, []) : []
+  # Get a list of on-demand folders (only for classic bicep)
+  on_demand_folders = local.is_bicep_classic ? try(local.starter_module_config.on_demand_folders, []) : []
 
-  networking_type = local.is_bicep_avm ? var.network_type : (local.is_classic_bicep && fileexists("${var.module_folder_path}/${var.bicep_parameters_file_path}") ? jsondecode(file("${var.module_folder_path}/${var.bicep_parameters_file_path}")).NETWORK_TYPE : "")
+  networking_type = local.is_bicep ? var.network_type : (local.is_bicep_classic && fileexists("${var.module_folder_path}/${var.bicep_parameters_file_path}") ? jsondecode(file("${var.module_folder_path}/${var.bicep_parameters_file_path}")).NETWORK_TYPE : "")
   script_files = local.is_bicep_iac_type ? { for script_file in local.script_files_all : format("%03d", script_file.order) => {
     name                       = script_file.name
     displayName                = script_file.displayName
@@ -31,7 +29,7 @@ locals {
     subscriptionIdVariable     = try("$env:${script_file.subscriptionId}", "\"\"")
     resourceGroupNameVariable  = try("$env:${script_file.resourceGroupName}", "\"\"")
     deploymentType             = script_file.deploymentType
-    firstRunWhatIf             = local.is_classic_bicep ? format("%s%s", "$", script_file.firstRunWhatIf) : null
+    firstRunWhatIf             = local.is_bicep_classic ? format("%s%s", "$", script_file.firstRunWhatIf) : null
     group                      = script_file.group
     networkType                = try(script_file.networkType, "")
   } if try(script_file.networkType, "") == "" || try(script_file.networkType, "") == local.networking_type } : {}
@@ -40,15 +38,15 @@ locals {
     {
       content = templatefile("${local.deploy_script_file_directory_path}/${deploy_script_file}", {
         script_files                   = local.script_files
-        on_demand_folders              = local.is_classic_bicep ? local.on_demand_folders : []
-        on_demand_folder_repository    = local.is_classic_bicep ? var.on_demand_folder_repository : ""
-        on_demand_folder_artifact_name = local.is_classic_bicep ? var.on_demand_folder_artifact_name : ""
+        on_demand_folders              = local.is_bicep_classic ? local.on_demand_folders : []
+        on_demand_folder_repository    = local.is_bicep_classic ? var.on_demand_folder_repository : ""
+        on_demand_folder_artifact_name = local.is_bicep_classic ? var.on_demand_folder_artifact_name : ""
       })
     }
   }
 
-  # Add parameters.json for bicep-avm in root directory
-  parameters_json_file = local.is_bicep_avm ? {
+  # Add parameters.json for bicep in root directory
+  parameters_json_file = local.is_bicep ? {
     "parameters.json" = {
       content = templatefile("${local.deploy_script_file_directory_path}/parameters.json.tftpl", {
         management_group_id          = local.root_parent_management_group_id
@@ -119,15 +117,15 @@ locals {
   }
 
   # Build a map of module files with types that are supported
-  module_files_supported = { for key, value in local.module_files_with_locations : key => value if value.content != "unsupported_file_type" && !endswith(key, "-cache.json") && !endswith(key, local.config_file_path) }
+  module_files_supported = { for key, value in local.module_files_with_locations : key => value if value.content != "unsupported_file_type" && !endswith(key, "-cache.json") && !endswith(key, var.bicep_config_file_path) }
 
   # Build a list of files to exclude from the repository based on the on-demand folders (only for classic bicep)
-  excluded_module_files = local.is_classic_bicep ? distinct(flatten([for exclusion in local.on_demand_folders :
+  excluded_module_files = local.is_bicep_classic ? distinct(flatten([for exclusion in local.on_demand_folders :
     [for key, value in local.module_files_supported : key if startswith(key, exclusion.target)]
   ])) : []
 
-  # For bicep-avm, exclude networking folders based on network_type
-  excluded_networking_files = local.is_bicep_avm && local.networking_type != "" ? flatten([
+  # For bicep, exclude networking folders based on network_type
+  excluded_networking_files = local.is_bicep && local.networking_type != "" ? flatten([
     local.networking_type == "hubNetworking" ? [for key, value in local.module_files_supported : key if startswith(key, "templates/networking/virtualwan")] : [],
     local.networking_type == "vwanConnectivity" ? [for key, value in local.module_files_supported : key if startswith(key, "templates/networking/hubnetworking")] : [],
     local.networking_type == "none" ? [for key, value in local.module_files_supported : key if startswith(key, "templates/networking/")] : []

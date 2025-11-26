@@ -11,4 +11,4 @@ resources:
 lockBehavior: sequential
 
 extends:
-  template: ${ci_bicep_avm_template_path}@templates
+  template: ${ci_template_path}@templates

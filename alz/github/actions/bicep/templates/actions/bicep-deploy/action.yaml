@@ -1,10 +1,7 @@
 ---
-name: Run Bicep Deploy
-description: Run Bicep Deployment
+name: Run Bicep Deploy with Deployment Stack
+description: Run Bicep Deployment using Azure Deployment Stacks
 inputs:
-  whatIfEnabled:
-    description: 'Is the WhatIf flag enabled?'
-    required: true
   displayName:
     description: 'Display Name'
     required: true
@@ -27,26 +24,34 @@ inputs:
     description: 'The location'
     required: true
   deploymentType:
-    description: 'The deployment type'
+    description: 'The deployment type (managementGroup, subscription, resourceGroup)'
     required: true
   firstRunWhatIf:
     description: 'Run a what-if on the first run'
-    required: true
-  firstDeployment:
-    description: 'Is this the first deployment?'
-    required: true
+    required: false
+    default: 'false'
+  networkType:
+    description: 'The network type filter'
+    required: false
+    default: ''
+  whatIfEnabled:
+    description: 'Enable what-if mode (validation only, no deployment)'
+    required: false
+    default: 'false'
 
 runs:
   using: "composite"
   steps:
-    - name: Run Bicep Deploy
+    - name: Run Bicep Deploy with Deployment Stack
       uses: azure/powershell@v2
       with:
         azPSVersion: 'latest'
         inlineScript: |
-          $whatIf = [System.Convert]::ToBoolean($env:WHAT_IF_ENABLED)
+          $deploymentType = $env:DEPLOYMENT_TYPE
+          $whatIfEnabled = $env:WHAT_IF_ENABLED -eq 'true'
 
-          $firstDeploymentString = $env:FIRST_DEPLOYMENT
+          # Check if we should skip what-if for first deployment
+          $firstDeploymentString = $env:firstDeployment
           $firstDeployment = $true
           if($firstDeploymentString -eq "") {
             $firstDeployment = $false
@@ -56,130 +61,217 @@ runs:
 
           $firstRunWhatIf = [System.Convert]::ToBoolean($env:FIRST_RUN_WHAT_IF)
 
-          if($whatIf -and $firstDeployment -and !$firstRunWhatIf) {
-            Write-Warning "Skipping the WhatIf check as the deployment is dependent on resources that do not exist yet..."
+          if($whatIfEnabled -and $firstDeployment -and !$firstRunWhatIf) {
+            Write-Warning "Skipping the What-If check as the deployment is dependent on resources that do not exist yet..."
             exit 0
           }
 
-          $deploymentType = $env:DEPLOYMENT_TYPE
+          # Generate deployment name without timestamp for consistent deployment stack names
+          $deploymentPrefix = "alz"
+          $deploymentNameBase = $env:DISPLAY_NAME.Replace(" ", "-")
 
-          $deploymentPrefix = $env:PREFIX
-          $deploymentName = $env:DISPLAY_NAME.Replace(" ", "-")
-          $deploymentTimeStamp = Get-Date -Format 'yyyyMMddHHmmss'
+          $deploymentNameMaxLength = 64 - $deploymentPrefix.Length - 1
 
-          $prefixPostFixAndHythenLength = $deploymentPrefix.Length + $deploymentTimeStamp.Length + 2
-          $deploymentNameMaxLength = 61 - $prefixPostFixAndHythenLength
-
-          if($deploymentName.Length -gt $deploymentNameMaxLength) {
-            $deploymentName = $deploymentName.Substring(0, $deploymentNameMaxLength)
+          if ($deploymentNameBase.Length -gt $deploymentNameMaxLength) {
+            $deploymentNameBase = $deploymentNameBase.Substring(0, $deploymentNameMaxLength)
           }
 
-          $deploymentName = "$deploymentPrefix-$deploymentName-$deploymentTimeStamp"
-          Write-Host "Deployment Name: $deploymentName"
+          $deploymentName = "$deploymentPrefix-$deploymentNameBase"
 
-          $inputObject = @{
-            TemplateFile          = $env:TEMPLATE_FILE_PATH
-            TemplateParameterFile = $env:TEMPLATE_PARAMETERS_FILE_PATH
-            WhatIf                = $whatIf
-            Verbose               = $true
+          $modeText = if ($whatIfEnabled) { "What-If" } else { "Deployment Stack" }
+
+          Write-Host "================================================" -ForegroundColor Blue
+          Write-Host "Starting $modeText for $deploymentName" -ForegroundColor Blue
+          Write-Host "================================================" -ForegroundColor Blue
+          Write-Host ""
+          Write-Host "Display Name: $env:DISPLAY_NAME" -ForegroundColor DarkGray
+          Write-Host "Deployment Name: $deploymentName" -ForegroundColor DarkGray
+          Write-Host "Template File Path: $env:TEMPLATE_FILE_PATH" -ForegroundColor DarkGray
+          Write-Host "Template Parameters File Path: $env:TEMPLATE_PARAMETERS_FILE_PATH" -ForegroundColor DarkGray
+          Write-Host "Management Group Id: $env:MANAGEMENT_GROUP_ID" -ForegroundColor DarkGray
+          Write-Host "Subscription Id: $env:SUBSCRIPTION_ID" -ForegroundColor DarkGray
+          Write-Host "Resource Group Name: $env:RESOURCE_GROUP_NAME" -ForegroundColor DarkGray
+          Write-Host "Location: $env:LOCATION" -ForegroundColor DarkGray
+          Write-Host "Deployment Type: $deploymentType" -ForegroundColor DarkGray
+          Write-Host "What-If Mode: $whatIfEnabled" -ForegroundColor DarkGray
+          Write-Host ""
+
+          # Check if template files exist
+          if (-not (Test-Path $env:TEMPLATE_FILE_PATH)) {
+            Write-Error "Template file not found: $env:TEMPLATE_FILE_PATH"
+            throw "Template file not found: $env:TEMPLATE_FILE_PATH"
           }
+          Write-Host "✓ Template file exists: $env:TEMPLATE_FILE_PATH" -ForegroundColor Green
 
-          $retryCount = 0
-          $retryMax = 10
-          $initialRetryDelay = 20
-          $retryDelayIncrement = 10
-          $finalSuccess = $false
+          if (-not (Test-Path $env:TEMPLATE_PARAMETERS_FILE_PATH)) {
+            Write-Error "Template parameters file not found: $env:TEMPLATE_PARAMETERS_FILE_PATH"
+            throw "Template parameters file not found: $env:TEMPLATE_PARAMETERS_FILE_PATH"
+          }
+          Write-Host "✓ Template parameters file exists: $env:TEMPLATE_PARAMETERS_FILE_PATH" -ForegroundColor Green
+          Write-Host ""
 
-          while ($retryCount -lt $retryMax) {
-            $retryAttempt = '{0:d2}' -f ($retryCount + 1)
+          if ($whatIfEnabled) {
+            # What-If mode - validation only using standard deployment with -WhatIf parameter
+            Write-Host "Running in What-If mode (validation only)" -ForegroundColor Cyan
+            Write-Host ""
 
-            if($retryCount -gt 0) {
-              $retryDelay = $initialRetryDelay + ($retryCount * $retryDelayIncrement)
-              Write-Host "Retrying deployment with attempt number $retryAttempt after $retryDelay seconds..." -ForegroundColor Green
-              Start-Sleep -Seconds $retryDelay
-              Write-Host "Retrying deployment..." -ForegroundColor Green
+            $whatIfParameters = @{
+              DeploymentName        = $deploymentName
+              TemplateFile          = $env:TEMPLATE_FILE_PATH
+              TemplateParameterFile = $env:TEMPLATE_PARAMETERS_FILE_PATH
+              WhatIf                = $true
+              Verbose               = $true
             }
-
-            $inputObject.DeploymentName = "$deploymentName-$retryAttempt"
-
-            $result = $null
 
             try {
-              if ($deploymentType -eq "tenant") {
-                $inputObject.Location = $env:LOCATION
-                $result = New-AzTenantDeployment @inputObject
-              }
+              switch ($deploymentType) {
+                "managementGroup" {
+                  $targetManagementGroupId = $env:MANAGEMENT_GROUP_ID
+                  if ([string]::IsNullOrWhiteSpace($targetManagementGroupId)) {
+                    $targetManagementGroupId = (Get-AzContext).Tenant.TenantId
+                  }
 
-              if ($deploymentType -eq "managementGroup") {
-                $inputObject.Location = $env:LOCATION
-                $inputObject.ManagementGroupId = $env:ROOT_PARENT_MANAGEMENT_GROUP_ID
-                if ($inputObject.ManagementGroupId -eq "") {
-                  $inputObject.ManagementGroupId = (Get-AzContext).Tenant.TenantId
+                  Write-Host "Running Management Group What-If: $deploymentName" -ForegroundColor Cyan
+                  $whatIfParameters.Location = $env:LOCATION
+                  $whatIfParameters.ManagementGroupId = $targetManagementGroupId
+                  $result = New-AzManagementGroupDeployment @whatIfParameters
                 }
-                $result = New-AzManagementGroupDeployment @inputObject
+                "subscription" {
+                  if (-not [string]::IsNullOrWhiteSpace($env:SUBSCRIPTION_ID)) {
+                    Write-Host "Setting subscription context to: $env:SUBSCRIPTION_ID" -ForegroundColor Cyan
+                    Select-AzSubscription -SubscriptionId $env:SUBSCRIPTION_ID | Out-Null
+                  }
+
+                  Write-Host "Running Subscription What-If: $deploymentName" -ForegroundColor Cyan
+                  $whatIfParameters.Location = $env:LOCATION
+                  $result = New-AzSubscriptionDeployment @whatIfParameters
+                }
+                "resourceGroup" {
+                  if (-not [string]::IsNullOrWhiteSpace($env:SUBSCRIPTION_ID)) {
+                    Write-Host "Setting subscription context to: $env:SUBSCRIPTION_ID" -ForegroundColor Cyan
+                    Select-AzSubscription -SubscriptionId $env:SUBSCRIPTION_ID | Out-Null
+                  }
+
+                  Write-Host "Running Resource Group What-If: $deploymentName" -ForegroundColor Cyan
+                  $whatIfParameters.ResourceGroupName = $env:RESOURCE_GROUP_NAME
+                  $result = New-AzResourceGroupDeployment @whatIfParameters
+                }
+                default {
+                  Write-Error "Invalid deployment type: $deploymentType"
+                  throw "Invalid deployment type: $deploymentType"
+                }
               }
 
-              if ($deploymentType -eq "subscription") {
-                $inputObject.Location = $env:LOCATION
-                Select-AzSubscription -SubscriptionId $env:SUBSCRIPTION_ID
-                $result = New-AzSubscriptionDeployment @inputObject
-              }
+              Write-Host ""
+              Write-Host "================================================" -ForegroundColor Green
+              Write-Host "✓ What-If Validation Succeeded: $deploymentName" -ForegroundColor Green
+              Write-Host "================================================" -ForegroundColor Green
+              Write-Host ""
 
-              if ($deploymentType -eq "resourceGroup") {
-                $inputObject.ResourceGroupName = $env:RESOURCE_GROUP_NAME
-                Select-AzSubscription -SubscriptionId $env:SUBSCRIPTION_ID
-                $result = New-AzResourceGroupDeployment @inputObject
-              }
             } catch {
-              Write-Host $_ -ForegroundColor Red
-              Write-Host "Deployment failed with exception, this is likely an intermittent failure so entering retry loop..." -ForegroundColor Red
-              $retryCount++
-              continue
+              Write-Error "What-If validation failed: $($_.Exception.Message)"
+              throw
             }
 
-            if ($whatIf) {
-              $result | Format-List | Out-Host
-              exit 0
+          } else {
+            # Deployment Stack mode - actual deployment
+            $stackParameters = @{
+              Name                  = $deploymentName
+              TemplateFile          = $env:TEMPLATE_FILE_PATH
+              TemplateParameterFile = $env:TEMPLATE_PARAMETERS_FILE_PATH
+              DenySettingsMode      = "None"
+              ActionOnUnmanage      = "DeleteAll"
+              Force                 = $true
+              Verbose               = $true
             }
 
-            $resultId = ""
+            $retryCount = 0
+            $retryMax = 20
+            $initialRetryDelay = 20
+            $retryDelayIncrement = 10
+            $finalSuccess = $false
 
-            if($deploymentType -eq "resourceGroup") {
-              $resultId = "/subscriptions/$($env:SUBSCRIPTION_ID)/resourceGroups/$($env:RESOURCE_GROUP_NAME)/providers/Microsoft.Resources/deployments/$deploymentName"
-            } else {
-              $resultId = $result.Id
+            while ($retryCount -lt $retryMax) {
+              if ($retryCount -gt 0) {
+                $retryDelay = $initialRetryDelay + ($retryCount * $retryDelayIncrement)
+                Write-Host "Retrying deployment stack after $retryDelay seconds..." -ForegroundColor Yellow
+                Start-Sleep -Seconds $retryDelay
+                Write-Host "Retry attempt $retryCount" -ForegroundColor Yellow
+              }
+
+              $result = $null
+
+              try {
+                switch ($deploymentType) {
+                  "managementGroup" {
+                    $targetManagementGroupId = $env:MANAGEMENT_GROUP_ID
+                    if ([string]::IsNullOrWhiteSpace($targetManagementGroupId)) {
+                      $targetManagementGroupId = (Get-AzContext).Tenant.TenantId
+                    }
+
+                    Write-Host "Creating Management Group Deployment Stack: $deploymentName" -ForegroundColor Cyan
+                    $result = New-AzManagementGroupDeploymentStack @stackParameters -ManagementGroupId $targetManagementGroupId -Location $env:LOCATION
+                  }
+                  "subscription" {
+                    if (-not [string]::IsNullOrWhiteSpace($env:SUBSCRIPTION_ID)) {
+                      Write-Host "Setting subscription context to: $env:SUBSCRIPTION_ID" -ForegroundColor Cyan
+                      Select-AzSubscription -SubscriptionId $env:SUBSCRIPTION_ID | Out-Null
+                    }
+
+                    Write-Host "Creating Subscription Deployment Stack: $deploymentName" -ForegroundColor Cyan
+                    $result = New-AzSubscriptionDeploymentStack @stackParameters -Location $env:LOCATION
+                  }
+                  "resourceGroup" {
+                    if (-not [string]::IsNullOrWhiteSpace($env:SUBSCRIPTION_ID)) {
+                      Write-Host "Setting subscription context to: $env:SUBSCRIPTION_ID" -ForegroundColor Cyan
+                      Select-AzSubscription -SubscriptionId $env:SUBSCRIPTION_ID | Out-Null
+                    }
+
+                    Write-Host "Creating Resource Group Deployment Stack: $deploymentName" -ForegroundColor Cyan
+                    $result = New-AzResourceGroupDeploymentStack @stackParameters -ResourceGroupName $env:RESOURCE_GROUP_NAME
+                  }
+                  default {
+                    Write-Error "Invalid deployment type: $deploymentType"
+                    throw "Invalid deployment type: $deploymentType"
+                  }
+                }
+
+                if ($result.ProvisioningState -eq "Succeeded") {
+                  $finalSuccess = $true
+                  Write-Host ""
+                  Write-Host "================================================" -ForegroundColor Green
+                  Write-Host "✓ Deployment Stack Succeeded: $deploymentName" -ForegroundColor Green
+                  Write-Host "================================================" -ForegroundColor Green
+                  Write-Host ""
+                  break
+                } else {
+                  Write-Warning "Deployment stack finished with state: $($result.ProvisioningState)"
+                  $retryCount++
+                }
+              } catch {
+                Write-Warning "Deployment stack failed with error: $($_.Exception.Message)"
+                $retryCount++
+
+                if ($retryCount -ge $retryMax) {
+                  Write-Error "Deployment stack failed after $retryMax attempts"
+                  throw
+                }
+              }
             }
 
-            $resultIdEscaped = $resultId.Replace("/", "%2F")
-            $resultUrl = "https://portal.azure.com/#view/HubsExtension/DeploymentDetailsBlade/~/overview/id/$resultIdEscaped"
-
-            Write-Host "Deployment Name: $deploymentName"
-            Write-Host "Deployment ID: $resultId"
-            Write-Host "Deployment Url: $resultUrl"
-            $result | Format-List | Out-Host
-
-            if($result.ProvisioningState -ne "Succeeded") {
-              Write-Host "Deployment failed with unsuccessful provisioning state, this is likely an intermittent failure so entering retry loop..." -ForegroundColor Red
-              $retryCount++
-            } else {
-              $finalSuccess = $true
-              break
+            if (-not $finalSuccess) {
+              Write-Error "Deployment stack did not succeed after $retryMax attempts"
+              throw "Deployment stack did not succeed after $retryMax attempts"
             }
-          }
-
-          if($finalSuccess -eq $false) {
-            Write-Error "Deployment failed after $retryMax attempts..."
-            exit 1
           }
       env:
         DISPLAY_NAME: $${{ inputs.displayName }}
         TEMPLATE_FILE_PATH: $${{ inputs.templateFilePath }}
         TEMPLATE_PARAMETERS_FILE_PATH: $${{ inputs.templateParametersFilePath }}
-        ROOT_PARENT_MANAGEMENT_GROUP_ID: $${{ inputs.managementGroupId }}
+        MANAGEMENT_GROUP_ID: $${{ inputs.managementGroupId }}
         SUBSCRIPTION_ID: $${{ inputs.subscriptionId }}
         RESOURCE_GROUP_NAME: $${{ inputs.resourceGroupName }}
         LOCATION: $${{ inputs.location }}
         DEPLOYMENT_TYPE: $${{ inputs.deploymentType }}
         FIRST_RUN_WHAT_IF: $${{ inputs.firstRunWhatIf }}
-        FIRST_DEPLOYMENT: $${{ inputs.firstDeployment }}
         WHAT_IF_ENABLED: $${{ inputs.whatIfEnabled }}

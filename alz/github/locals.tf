@@ -115,11 +115,6 @@ locals {
 }
 
 locals {
-  architecture_definition_name = var.architecture_definition_name
-  has_architecture_definition  = var.architecture_definition_name != null && var.architecture_definition_name != ""
-}
-
-locals {
   github_organization_url = "${var.github_organization_scheme}://${var.github_organization_domain_name}/${var.github_organization_name}"
   github_api_base_url     = var.github_api_domain_name == "" ? "${var.github_organization_scheme}://api.${var.github_organization_domain_name}/" : "${var.github_organization_scheme}://${var.github_api_domain_name}/"
 }

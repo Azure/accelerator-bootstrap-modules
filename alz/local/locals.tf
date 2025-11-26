@@ -3,14 +3,6 @@ locals {
   resource_names = module.resource_names.resource_names
 }
 
-# Dynamic Bicep Configuration Path
-locals {
-  bicep_config_file_path = var.bicep_config_file_path != null ? var.bicep_config_file_path : (
-    var.iac_type == "bicep-avm" ? ".config/ALZ-Powershell.config.json" :
-    "accelerator/.config/ALZ-Powershell-Auto.config.json"
-  )
-}
-
 locals {
   root_parent_management_group_id = var.root_parent_management_group_id == "" ? data.azurerm_client_config.current.tenant_id : var.root_parent_management_group_id
 }
@@ -66,10 +58,4 @@ locals {
       permissions = value.permissions
     }
   }
-}
-
-locals {
-  architecture_definition_name             = var.architecture_definition_name
-  has_architecture_definition              = var.architecture_definition_name != null && var.architecture_definition_name != ""
-  architecture_definition_file_destination = var.architecture_definition_name != null && var.architecture_definition_name != "" ? "${local.target_directory}/${var.root_module_folder_relative_path}/lib/architecture_definitions/${local.architecture_definition_name}.alz_architecture_definition.json" : ""
 }

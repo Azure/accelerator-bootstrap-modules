@@ -7,22 +7,6 @@ module "resource_names" {
   resource_names   = merge(var.resource_names, local.custom_role_definitions_bicep_names, local.custom_role_definitions_terraform_names)
 }
 
-module "architecture_definition" {
-  count                                                     = local.has_architecture_definition ? 1 : 0
-  source                                                    = "../../modules/template_architecture_definition"
-  starter_module_folder_path                                = local.starter_root_module_folder_path
-  architecture_definition_name                              = local.architecture_definition_name
-  architecture_definition_template_path                     = var.architecture_definition_template_path
-  architecture_definition_override_path                     = var.architecture_definition_override_path
-  apply_alz_archetypes_via_architecture_definition_template = var.apply_alz_archetypes_via_architecture_definition_template
-}
-
-resource "local_file" "architecture_definition_file" {
-  count    = local.has_architecture_definition ? 1 : 0
-  content  = module.architecture_definition[0].architecture_definition_json
-  filename = local.architecture_definition_file_destination
-}
-
 module "files" {
   source                            = "../../modules/files"
   starter_module_folder_path        = local.starter_module_folder_path

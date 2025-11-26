@@ -1,0 +1,185 @@
+---
+name: Run Bicep Deploy
+description: Run Bicep Deployment
+inputs:
+  whatIfEnabled:
+    description: 'Is the WhatIf flag enabled?'
+    required: true
+  displayName:
+    description: 'Display Name'
+    required: true
+  templateFilePath:
+    description: 'The path to the Bicep file'
+    required: true
+  templateParametersFilePath:
+    description: 'The path to the parameters file'
+    required: true
+  managementGroupId:
+    description: 'The root parent management group id'
+    required: true
+  subscriptionId:
+    description: 'The subscription id'
+    required: true
+  resourceGroupName:
+    description: 'The resource group name'
+    required: true
+  location:
+    description: 'The location'
+    required: true
+  deploymentType:
+    description: 'The deployment type'
+    required: true
+  firstRunWhatIf:
+    description: 'Run a what-if on the first run'
+    required: true
+  firstDeployment:
+    description: 'Is this the first deployment?'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run Bicep Deploy
+      uses: azure/powershell@v2
+      with:
+        azPSVersion: 'latest'
+        inlineScript: |
+          $whatIf = [System.Convert]::ToBoolean($env:WHAT_IF_ENABLED)
+
+          $firstDeploymentString = $env:FIRST_DEPLOYMENT
+          $firstDeployment = $true
+          if($firstDeploymentString -eq "") {
+            $firstDeployment = $false
+          } else {
+            $firstDeployment = [System.Convert]::ToBoolean($firstDeploymentString)
+          }
+
+          $firstRunWhatIf = [System.Convert]::ToBoolean($env:FIRST_RUN_WHAT_IF)
+
+          if($whatIf -and $firstDeployment -and !$firstRunWhatIf) {
+            Write-Warning "Skipping the WhatIf check as the deployment is dependent on resources that do not exist yet..."
+            exit 0
+          }
+
+          $deploymentType = $env:DEPLOYMENT_TYPE
+
+          $deploymentPrefix = $env:PREFIX
+          $deploymentName = $env:DISPLAY_NAME.Replace(" ", "-")
+          $deploymentTimeStamp = Get-Date -Format 'yyyyMMddHHmmss'
+
+          $prefixPostFixAndHythenLength = $deploymentPrefix.Length + $deploymentTimeStamp.Length + 2
+          $deploymentNameMaxLength = 61 - $prefixPostFixAndHythenLength
+
+          if($deploymentName.Length -gt $deploymentNameMaxLength) {
+            $deploymentName = $deploymentName.Substring(0, $deploymentNameMaxLength)
+          }
+
+          $deploymentName = "$deploymentPrefix-$deploymentName-$deploymentTimeStamp"
+          Write-Host "Deployment Name: $deploymentName"
+
+          $inputObject = @{
+            TemplateFile          = $env:TEMPLATE_FILE_PATH
+            TemplateParameterFile = $env:TEMPLATE_PARAMETERS_FILE_PATH
+            WhatIf                = $whatIf
+            Verbose               = $true
+          }
+
+          $retryCount = 0
+          $retryMax = 10
+          $initialRetryDelay = 20
+          $retryDelayIncrement = 10
+          $finalSuccess = $false
+
+          while ($retryCount -lt $retryMax) {
+            $retryAttempt = '{0:d2}' -f ($retryCount + 1)
+
+            if($retryCount -gt 0) {
+              $retryDelay = $initialRetryDelay + ($retryCount * $retryDelayIncrement)
+              Write-Host "Retrying deployment with attempt number $retryAttempt after $retryDelay seconds..." -ForegroundColor Green
+              Start-Sleep -Seconds $retryDelay
+              Write-Host "Retrying deployment..." -ForegroundColor Green
+            }
+
+            $inputObject.DeploymentName = "$deploymentName-$retryAttempt"
+
+            $result = $null
+
+            try {
+              if ($deploymentType -eq "tenant") {
+                $inputObject.Location = $env:LOCATION
+                $result = New-AzTenantDeployment @inputObject
+              }
+
+              if ($deploymentType -eq "managementGroup") {
+                $inputObject.Location = $env:LOCATION
+                $inputObject.ManagementGroupId = $env:ROOT_PARENT_MANAGEMENT_GROUP_ID
+                if ($inputObject.ManagementGroupId -eq "") {
+                  $inputObject.ManagementGroupId = (Get-AzContext).Tenant.TenantId
+                }
+                $result = New-AzManagementGroupDeployment @inputObject
+              }
+
+              if ($deploymentType -eq "subscription") {
+                $inputObject.Location = $env:LOCATION
+                Select-AzSubscription -SubscriptionId $env:SUBSCRIPTION_ID
+                $result = New-AzSubscriptionDeployment @inputObject
+              }
+
+              if ($deploymentType -eq "resourceGroup") {
+                $inputObject.ResourceGroupName = $env:RESOURCE_GROUP_NAME
+                Select-AzSubscription -SubscriptionId $env:SUBSCRIPTION_ID
+                $result = New-AzResourceGroupDeployment @inputObject
+              }
+            } catch {
+              Write-Host $_ -ForegroundColor Red
+              Write-Host "Deployment failed with exception, this is likely an intermittent failure so entering retry loop..." -ForegroundColor Red
+              $retryCount++
+              continue
+            }
+
+            if ($whatIf) {
+              $result | Format-List | Out-Host
+              exit 0
+            }
+
+            $resultId = ""
+
+            if($deploymentType -eq "resourceGroup") {
+              $resultId = "/subscriptions/$($env:SUBSCRIPTION_ID)/resourceGroups/$($env:RESOURCE_GROUP_NAME)/providers/Microsoft.Resources/deployments/$deploymentName"
+            } else {
+              $resultId = $result.Id
+            }
+
+            $resultIdEscaped = $resultId.Replace("/", "%2F")
+            $resultUrl = "https://portal.azure.com/#view/HubsExtension/DeploymentDetailsBlade/~/overview/id/$resultIdEscaped"
+
+            Write-Host "Deployment Name: $deploymentName"
+            Write-Host "Deployment ID: $resultId"
+            Write-Host "Deployment Url: $resultUrl"
+            $result | Format-List | Out-Host
+
+            if($result.ProvisioningState -ne "Succeeded") {
+              Write-Host "Deployment failed with unsuccessful provisioning state, this is likely an intermittent failure so entering retry loop..." -ForegroundColor Red
+              $retryCount++
+            } else {
+              $finalSuccess = $true
+              break
+            }
+          }
+
+          if($finalSuccess -eq $false) {
+            Write-Error "Deployment failed after $retryMax attempts..."
+            exit 1
+          }
+      env:
+        DISPLAY_NAME: $${{ inputs.displayName }}
+        TEMPLATE_FILE_PATH: $${{ inputs.templateFilePath }}
+        TEMPLATE_PARAMETERS_FILE_PATH: $${{ inputs.templateParametersFilePath }}
+        ROOT_PARENT_MANAGEMENT_GROUP_ID: $${{ inputs.managementGroupId }}
+        SUBSCRIPTION_ID: $${{ inputs.subscriptionId }}
+        RESOURCE_GROUP_NAME: $${{ inputs.resourceGroupName }}
+        LOCATION: $${{ inputs.location }}
+        DEPLOYMENT_TYPE: $${{ inputs.deploymentType }}
+        FIRST_RUN_WHAT_IF: $${{ inputs.firstRunWhatIf }}
+        FIRST_DEPLOYMENT: $${{ inputs.firstDeployment }}
+        WHAT_IF_ENABLED: $${{ inputs.whatIfEnabled }}

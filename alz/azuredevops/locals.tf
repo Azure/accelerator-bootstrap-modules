@@ -125,8 +125,3 @@ locals {
     }
   }
 }
-
-locals {
-  architecture_definition_name = var.architecture_definition_name
-  has_architecture_definition  = var.architecture_definition_name != null && var.architecture_definition_name != ""
-}

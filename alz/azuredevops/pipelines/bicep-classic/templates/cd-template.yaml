@@ -1,0 +1,131 @@
+---
+parameters:
+  - name: skipWhatIf
+    type: boolean
+    default: false
+  - name: destroy
+    type: boolean
+    default: false
+%{ for script_file in script_files ~}
+  - name: ${script_file.name}
+    type: boolean
+    default: true
+%{ endfor ~}
+
+stages:
+  - stage: whatif
+    displayName: What If
+    condition: eq($${{ parameters.skipWhatIf }}, false)
+    variables:
+      - group: ${variable_group_name}
+      - name: parametersFileName
+        value: parameters.json
+
+    jobs:
+      - deployment: whatif
+        displayName: What If with Bicep
+        pool:
+          ${agent_pool_configuration}
+        environment: ${environment_name_plan}
+        timeoutInMinutes: 0
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                  displayName: Checkout Bicep Module
+
+                - template: helpers/bicep-variables.yaml
+                  parameters:
+                    parametersFileName: $(parametersFileName)
+
+%{ for on_demand_folder in on_demand_folders ~}
+                - template: helpers/bicep-on-demand-folder.yaml
+                  parameters:
+                    repository: "${on_demand_folder_repository}"
+                    releaseArtifactName: "${on_demand_folder_artifact_name}"
+                    releaseVersion: "$(RELEASE_VERSION)"
+                    sourcePath: "${on_demand_folder.source}"
+                    targetPath: "${on_demand_folder.target}"
+
+%{ endfor ~}
+
+                - $${{ if eq(parameters.destroy, false) }}:
+                  - template: helpers/bicep-installer.yaml
+                    parameters:
+                      serviceConnection: '${service_connection_name_plan}'
+
+                  - template: helpers/bicep-templates.yaml
+                    parameters:
+                      serviceConnection: '${service_connection_name_plan}'
+%{ for script_file in script_files ~}
+                      ${script_file.name}: $${{ parameters.${script_file.name} }}
+%{ endfor ~}
+                - $${{ if eq(parameters.destroy, true) }}:
+                  - template: helpers/bicep-installer.yaml
+                    parameters:
+                      serviceConnection: '${service_connection_name_plan}'
+
+                  - template: helpers/bicep-destroy.yaml
+                    parameters:
+                      serviceConnection: '${service_connection_name_plan}'
+
+  - stage: deploy
+    displayName: Deploy
+    dependsOn: whatif
+    condition: not(or(failed(), canceled()))
+    variables:
+      - group: ${variable_group_name}
+      - name: parametersFileName
+        value: parameters.json
+
+    jobs:
+      - deployment: deploy
+        displayName: Deploy with Bicep
+        pool:
+          ${agent_pool_configuration}
+        environment: ${environment_name_apply}
+        timeoutInMinutes: 0
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                  displayName: Checkout Bicep Module
+
+                - template: helpers/bicep-variables.yaml
+                  parameters:
+                    parametersFileName: $(parametersFileName)
+
+%{ for on_demand_folder in on_demand_folders ~}
+                - template: helpers/bicep-on-demand-folder.yaml
+                  parameters:
+                    repository: "${on_demand_folder_repository}"
+                    releaseArtifactName: "${on_demand_folder_artifact_name}"
+                    releaseVersion: "$(RELEASE_VERSION)"
+                    sourcePath: "${on_demand_folder.source}"
+                    targetPath: "${on_demand_folder.target}"
+
+%{ endfor ~}
+
+                - $${{ if eq(parameters.destroy, false) }}:
+                  - template: helpers/bicep-installer.yaml
+                    parameters:
+                      serviceConnection: '${service_connection_name_apply}'
+
+                  - template: helpers/bicep-templates.yaml
+                    parameters:
+                      serviceConnection: '${service_connection_name_apply}'
+                      whatIfEnabled: false
+%{ for script_file in script_files ~}
+                      ${script_file.name}: $${{ parameters.${script_file.name} }}
+%{ endfor ~}
+                - $${{ if eq(parameters.destroy, true) }}:
+                  - template: helpers/bicep-installer.yaml
+                    parameters:
+                      serviceConnection: '${service_connection_name_apply}'
+
+                  - template: helpers/bicep-destroy.yaml
+                    parameters:
+                      serviceConnection: '${service_connection_name_apply}'
+                      whatIfEnabled: false

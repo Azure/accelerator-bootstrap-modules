@@ -16,6 +16,10 @@ on:
         type: boolean
         default: true
 %{ endfor ~}
+      destroy:
+        description: '[DANGER!] Destroy? [DANGER!]'
+        type: boolean
+        default: false
 
 jobs:
   plan_and_apply:
@@ -26,6 +30,7 @@ jobs:
       contents: read
     with:
       skip_what_if: $${{ github.event_name != 'workflow_dispatch' && false || inputs.skip_what_if == true }}
+      destroy: $${{ github.event_name != 'workflow_dispatch' && false || inputs.destroy == true }}
 %{ for script_file in script_files ~}
       ${script_file.name}: $${{ github.event_name != 'workflow_dispatch' && true || inputs.${script_file.group} == true }}
 %{ endfor ~}

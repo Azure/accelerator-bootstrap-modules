@@ -1,5 +1,5 @@
 variable "iac_type" {
-  description = "The type of infrastructure as code to use for the deployment. (e.g. 'terraform', 'bicep-avm', or 'bicep')"
+  description = "The type of infrastructure as code to use for the deployment. (e.g. 'terraform', 'bicep', or 'bicep-classic')"
   type        = string
 }
 
@@ -497,13 +497,7 @@ variable "role_assignments_bicep" {
 
 variable "bicep_config_file_path" {
   type        = string
-  description = "The path to the Bicep configuration file. If not provided, will auto-detect based on iac_type."
-  default     = null
-}
-
-variable "bicep_avm_config_file_path" {
-  type        = string
-  description = "The path to the Bicep AVM configuration file."
+  description = "The path to the Bicep configuration file."
   default     = ".config/ALZ-Powershell.config.json"
 }
 
@@ -518,34 +512,10 @@ variable "starter_locations" {
   default     = ["eastus", "westus"]
 }
 
-variable "architecture_definition_name" {
-  type        = string
-  description = "Name of the architecture definition use by Microsoft Cloud for Industry"
-  default     = null
-}
-
 variable "root_module_folder_relative_path" {
   type        = string
   description = "The root module folder path"
   default     = "."
-}
-
-variable "architecture_definition_template_path" {
-  type        = string
-  default     = ""
-  description = "The path to the architecture definition template file to use."
-}
-
-variable "architecture_definition_override_path" {
-  type        = string
-  default     = ""
-  description = "The path to the architecture definition file to use instead of the default."
-}
-
-variable "apply_alz_archetypes_via_architecture_definition_template" {
-  type        = bool
-  default     = true
-  description = "Toggles assignment of ALZ policies. True to deploy, otherwise false. (e.g true)"
 }
 
 variable "storage_account_blob_soft_delete_retention_days" {

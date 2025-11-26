@@ -2,9 +2,9 @@ locals {
   agent_pool_configuration  = var.use_self_hosted_agents ? "name: ${local.resource_names.version_control_system_agent_pool}" : "vmImage: ubuntu-latest"
   repository_name_templates = var.use_separate_repository_for_templates ? local.resource_names.version_control_system_repository_templates : local.resource_names.version_control_system_repository
 
-  is_bicep_iac_type      = var.iac_type == "bicep" || var.iac_type == "bicep-avm"
-  is_classic_bicep       = var.iac_type == "bicep"
-  is_bicep_avm           = var.iac_type == "bicep-avm"
+  is_bicep_iac_type      = contains(["bicep", "bicep-classic"], var.iac_type)
+  is_bicep_classic       = var.iac_type == "bicep-classic"
+  is_bicep               = var.iac_type == "bicep"
   iac_type_for_pipelines = var.iac_type # Use actual iac_type for pipeline directory
 
   pipeline_files_directory_path          = "${path.module}/pipelines/${local.iac_type_for_pipelines}/main"
@@ -16,16 +16,14 @@ locals {
   target_folder_name = ".pipelines"
 
   # Select config file based on IAC type
-  config_file_path = local.is_bicep_avm ? var.bicep_avm_config_file_path : var.bicep_config_file_path
-
-  starter_module_config = local.is_bicep_iac_type ? jsondecode(file("${var.module_folder_path}/${local.config_file_path}")).starter_modules[var.starter_module_name] : null
+  starter_module_config = local.is_bicep_iac_type ? jsondecode(file("${var.module_folder_path}/${var.bicep_config_file_path}")).starter_modules[var.starter_module_name] : null
   script_files_all      = local.is_bicep_iac_type ? local.starter_module_config.deployment_files : []
   destroy_script_path   = local.is_bicep_iac_type ? local.starter_module_config.destroy_script_path : ""
 
   # Get a list of on-demand folders
-  on_demand_folders = local.is_classic_bicep ? local.starter_module_config.on_demand_folders : []
+  on_demand_folders = local.is_bicep_classic ? local.starter_module_config.on_demand_folders : []
 
-  networking_type = local.is_bicep_avm ? var.network_type : (local.is_classic_bicep && fileexists("${var.module_folder_path}/${var.bicep_parameters_file_path}") ? jsondecode(file("${var.module_folder_path}/${var.bicep_parameters_file_path}")).NETWORK_TYPE : "")
+  networking_type = local.is_bicep ? var.network_type : (local.is_bicep_classic && fileexists("${var.module_folder_path}/${var.bicep_parameters_file_path}") ? jsondecode(file("${var.module_folder_path}/${var.bicep_parameters_file_path}")).NETWORK_TYPE : "")
   script_files = local.is_bicep_iac_type ? { for script_file in local.script_files_all : format("%03d", script_file.order) => {
     name                       = script_file.name
     displayName                = script_file.displayName
@@ -58,8 +56,6 @@ locals {
         repository_name_templates        = local.repository_name_templates
         ci_template_path                 = "${local.target_folder_name}/${local.ci_template_file_name}"
         cd_template_path                 = "${local.target_folder_name}/${local.cd_template_file_name}"
-        ci_bicep_avm_template_path       = "${local.target_folder_name}/${local.ci_template_file_name}"
-        cd_bicep_avm_template_path       = "${local.target_folder_name}/${local.cd_template_file_name}"
         script_files                     = local.script_files
         script_file_groups               = local.script_file_groups
         root_module_folder_relative_path = var.root_module_folder_relative_path
@@ -89,10 +85,10 @@ locals {
     }
   }
 
-  # Add parameters.json for bicep-avm
-  parameters_json_file = local.is_bicep_avm ? {
+  # Add parameters.json for bicep
+  parameters_json_file = local.is_bicep ? {
     "parameters.json" = {
-      content = templatefile("${path.module}/scripts-bicep-avm/parameters.json.tftpl", {
+      content = templatefile("${path.module}/scripts-bicep/parameters.json.tftpl", {
         management_group_id          = local.root_parent_management_group_id
         subscription_id_management   = try(var.subscription_ids["management"], var.subscription_id_management, "")
         subscription_id_identity     = try(var.subscription_ids["identity"], var.subscription_id_identity, "")
@@ -153,12 +149,6 @@ locals {
     }
   }
 
-  architecture_definition_file = local.has_architecture_definition ? {
-    "${var.root_module_folder_relative_path}/lib/architecture_definitions/${local.architecture_definition_name}.alz_architecture_definition.json" = {
-      content = module.architecture_definition[0].architecture_definition_json
-    }
-  } : {}
-
   # Build a map of module files with types that are supported
   module_files_supported = { for key, value in local.module_files_with_locations : key => value if value.content != "unsupported_file_type" && !endswith(key, "-cache.json") && !endswith(key, var.bicep_config_file_path) }
 
@@ -171,6 +161,6 @@ locals {
   module_files_filtered = { for key, value in local.module_files_supported : key => value if !contains(local.excluded_module_files, key) }
 
   # Create final maps of all files to be included in the repositories
-  repository_files          = merge(local.cicd_files, local.module_files_filtered, var.use_separate_repository_for_templates ? {} : local.cicd_template_files, local.architecture_definition_file, local.parameters_json_file)
+  repository_files          = merge(local.cicd_files, local.module_files_filtered, var.use_separate_repository_for_templates ? {} : local.cicd_template_files, local.parameters_json_file)
   template_repository_files = var.use_separate_repository_for_templates ? local.cicd_template_files : {}
 }
