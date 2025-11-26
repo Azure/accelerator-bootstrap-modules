@@ -7,6 +7,10 @@ resource "azuredevops_git_repository" "default_rename" {
   name           = "${var.project_name}-default"
   default_branch = "refs/heads/main"
 
+  initialization {
+    init_type = "Clean"
+  }
+
   lifecycle {
     ignore_changes = [initialization, default_branch]
   }
@@ -19,6 +23,7 @@ resource "azuredevops_git_repository" "alz" {
   project_id     = local.project_id
   name           = var.repository_name
   default_branch = local.default_branch
+
   initialization {
     init_type = "Clean"
   }
