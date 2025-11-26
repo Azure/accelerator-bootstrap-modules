@@ -511,3 +511,9 @@ variable "storage_account_blob_versioning_enabled" {
   type    = bool
   default = true
 }
+
+variable "tags" {
+  type        = map(string)
+  description = "(Optional) Tags to apply to resources."
+  default     = {}
+}
