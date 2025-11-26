@@ -2,10 +2,10 @@ locals {
   agent_pool_configuration  = var.use_self_hosted_agents ? "name: ${local.resource_names.version_control_system_agent_pool}" : "vmImage: ubuntu-latest"
   repository_name_templates = var.use_separate_repository_for_templates ? local.resource_names.version_control_system_repository_templates : local.resource_names.version_control_system_repository
 
-  is_bicep_iac_type = var.iac_type == "bicep" || var.iac_type == "bicep-avm"
-  is_classic_bicep  = var.iac_type == "bicep"
-  is_bicep_avm      = var.iac_type == "bicep-avm"
-  iac_type_for_pipelines = var.iac_type  # Use actual iac_type for pipeline directory
+  is_bicep_iac_type      = var.iac_type == "bicep" || var.iac_type == "bicep-avm"
+  is_classic_bicep       = var.iac_type == "bicep"
+  is_bicep_avm           = var.iac_type == "bicep-avm"
+  iac_type_for_pipelines = var.iac_type # Use actual iac_type for pipeline directory
 
   pipeline_files_directory_path          = "${path.module}/pipelines/${local.iac_type_for_pipelines}/main"
   pipeline_template_files_directory_path = "${path.module}/pipelines/${local.iac_type_for_pipelines}/templates"

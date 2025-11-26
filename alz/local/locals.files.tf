@@ -1,8 +1,8 @@
 locals {
   deploy_script_folder_path = local.is_bicep_avm ? "${path.module}/scripts-bicep-avm" : "${path.module}/scripts"
-  is_bicep_iac_type  = contains(["bicep", "bicep-avm"], var.iac_type)
-  is_classic_bicep   = var.iac_type == "bicep"
-  is_bicep_avm       = var.iac_type == "bicep-avm"
+  is_bicep_iac_type         = contains(["bicep", "bicep-avm"], var.iac_type)
+  is_classic_bicep          = var.iac_type == "bicep"
+  is_bicep_avm              = var.iac_type == "bicep-avm"
 }
 
 locals {

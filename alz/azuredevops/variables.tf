@@ -576,7 +576,7 @@ variable "custom_role_definitions_bicep" {
       description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing in platform subscriptions."
       permissions = {
         actions = [
-            "*"
+          "*"
         ]
         not_actions = []
       }

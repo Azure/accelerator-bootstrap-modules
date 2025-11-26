@@ -5,7 +5,7 @@ locals {
   is_bicep_iac_type         = contains(["bicep", "bicep-avm"], var.iac_type)
   is_classic_bicep          = var.iac_type == "bicep"
   is_bicep_avm              = var.iac_type == "bicep-avm"
-  iac_type_for_pipelines    = var.iac_type  # Use actual iac_type for pipeline directory
+  iac_type_for_pipelines    = var.iac_type # Use actual iac_type for pipeline directory
 }
 
 locals {
