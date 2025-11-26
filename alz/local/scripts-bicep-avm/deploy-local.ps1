@@ -32,10 +32,11 @@ if ($env:NETWORK_TYPE -eq "${script_file.networkType}") {
         -resourceGroupName ${script_file.resourceGroupNameVariable} `
         -location $env:LOCATION `
         -deploymentType "${script_file.deploymentType}"
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 } else {
     Write-Host "Skipping ${script_file.displayName} - Network Type is $env:NETWORK_TYPE, requires ${script_file.networkType}" -ForegroundColor Yellow
 }
-%{ else ~}
+% { else ~ }
 # Running deployment stack for ${script_file.displayName}
 & (Join-Path $scriptRoot 'bicep-deploy.ps1') `
     -name "${script_file.name}" `
@@ -47,6 +48,7 @@ if ($env:NETWORK_TYPE -eq "${script_file.networkType}") {
     -resourceGroupName ${script_file.resourceGroupNameVariable} `
     -location $env:LOCATION `
     -deploymentType "${script_file.deploymentType}"
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 %{ endif ~}
 
 %{ endfor ~}
