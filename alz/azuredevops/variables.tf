@@ -670,3 +670,9 @@ variable "storage_account_blob_versioning_enabled" {
   type    = bool
   default = true
 }
+
+variable "tags" {
+  type        = map(string)
+  default     = {}
+  description = "Tags to apply to Azure resources"
+}

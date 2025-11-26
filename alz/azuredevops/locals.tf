@@ -39,18 +39,21 @@ locals {
     (local.apply_key) = local.resource_names.user_assigned_managed_identity_apply
   }
 
-  federated_credentials = {
+  # Federated credentials for the identities module (includes audience)
+  federated_credentials_for_identities = {
     (local.plan_key) = {
       user_assigned_managed_identity_key = local.plan_key
       federated_credential_subject       = module.azure_devops.subjects[local.plan_key]
       federated_credential_issuer        = module.azure_devops.issuers[local.plan_key]
       federated_credential_name          = local.resource_names.user_assigned_managed_identity_federated_credentials_plan
+      audience                           = ["api://AzureADTokenExchange"]
     }
     (local.apply_key) = {
       user_assigned_managed_identity_key = local.apply_key
       federated_credential_subject       = module.azure_devops.subjects[local.apply_key]
       federated_credential_issuer        = module.azure_devops.issuers[local.apply_key]
       federated_credential_name          = local.resource_names.user_assigned_managed_identity_federated_credentials_apply
+      audience                           = ["api://AzureADTokenExchange"]
     }
   }
 

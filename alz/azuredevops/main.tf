@@ -26,9 +26,25 @@ module "files" {
   additional_folders_path           = var.additional_folders_path
 }
 
+# ========================================
+# IDENTITY MANAGEMENT
+# ========================================
+# Create all bootstrap identities (plan, apply) in a dedicated module
+# This must happen before azure_devops module to get federated credentials
+
+module "identities" {
+  source              = "../../modules/identities"
+  resource_group_name = local.resource_names.resource_group_identity
+  location            = var.bootstrap_location
+  managed_identities  = local.managed_identities
+  # Federated credentials created after azure_devops module provides subjects/issuers
+  federated_credentials = local.federated_credentials_for_identities
+  tags                  = var.tags
+}
+
 module "azure" {
   source                                                    = "../../modules/azure"
-  resource_group_identity_name                              = local.resource_names.resource_group_identity
+  resource_group_identity_name                              = module.identities.resource_group_name
   resource_group_agents_name                                = local.resource_names.resource_group_agents
   resource_group_network_name                               = local.resource_names.resource_group_network
   resource_group_state_name                                 = local.resource_names.resource_group_state
@@ -36,8 +52,9 @@ module "azure" {
   storage_account_name                                      = local.resource_names.storage_account
   storage_container_name                                    = local.resource_names.storage_container
   azure_location                                            = var.bootstrap_location
-  user_assigned_managed_identities                          = local.managed_identities
-  federated_credentials                                     = local.federated_credentials
+  managed_identity_ids                                      = module.identities.managed_identity_ids
+  managed_identity_client_ids                               = module.identities.managed_identity_client_ids
+  managed_identity_principal_ids                            = module.identities.managed_identity_principal_ids
   agent_container_instances                                 = local.agent_container_instances
   agent_container_instance_managed_identity_name            = local.resource_names.container_instance_managed_identity
   agent_organization_url                                    = module.azure_devops.organization_url
@@ -84,7 +101,7 @@ module "azure_devops" {
   create_project                               = var.azure_devops_create_project
   project_name                                 = var.azure_devops_project_name
   environments                                 = local.environments
-  managed_identity_client_ids                  = module.azure.user_assigned_managed_identity_client_ids
+  managed_identity_client_ids                  = module.identities.managed_identity_client_ids
   repository_name                              = local.resource_names.version_control_system_repository
   repository_files                             = local.repository_files
   template_repository_files                    = local.template_repository_files
@@ -103,4 +120,34 @@ module "azure_devops" {
   agent_pool_name                              = local.resource_names.version_control_system_agent_pool
   use_self_hosted_agents                       = var.use_self_hosted_agents
   create_branch_policies                       = var.create_branch_policies
+}
+
+# ========================================
+# STATE MIGRATION (Backwards Compatibility)
+# ========================================
+# These moved blocks ensure existing deployments migrate smoothly to the new identity module structure
+
+moved {
+  from = module.azure.azurerm_resource_group.identity
+  to   = module.identities.azurerm_resource_group.identity
+}
+
+moved {
+  from = module.azure.azurerm_user_assigned_identity.alz["plan"]
+  to   = module.identities.azurerm_user_assigned_identity.identities["plan"]
+}
+
+moved {
+  from = module.azure.azurerm_user_assigned_identity.alz["apply"]
+  to   = module.identities.azurerm_user_assigned_identity.identities["apply"]
+}
+
+moved {
+  from = module.azure.azurerm_federated_identity_credential.alz["plan"]
+  to   = module.identities.azurerm_federated_identity_credential.credentials["plan"]
+}
+
+moved {
+  from = module.azure.azurerm_federated_identity_credential.alz["apply"]
+  to   = module.identities.azurerm_federated_identity_credential.credentials["apply"]
 }
