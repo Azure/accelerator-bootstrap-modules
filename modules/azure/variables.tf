@@ -2,18 +2,20 @@ variable "azure_location" {
   type = string
 }
 
-variable "user_assigned_managed_identities" {
-  type = map(string)
+# Managed identities are now created externally and passed in
+variable "managed_identity_ids" {
+  type        = map(string)
+  description = "Map of managed identity resource IDs (key = logical name like 'plan', 'apply')"
 }
 
-variable "federated_credentials" {
-  type = map(object({
-    user_assigned_managed_identity_key = string
-    federated_credential_subject       = string
-    federated_credential_issuer        = string
-    federated_credential_name          = string
-  }))
-  default = {}
+variable "managed_identity_client_ids" {
+  type        = map(string)
+  description = "Map of managed identity client IDs for outputs"
+}
+
+variable "managed_identity_principal_ids" {
+  type        = map(string)
+  description = "Map of managed identity principal IDs for role assignments"
 }
 
 variable "resource_group_identity_name" {

@@ -1,5 +1,6 @@
 output "user_assigned_managed_identity_client_ids" {
-  value = { for key, value in var.user_assigned_managed_identities : key => azurerm_user_assigned_identity.alz[key].client_id }
+  value       = var.managed_identity_client_ids
+  description = "Map of managed identity client IDs (passed through from identities module)"
 }
 
 output "role_assignments" {
