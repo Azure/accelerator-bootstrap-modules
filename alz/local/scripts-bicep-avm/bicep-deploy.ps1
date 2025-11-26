@@ -82,21 +82,21 @@ while ($retryCount -lt $retryMax) {
                     $targetManagementGroupId = (Get-AzContext).Tenant.TenantId
                 }
 
-                $result = New-AzManagementGroupDeploymentStack @stackParameters -ManagementGroupId $targetManagementGroupId -Location $location
+                $result = New-AzManagementGroupDeploymentStack @stackParameters -ManagementGroupId $targetManagementGroupId -Location $location -Verbose
             }
             "subscription" {
                 if (-not [string]::IsNullOrWhiteSpace($subscriptionId)) {
                     Select-AzSubscription -SubscriptionId $subscriptionId | Out-Null
                 }
 
-                $result = New-AzSubscriptionDeploymentStack @stackParameters -Location $location
+                $result = New-AzSubscriptionDeploymentStack @stackParameters -Location $location -Verbose
             }
             "resourceGroup" {
                 if (-not [string]::IsNullOrWhiteSpace($subscriptionId)) {
                     Select-AzSubscription -SubscriptionId $subscriptionId | Out-Null
                 }
 
-                $result = New-AzResourceGroupDeploymentStack @stackParameters -ResourceGroupName $resourceGroupName -Location $location
+                $result = New-AzResourceGroupDeploymentStack @stackParameters -ResourceGroupName $resourceGroupName -Location $location -Verbose
             }
             "tenant" {
                 throw "Deployment stacks are not supported for tenant scoped deployments."
