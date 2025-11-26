@@ -20,6 +20,10 @@ on:
         description: 'The branch to use for the terraform module'
         default: 'main'
         type: string
+      alz_bicep_avm_branch:
+        description: 'The branch to use for the bicep-avm module'
+        default: 'main'
+        type: string
       alz_on_demand_folder_release_tag:
         description: 'The tag to use for the on demand folder release'
         default: 'latest'
@@ -38,10 +42,12 @@ env:
   TARGET_FOLDER: ./out
   LOCAL_TARGET_FOLDER: ./loc
   BICEP_STARTER_MODULE_REPOSITORY: Azure/ALZ-Bicep
+  BICEP_AVM_STARTER_MODULE_REPOSITORY: Azure/alz-bicep-accelerator
   TERRAFORM_STARTER_MODULE_REPOSITORY: Azure/alz-terraform-accelerator
   POWERSHELL_MODULE_REPOSITORY: Azure/ALZ-PowerShell-Module
   ALZ_POWERSHELL_BRANCH: ${{ inputs.powershell_branch != '' && inputs.powershell_branch || 'main' }}
   ALZ_BICEP_BRANCH: ${{ inputs.alz_bicep_branch != '' && inputs.alz_bicep_branch || 'main' }}
+  ALZ_BICEP_AVM_BRANCH: ${{ inputs.alz_bicep_avm_branch != '' && inputs.alz_bicep_avm_branch || 'main' }}
   ALZ_TERRAFORM_BRANCH: ${{ inputs.alz_terraform_branch != '' && inputs.alz_terraform_branch || 'main' }}
   ALZ_ON_DEMAND_FOLDER_RELEASE_TAG: ${{ inputs.alz_on_demand_folder_release_tag != '' && inputs.alz_on_demand_folder_release_tag || 'latest' }}
 
@@ -97,6 +103,14 @@ jobs:
         with:
           repository: ${{ env.BICEP_STARTER_MODULE_REPOSITORY }}
           ref: ${{ env.ALZ_BICEP_BRANCH }}
+          path: ${{ env.STARTER_MODULE_FOLDER }}
+
+      - name: Checkout Starter Modules for Bicep AVM
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        if: ${{ matrix.infrastructureAsCode == 'bicep-avm' }}
+        with:
+          repository: ${{ env.BICEP_AVM_STARTER_MODULE_REPOSITORY }}
+          ref: ${{ env.ALZ_BICEP_AVM_BRANCH }}
           path: ${{ env.STARTER_MODULE_FOLDER }}
 
       - name: Checkout Starter Modules for Terraform
@@ -390,6 +404,11 @@ jobs:
             $Inputs["networkType"] = "none"
           }
 
+          # Bicep AVM
+          if($infrastructureAsCode -eq "bicep-avm") {
+            $Inputs["network_type"] = "none"
+          }
+
           $json = ConvertTo-Json $Inputs -Depth 100
           $json | Out-File -FilePath inputs.json -Encoding utf8 -Force
 
@@ -419,7 +438,7 @@ jobs:
             try {
               Write-Host "Running the ALZ Module"
               $starterModuleOverrideFolderPath = "${{ env.STARTER_MODULE_FOLDER }}"
-              if($infrastructureAsCode -eq "terraform") {
+              if($infrastructureAsCode -eq "terraform" -or $infrastructureAsCode -eq "bicep-avm") {
                 $starterModuleOverrideFolderPath = "$starterModuleOverrideFolderPath/templates"
               }
               Deploy-Accelerator -output "${{ env.TARGET_FOLDER }}" -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "${{ env.BOOTSTRAP_MODULE_FOLDER }}" -starterModuleOverrideFolderPath $starterModuleOverrideFolderPath -starterRelease "${{ env.ALZ_ON_DEMAND_FOLDER_RELEASE_TAG }}" -autoApprove -skipAlzModuleVersionRequirementsCheck -ErrorAction Stop -Verbose
