@@ -21,6 +21,8 @@ module "container_app_jobs" {
   virtual_network_creation_enabled = false
   virtual_network_name             = azurerm_virtual_network.alz[0].name
   virtual_network_address_space    = var.virtual_network_address_space
+  virtual_network_id               = azurerm_virtual_network.alz[0].id
+  container_app_subnet_id          = azurerm_subnet.container_apps[0].id
 
   # Container registry (BYO mode)
   container_registry_creation_enabled = false
