@@ -59,16 +59,6 @@ variable "subscription_id_management" {
   }
 }
 
-variable "subscription_id_security" {
-  description = "DEPRECATED (use subscription_ids instead): The identifier of the Security Subscription"
-  type        = string
-  default     = null
-  validation {
-    condition     = var.subscription_id_security == null || can(regex("^[0-9a-fA-F-]{36}$", var.subscription_id_security))
-    error_message = "The bootstrap subscription ID must be a valid GUID"
-  }
-}
-
 variable "configuration_file_path" {
   description = "The name of the configuration file"
   type        = string
@@ -96,16 +86,6 @@ variable "on_demand_folder_artifact_name" {
 variable "bootstrap_location" {
   description = "Azure Deployment location for the bootstrap resources (e.g. storage account, identities, etc)"
   type        = string
-}
-
-variable "network_type" {
-  description = "The network type for the deployment (e.g. 'hubNetworking' or 'vwanConnectivity'). Leave empty for no networking."
-  type        = string
-  default     = ""
-  validation {
-    condition     = var.network_type == "" || var.network_type == "hubNetworking" || var.network_type == "vwanConnectivity"
-    error_message = "The network_type must be either 'hubNetworking', 'vwanConnectivity', or an empty string (for no networking). Note: values are case-sensitive."
-  }
 }
 
 variable "github_personal_access_token" {
@@ -421,11 +401,6 @@ variable "storage_account_replication_type" {
 variable "bicep_config_file_path" {
   type    = string
   default = ".config/ALZ-Powershell.config.json"
-}
-
-variable "starter_locations" {
-  type    = list(string)
-  default = ["eastus", "westus"]
 }
 
 variable "bicep_parameters_file_path" {

@@ -2,9 +2,6 @@ locals {
   agent_pool_configuration  = var.use_self_hosted_agents ? "name: ${local.resource_names.version_control_system_agent_pool}" : "vmImage: ubuntu-latest"
   repository_name_templates = var.use_separate_repository_for_templates ? local.resource_names.version_control_system_repository_templates : local.resource_names.version_control_system_repository
 
-  is_bicep_iac_type      = contains(["bicep", "bicep-classic"], var.iac_type)
-  is_bicep_classic       = var.iac_type == "bicep-classic"
-  is_bicep               = var.iac_type == "bicep"
   iac_type_for_pipelines = var.iac_type # Use actual iac_type for pipeline directory
 
   pipeline_files_directory_path          = "${path.module}/pipelines/${local.iac_type_for_pipelines}/main"
@@ -19,34 +16,6 @@ locals {
   starter_module_config = local.is_bicep_iac_type ? jsondecode(file("${var.module_folder_path}/${var.bicep_config_file_path}")).starter_modules[var.starter_module_name] : null
   script_files_all      = local.is_bicep_iac_type ? local.starter_module_config.deployment_files : []
   destroy_script_path   = local.is_bicep_iac_type ? local.starter_module_config.destroy_script_path : ""
-
-  # Get a list of on-demand folders
-  on_demand_folders = local.is_bicep_classic ? local.starter_module_config.on_demand_folders : []
-
-  networking_type = local.is_bicep ? var.network_type : (local.is_bicep_classic && fileexists("${var.module_folder_path}/${var.bicep_parameters_file_path}") ? jsondecode(file("${var.module_folder_path}/${var.bicep_parameters_file_path}")).NETWORK_TYPE : "")
-  script_files = local.is_bicep_iac_type ? { for script_file in local.script_files_all : format("%03d", script_file.order) => {
-    name                       = script_file.name
-    displayName                = script_file.displayName
-    templateFilePath           = script_file.templateFilePath
-    templateParametersFilePath = script_file.templateParametersFilePath
-    managementGroupIdVariable  = try("$(${script_file.managementGroupId})", "")
-    subscriptionIdVariable     = try("$(${script_file.subscriptionId})", "")
-    resourceGroupNameVariable  = try("$(${script_file.resourceGroupName})", "")
-    deploymentType             = script_file.deploymentType
-    firstRunWhatIf             = script_file.firstRunWhatIf
-    group                      = script_file.group
-    networkType                = try(script_file.networkType, "")
-  } if try(script_file.networkType, "") == "" || try(script_file.networkType, "") == local.networking_type } : {}
-
-  script_file_groups_all = local.is_bicep_iac_type ? local.starter_module_config.deployment_file_groups : []
-
-  used_script_file_groups = distinct([for script_file in local.script_files_all : script_file.group])
-
-  script_file_groups = { for script_file_group in local.script_file_groups_all : format("%03d", script_file_group.order) => {
-    name        = script_file_group.name
-    displayName = script_file_group.displayName
-    } if contains(local.used_script_file_groups, script_file_group.name)
-  }
 
   # CI / CD Top Level Files
   cicd_files = { for pipeline_file in local.pipeline_files : "${local.target_folder_name}/${pipeline_file}" =>
@@ -84,22 +53,9 @@ locals {
       })
     }
   }
+}
 
-  # Add parameters.json for bicep
-  parameters_json_file = local.is_bicep ? {
-    "parameters.json" = {
-      content = templatefile("${path.module}/scripts-bicep/parameters.json.tftpl", {
-        management_group_id          = local.root_parent_management_group_id
-        subscription_id_management   = try(var.subscription_ids["management"], var.subscription_id_management, "")
-        subscription_id_identity     = try(var.subscription_ids["identity"], var.subscription_id_identity, "")
-        subscription_id_connectivity = try(var.subscription_ids["connectivity"], var.subscription_id_connectivity, "")
-        subscription_id_security     = try(var.subscription_ids["security"], var.subscription_id_security, "")
-        location                     = var.bootstrap_location
-        network_type                 = local.networking_type
-      })
-    }
-  } : {}
-
+locals {
   # Build a map of module files and turn on the terraform backend block
   module_files = { for key, value in module.files.files : key =>
     {
@@ -107,50 +63,8 @@ locals {
     }
   }
 
-  # Build a map of module files with subscription ID replacements
-  module_files_with_subscriptions = { for key, value in local.module_files : key =>
-    {
-      content = replace(
-        replace(
-          replace(
-            replace(
-              value.content,
-              "{{your-management-subscription-id}}",
-              try(var.subscription_ids["management"], var.subscription_id_management, "")
-            ),
-            "{{your-connectivity-subscription-id}}",
-            try(var.subscription_ids["connectivity"], var.subscription_id_connectivity, "")
-          ),
-          "{{your-identity-subscription-id}}",
-          try(var.subscription_ids["identity"], var.subscription_id_identity, "")
-        ),
-        "{{your-security-subscription-id}}",
-        try(var.subscription_ids["security"], var.subscription_id_security, "")
-      )
-    }
-  }
-
-  # Replace location tokens in .bicepparam files
-  module_files_with_locations = { for key, value in local.module_files_with_subscriptions : key =>
-    {
-      content = endswith(key, ".bicepparam") ? replace(
-        replace(
-          replace(
-            value.content,
-            "{{location-0}}",
-            try(var.starter_locations[0], "eastus")
-          ),
-          "{{location-1}}",
-          try(var.starter_locations[1], "westus")
-        ),
-        "{{your-tenant-root-management-group-id}}",
-        var.root_parent_management_group_id
-      ) : value.content
-    }
-  }
-
   # Build a map of module files with types that are supported
-  module_files_supported = { for key, value in local.module_files_with_locations : key => value if value.content != "unsupported_file_type" && !endswith(key, "-cache.json") && !endswith(key, var.bicep_config_file_path) }
+  module_files_supported = { for key, value in local.module_files : key => value if value.content != "unsupported_file_type" && !endswith(key, "-cache.json") && !endswith(key, var.bicep_config_file_path) }
 
   # Build a list of files to exclude from the repository based on the on-demand folders
   excluded_module_files = distinct(flatten([for exclusion in local.on_demand_folders :
@@ -161,6 +75,6 @@ locals {
   module_files_filtered = { for key, value in local.module_files_supported : key => value if !contains(local.excluded_module_files, key) }
 
   # Create final maps of all files to be included in the repositories
-  repository_files          = merge(local.cicd_files, local.module_files_filtered, var.use_separate_repository_for_templates ? {} : local.cicd_template_files, local.parameters_json_file)
+  repository_files          = merge(local.cicd_files, local.module_files_filtered, var.use_separate_repository_for_templates ? {} : local.cicd_template_files, local.bicep_module_files_templated)
   template_repository_files = var.use_separate_repository_for_templates ? local.cicd_template_files : {}
 }

@@ -59,16 +59,6 @@ variable "subscription_id_management" {
   }
 }
 
-variable "subscription_id_security" {
-  description = "DEPRECATED (use subscription_ids instead): The identifier of the Security Subscription"
-  type        = string
-  default     = null
-  validation {
-    condition     = var.subscription_id_security == null || can(regex("^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$", var.subscription_id_security))
-    error_message = "The subscription ID must be a valid GUID"
-  }
-}
-
 variable "configuration_file_path" {
   description = "The name of the configuration file"
   type        = string
@@ -96,16 +86,6 @@ variable "on_demand_folder_artifact_name" {
 variable "bootstrap_location" {
   description = "Azure Deployment location for the bootstrap resources (e.g. storage account, identities, etc)"
   type        = string
-}
-
-variable "network_type" {
-  description = "The network type for the deployment. Valid values: 'hubNetworking', 'vwanConnectivity', or '' (empty string for no networking)"
-  type        = string
-  default     = ""
-  validation {
-    condition     = var.network_type == "" || var.network_type == "hubNetworking" || var.network_type == "vwanConnectivity"
-    error_message = "The network_type must be either 'hubNetworking', 'vwanConnectivity', or '' (empty string for no networking)"
-  }
 }
 
 variable "azure_devops_personal_access_token" {
@@ -693,10 +673,4 @@ variable "storage_account_container_soft_delete_enabled" {
 variable "storage_account_blob_versioning_enabled" {
   type    = bool
   default = true
-}
-
-variable "starter_locations" {
-  type        = list(string)
-  description = "The list of Azure locations for starter module deployments"
-  default     = ["eastus", "westus"]
 }
