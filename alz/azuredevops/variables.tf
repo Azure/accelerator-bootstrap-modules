@@ -164,6 +164,17 @@ variable "use_self_hosted_agents" {
   default     = true
 }
 
+variable "use_container_app_jobs" {
+  description = "Whether to use Container App Jobs for self-hosted agents (Azure DevOps only). Mutually exclusive with Container Instances."
+  type        = bool
+  default     = false
+  
+  validation {
+    condition     = !var.use_container_app_jobs || var.use_self_hosted_agents
+    error_message = "use_container_app_jobs requires use_self_hosted_agents to be true."
+  }
+}
+
 variable "azure_devops_agents_personal_access_token" {
   description = "Personal access token for Azure DevOps self-hosted agents (the token requires the 'Agent Pools - Read & Manage' scope and should have the maximum expiry). Only required if 'use_self_hosted_runners' is 'true'"
   type        = string
@@ -281,6 +292,7 @@ variable "resource_names" {
     resource_group_network                                     = optional(string, "rg-{{service_name}}-{{environment_name}}-network-{{azure_location}}-{{postfix_number}}")
     user_assigned_managed_identity_plan                        = optional(string, "id-{{service_name}}-{{environment_name}}-{{azure_location}}-plan-{{postfix_number}}")
     user_assigned_managed_identity_apply                       = optional(string, "id-{{service_name}}-{{environment_name}}-{{azure_location}}-apply-{{postfix_number}}")
+    user_assigned_managed_identity_agent                       = optional(string, "id-{{service_name}}-{{environment_name}}-{{azure_location}}-agent-{{postfix_number}}")
     user_assigned_managed_identity_federated_credentials_plan  = optional(string, "id-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-plan")
     user_assigned_managed_identity_federated_credentials_apply = optional(string, "id-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-apply")
     storage_account                                            = optional(string, "sto{{service_name_short}}{{environment_name_short}}{{azure_location_short}}{{postfix_number}}{{random_string}}")
@@ -306,6 +318,7 @@ variable "resource_names" {
     nat_gateway                                                = optional(string, "nat-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}")
     subnet_container_instances                                 = optional(string, "subnet-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-aci")
     subnet_private_endpoints                                   = optional(string, "subnet-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-pe")
+    subnet_container_apps                                      = optional(string, "subnet-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-ca")
     storage_account_private_endpoint                           = optional(string, "pe-{{service_name}}-{{environment_name}}-{{azure_location}}-sto-{{postfix_number}}")
     container_registry                                         = optional(string, "acr{{service_name}}{{environment_name}}{{azure_location_short}}{{postfix_number}}{{random_string}}")
     container_registry_private_endpoint                        = optional(string, "pe-{{service_name}}-{{environment_name}}-{{azure_location}}-acr-{{postfix_number}}")
@@ -355,6 +368,12 @@ variable "virtual_network_subnet_address_prefix_private_endpoints" {
   type        = string
   description = "Address prefix for the virtual network subnet"
   default     = "10.0.0.64/26"
+}
+
+variable "virtual_network_subnet_address_prefix_container_apps" {
+  type        = string
+  description = "Address prefix for the Container Apps subnet"
+  default     = "10.0.0.128/26"
 }
 
 variable "storage_account_replication_type" {

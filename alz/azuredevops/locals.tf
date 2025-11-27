@@ -12,7 +12,8 @@ locals {
 }
 
 locals {
-  use_private_networking          = var.use_self_hosted_agents && var.use_private_networking
+  # Auto-enable private networking when using Container App Jobs (Container App Environment requires VNET)
+  use_private_networking          = var.use_self_hosted_agents && (var.use_private_networking || var.use_container_app_jobs)
   allow_storage_access_from_my_ip = local.use_private_networking && var.allow_storage_access_from_my_ip
 }
 
@@ -34,10 +35,15 @@ locals {
 }
 
 locals {
-  managed_identities = {
-    (local.plan_key)  = local.resource_names.user_assigned_managed_identity_plan
-    (local.apply_key) = local.resource_names.user_assigned_managed_identity_apply
-  }
+  managed_identities = merge(
+    {
+      (local.plan_key)  = local.resource_names.user_assigned_managed_identity_plan
+      (local.apply_key) = local.resource_names.user_assigned_managed_identity_apply
+    },
+    var.use_self_hosted_agents && var.use_container_app_jobs ? {
+      agent = local.resource_names.user_assigned_managed_identity_agent
+    } : {}
+  )
 
   # Federated credentials for the identities module (includes audience)
   federated_credentials_for_identities = {

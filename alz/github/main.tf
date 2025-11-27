@@ -1,3 +1,8 @@
+# Validation: Container App Jobs are not supported for GitHub
+locals {
+  validation_container_app_jobs_not_supported = var.use_self_hosted_agents && var.use_container_app_jobs ? tobool("ERROR: Container App Jobs (use_container_app_jobs=true) are only supported with Azure DevOps, not GitHub. Please use Container Instances instead (use_container_app_jobs=false).") : true
+}
+
 module "resource_names" {
   source           = "../../modules/resource_names"
   azure_location   = var.bootstrap_location

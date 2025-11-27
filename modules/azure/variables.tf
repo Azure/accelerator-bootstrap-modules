@@ -197,6 +197,18 @@ variable "virtual_network_subnet_address_prefix_private_endpoints" {
   default     = "10.0.0.64/26"
 }
 
+variable "virtual_network_subnet_name_container_apps" {
+  type        = string
+  description = "Name of the virtual network subnet for Container Apps"
+  default     = ""
+}
+
+variable "virtual_network_subnet_address_prefix_container_apps" {
+  type        = string
+  description = "Address prefix for the Container Apps subnet"
+  default     = "10.0.0.128/26"
+}
+
 variable "storage_account_private_endpoint_name" {
   type    = string
   default = ""
@@ -251,6 +263,24 @@ variable "container_registry_image_tag" {
 variable "use_self_hosted_agents" {
   type    = bool
   default = true
+}
+
+variable "use_container_app_jobs" {
+  type        = bool
+  default     = false
+  description = "Whether to use Container App Jobs for self-hosted agents (Azure DevOps only). Mutually exclusive with Container Instances."
+}
+
+variable "agent_container_cpu" {
+  type        = number
+  default     = 2
+  description = "CPU allocation for agent containers"
+}
+
+variable "agent_container_memory" {
+  type        = string
+  default     = "4Gi"
+  description = "Memory allocation for agent containers"
 }
 
 variable "agent_container_instance_managed_identity_name" {
