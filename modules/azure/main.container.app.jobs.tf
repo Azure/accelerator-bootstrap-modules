@@ -25,14 +25,11 @@ module "container_app_jobs" {
   container_app_subnet_id          = azurerm_subnet.container_apps[0].id
 
   # Container registry (BYO mode)
-  container_registry_creation_enabled = false
-  custom_container_registry_login_server = azurerm_container_registry.alz[0].login_server
-  
-  # Container registry private endpoint subnet (BYO mode)
-  container_registry_private_endpoint_subnet_id = azurerm_subnet.private_endpoints[0].id
-  
-  # Container registry DNS zone (BYO mode - let module create)
-  container_registry_private_dns_zone_creation_enabled = true
+  container_registry_creation_enabled                  = false
+  custom_container_registry_login_server               = azurerm_container_registry.alz[0].login_server
+  container_registry_private_endpoint_subnet_id        = azurerm_subnet.private_endpoints[0].id
+  container_registry_dns_zone_id                       = azurerm_private_dns_zone.alz["container_registry"].id
+  container_registry_private_dns_zone_creation_enabled = false
 
   # User-assigned managed identity (BYO mode)
   user_assigned_managed_identity_creation_enabled = false
