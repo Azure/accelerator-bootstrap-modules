@@ -26,7 +26,13 @@ module "container_app_jobs" {
 
   # Container registry (BYO mode)
   container_registry_creation_enabled = false
-  container_registry_name             = azurerm_container_registry.alz[0].name
+  custom_container_registry_login_server = azurerm_container_registry.alz[0].login_server
+  
+  # Container registry private endpoint subnet (BYO mode)
+  container_registry_private_endpoint_subnet_id = azurerm_subnet.private_endpoints[0].id
+  
+  # Container registry DNS zone (BYO mode - let module create)
+  container_registry_private_dns_zone_creation_enabled = true
 
   # User-assigned managed identity (BYO mode)
   user_assigned_managed_identity_creation_enabled = false
@@ -36,7 +42,7 @@ module "container_app_jobs" {
 
   # Container App Job configuration
   container_app_container_cpu            = var.agent_container_cpu
-  container_app_container_memory         = "${var.agent_container_memory}Gi"
+  container_app_container_memory         = var.agent_container_memory
   container_app_max_execution_count      = 10
   container_app_min_execution_count      = 0
   container_app_polling_interval_seconds = 30
