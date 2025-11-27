@@ -24,7 +24,7 @@ stages:
       - deployment: whatif
         displayName: 'What If Deployment'
         pool:
-          ${agent_pool_configuration}
+          ${agent_pool_or_runner_configuration}
         environment: '${environment_name_plan}'
         strategy:
           runOnce:
@@ -136,7 +136,7 @@ stages:
       - deployment: deploy
         displayName: 'Deploy Bicep'
         pool:
-          ${agent_pool_configuration}
+          ${agent_pool_or_runner_configuration}
         environment: '${environment_name_apply}'
         strategy:
           runOnce:

@@ -11,7 +11,7 @@ stages:
       - job: validate
         displayName: Validate Bicep
         pool:
-          ${agent_pool_configuration}
+          ${agent_pool_or_runner_configuration}
         steps:
           - checkout: self
             displayName: Checkout Repo
@@ -59,7 +59,7 @@ stages:
       - deployment: whatif
         displayName: What If Deploy with Bicep
         pool:
-          ${agent_pool_configuration}
+          ${agent_pool_or_runner_configuration}
         environment: ${environment_name_plan}
         timeoutInMinutes: 0
         strategy:

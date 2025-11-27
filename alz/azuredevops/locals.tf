@@ -26,6 +26,11 @@ locals {
   cd_file_name          = "cd.yaml"
   ci_template_file_name = "ci-template.yaml"
   cd_template_file_name = "cd-template.yaml"
+  target_folder_name    = ".pipelines"
+
+  agent_pool_or_runner_configuration     = var.use_self_hosted_agents ? "name: ${local.resource_names.version_control_system_agent_pool}" : "vmImage: ubuntu-latest"
+  pipeline_files_directory_path          = "${path.module}/pipelines/${var.iac_type}/main"
+  pipeline_template_files_directory_path = "${path.module}/pipelines/${var.iac_type}/templates"
 }
 
 locals {

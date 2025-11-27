@@ -36,12 +36,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Get Bicep Variables
-        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-variables@main
+        uses: ${project_or_organization_name}/${repository_name_templates}/.github/actions/bicep-variables@main
         with:
           parameters_file_name: $${{ env.PARAMETERS_FILE_NAME }}
 
       - name: Install Bicep and Update Az Module
-        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-installer@main
+        uses: ${project_or_organization_name}/${repository_name_templates}/.github/actions/bicep-installer@main
 
       - name: OIDC Login to Tenant
         uses: azure/login@v2
@@ -52,14 +52,14 @@ jobs:
           enable-AzPSSession: true
 
       - name: Check for First Deployment
-        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-first-deployment-check@main
+        uses: ${project_or_organization_name}/${repository_name_templates}/.github/actions/bicep-first-deployment-check@main
         with:
           managementGroupId: $${{ env.MANAGEMENT_GROUP_ID }}
 
 %{ for script_file in script_files ~}
 %{ if try(script_file.networkType, "") != "" ~}
       - name: 'Plan: ${script_file.displayName} (Network Type: ${script_file.networkType})'
-        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-deploy@main
+        uses: ${project_or_organization_name}/${repository_name_templates}/.github/actions/bicep-deploy@main
         if: $${{ inputs.${script_file.name} && env.NETWORK_TYPE == '${script_file.networkType}' }}
         with:
           displayName: '${script_file.displayName}'
@@ -75,7 +75,7 @@ jobs:
           whatIfEnabled: 'true'
 %{ else ~}
       - name: 'Plan: ${script_file.displayName}'
-        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-deploy@main
+        uses: ${project_or_organization_name}/${repository_name_templates}/.github/actions/bicep-deploy@main
         if: $${{ inputs.${script_file.name} }}
         with:
           displayName: '${script_file.displayName}'
@@ -115,12 +115,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Get Bicep Variables
-        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-variables@main
+        uses: ${project_or_organization_name}/${repository_name_templates}/.github/actions/bicep-variables@main
         with:
           parameters_file_name: $${{ env.PARAMETERS_FILE_NAME }}
 
       - name: Install Bicep and Update Az Module
-        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-installer@main
+        uses: ${project_or_organization_name}/${repository_name_templates}/.github/actions/bicep-installer@main
 
       - name: OIDC Login to Tenant
         uses: azure/login@v2
@@ -133,7 +133,7 @@ jobs:
 %{ for script_file in script_files ~}
 %{ if try(script_file.networkType, "") != "" ~}
       - name: 'Deploy: ${script_file.displayName} (Network Type: ${script_file.networkType})'
-        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-deploy@main
+        uses: ${project_or_organization_name}/${repository_name_templates}/.github/actions/bicep-deploy@main
         if: $${{ inputs.${script_file.name} && env.NETWORK_TYPE == '${script_file.networkType}' }}
         with:
           displayName: '${script_file.displayName}'
@@ -147,7 +147,7 @@ jobs:
           networkType: '${script_file.networkType}'
 %{ else ~}
       - name: 'Deploy: ${script_file.displayName}'
-        uses: ${organization_name}/${repository_name_templates}/.github/actions/bicep-deploy@main
+        uses: ${project_or_organization_name}/${repository_name_templates}/.github/actions/bicep-deploy@main
         if: $${{ inputs.${script_file.name} }}
         with:
           displayName: '${script_file.displayName}'

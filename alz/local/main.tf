@@ -42,8 +42,28 @@ module "azure" {
   storage_account_container_soft_delete_retention_days = var.storage_account_container_soft_delete_retention_days
 }
 
+module "file_manipulation" {
+  source                           = "../../modules/file_manipulation"
+  vcs_type                         = "local"
+  files                            = module.files.files
+  resource_names                   = local.resource_names
+  iac_type                         = var.iac_type
+  module_folder_path               = local.starter_module_folder_path
+  bicep_config_file_path           = var.bicep_config_file_path
+  starter_module_name              = var.starter_module_name
+  root_module_folder_relative_path = var.root_module_folder_relative_path
+  on_demand_folder_repository      = var.on_demand_folder_repository
+  on_demand_folder_artifact_name   = var.on_demand_folder_artifact_name
+  pipeline_target_folder_name      = local.target_folder_name
+  bicep_parameters_file_path       = var.bicep_parameters_file_path
+  subscription_ids                 = var.subscription_ids
+  root_parent_management_group_id  = var.root_parent_management_group_id
+  pipeline_files_directory_path    = local.script_target_folder_name
+}
+
+
 resource "local_file" "alz" {
-  for_each = local.final_module_files
+  for_each = module.file_manipulation.repository_files
   content  = each.value.content
   filename = "${local.target_directory}/${each.key}"
 }

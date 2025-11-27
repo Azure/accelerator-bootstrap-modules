@@ -76,8 +76,8 @@ module "azure_devops" {
   environments                                 = local.environments
   managed_identity_client_ids                  = module.azure.user_assigned_managed_identity_client_ids
   repository_name                              = local.resource_names.version_control_system_repository
-  repository_files                             = local.repository_files
-  template_repository_files                    = local.template_repository_files
+  repository_files                             = module.file_manipulation.repository_files
+  template_repository_files                    = module.file_manipulation.template_repository_files
   use_template_repository                      = var.use_separate_repository_for_templates
   repository_name_templates                    = local.resource_names.version_control_system_repository_templates
   variable_group_name                          = local.resource_names.version_control_system_variable_group
@@ -93,4 +93,30 @@ module "azure_devops" {
   agent_pool_name                              = local.resource_names.version_control_system_agent_pool
   use_self_hosted_agents                       = var.use_self_hosted_agents
   create_branch_policies                       = var.create_branch_policies
+}
+
+module "file_manipulation" {
+  source                                 = "../../modules/file_manipulation"
+  vcs_type                               = "azuredevops"
+  files                                  = module.files.files
+  use_self_hosted_agents_runners         = var.use_self_hosted_agents
+  resource_names                         = local.resource_names
+  use_separate_repository_for_templates  = var.use_separate_repository_for_templates
+  iac_type                               = var.iac_type
+  module_folder_path                     = local.starter_module_folder_path
+  bicep_config_file_path                 = var.bicep_config_file_path
+  starter_module_name                    = var.starter_module_name
+  project_or_organization_name           = var.azure_devops_project_name
+  root_module_folder_relative_path       = var.root_module_folder_relative_path
+  on_demand_folder_repository            = var.on_demand_folder_repository
+  on_demand_folder_artifact_name         = var.on_demand_folder_artifact_name
+  ci_template_file_name                  = local.ci_template_file_name
+  cd_template_file_name                  = local.cd_template_file_name
+  pipeline_target_folder_name            = local.target_folder_name
+  bicep_parameters_file_path             = var.bicep_parameters_file_path
+  subscription_ids                       = var.subscription_ids
+  root_parent_management_group_id        = var.root_parent_management_group_id
+  agent_pool_or_runner_configuration     = local.agent_pool_or_runner_configuration
+  pipeline_files_directory_path          = local.pipeline_files_directory_path
+  pipeline_template_files_directory_path = local.pipeline_template_files_directory_path
 }

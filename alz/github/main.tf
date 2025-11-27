@@ -95,3 +95,29 @@ module "github" {
   use_self_hosted_runners                      = var.use_self_hosted_runners
   create_branch_policies                       = var.create_branch_policies
 }
+
+module "file_manipulation" {
+  source                                 = "../../modules/file_manipulation"
+  vcs_type                               = "github"
+  files                                  = module.files.files
+  use_self_hosted_agents_runners         = var.use_self_hosted_runners
+  resource_names                         = local.resource_names
+  use_separate_repository_for_templates  = var.use_separate_repository_for_templates
+  iac_type                               = var.iac_type
+  module_folder_path                     = local.starter_module_folder_path
+  bicep_config_file_path                 = var.bicep_config_file_path
+  starter_module_name                    = var.starter_module_name
+  project_or_organization_name           = var.github_organization_name
+  root_module_folder_relative_path       = var.root_module_folder_relative_path
+  on_demand_folder_repository            = var.on_demand_folder_repository
+  on_demand_folder_artifact_name         = var.on_demand_folder_artifact_name
+  ci_template_file_name                  = local.ci_template_file_name
+  cd_template_file_name                  = local.cd_template_file_name
+  pipeline_target_folder_name            = local.target_folder_name
+  bicep_parameters_file_path             = var.bicep_parameters_file_path
+  subscription_ids                       = var.subscription_ids
+  root_parent_management_group_id        = var.root_parent_management_group_id
+  agent_pool_or_runner_configuration     = local.agent_pool_or_runner_configuration
+  pipeline_files_directory_path          = local.pipeline_files_directory_path
+  pipeline_template_files_directory_path = local.pipeline_template_files_directory_path
+}

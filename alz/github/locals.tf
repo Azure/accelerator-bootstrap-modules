@@ -31,8 +31,13 @@ locals {
 }
 
 locals {
-  ci_template_file_name = "workflows/ci-template.yaml"
-  cd_template_file_name = "workflows/cd-template.yaml"
+  ci_template_file_name                  = "workflows/ci-template.yaml"
+  cd_template_file_name                  = "workflows/cd-template.yaml"
+  target_folder_name                     = ".github"
+  self_hosted_runner_name                = local.use_runner_group ? "group: ${local.resource_names.version_control_system_runner_group}" : "self-hosted"
+  agent_pool_or_runner_configuration     = var.use_self_hosted_runners ? local.self_hosted_runner_name : "ubuntu-latest"
+  pipeline_files_directory_path          = "${path.module}/actions/${var.iac_type}/main"
+  pipeline_template_files_directory_path = "${path.module}/actions/${var.iac_type}/templates"
 }
 
 locals {

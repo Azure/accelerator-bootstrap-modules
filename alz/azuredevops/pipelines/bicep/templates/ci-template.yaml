@@ -11,7 +11,7 @@ stages:
       - job: validate
         displayName: 'Bicep Build & Lint'
         pool:
-          ${agent_pool_configuration}
+          ${agent_pool_or_runner_configuration}
         steps:
           - checkout: self
             displayName: 'Checkout Bicep Module'
@@ -52,7 +52,7 @@ stages:
       - deployment: whatif
         displayName: 'What If Deployment'
         pool:
-          ${agent_pool_configuration}
+          ${agent_pool_or_runner_configuration}
         environment: '${environment_name_plan}'
         strategy:
           runOnce:

@@ -25,7 +25,7 @@ stages:
       - deployment: whatif
         displayName: What If with Bicep
         pool:
-          ${agent_pool_configuration}
+          ${agent_pool_or_runner_configuration}
         environment: ${environment_name_plan}
         timeoutInMinutes: 0
         strategy:
@@ -83,7 +83,7 @@ stages:
       - deployment: deploy
         displayName: Deploy with Bicep
         pool:
-          ${agent_pool_configuration}
+          ${agent_pool_or_runner_configuration}
         environment: ${environment_name_apply}
         timeoutInMinutes: 0
         strategy:
