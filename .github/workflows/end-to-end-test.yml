@@ -438,10 +438,19 @@ jobs:
             try {
               Write-Host "Running the ALZ Module"
               $starterModuleOverrideFolderPath = "${{ env.STARTER_MODULE_FOLDER }}"
-              if($infrastructureAsCode -eq "terraform" -or $infrastructureAsCode -eq "bicep") {
+              if($infrastructureAsCode -eq "terraform" -or $infrastructureAsCode -eq "bicep-classic") {
                 $starterModuleOverrideFolderPath = "$starterModuleOverrideFolderPath/templates"
               }
-              Deploy-Accelerator -output "${{ env.TARGET_FOLDER }}" -inputs "./inputs.json" -bootstrapModuleOverrideFolderPath "${{ env.BOOTSTRAP_MODULE_FOLDER }}" -starterModuleOverrideFolderPath $starterModuleOverrideFolderPath -starterRelease "${{ env.ALZ_ON_DEMAND_FOLDER_RELEASE_TAG }}" -autoApprove -skipAlzModuleVersionRequirementsCheck -ErrorAction Stop -Verbose
+              Deploy-Accelerator `
+                -output "${{ env.TARGET_FOLDER }}" `
+                -inputs "./inputs.json" `
+                -bootstrapModuleOverrideFolderPath "${{ env.BOOTSTRAP_MODULE_FOLDER }}" `
+                -starterModuleOverrideFolderPath $starterModuleOverrideFolderPath `
+                -starterRelease "${{ env.ALZ_ON_DEMAND_FOLDER_RELEASE_TAG }}" `
+                -autoApprove `
+                -skipAlzModuleVersionRequirementsCheck `
+                -ErrorAction Stop `
+                -Verbose
 
               if ($LastExitCode -eq 0) {
                 $success = $true
