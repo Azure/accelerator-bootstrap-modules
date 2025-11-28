@@ -3,7 +3,7 @@ locals {
   is_bicep_classic  = var.iac_type == "bicep-classic"
   is_bicep          = var.iac_type == "bicep"
 
-  bicep_parameters = local.is_bicep_iac_type && fileexists("${var.module_folder_path}/${var.bicep_parameters_file_path}") ? jsondecode(file("${var.module_folder_path}/${var.bicep_parameters_file_path}")) : {}
+  bicep_parameters = try(jsondecode(file("${var.module_folder_path}/${var.bicep_parameters_file_path}")), {})
   networking_type  = local.is_bicep_iac_type ? local.bicep_parameters.NETWORK_TYPE : ""
 }
 
