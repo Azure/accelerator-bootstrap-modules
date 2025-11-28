@@ -28,6 +28,10 @@ on:
         description: 'The tag to use for the on demand folder release'
         default: 'latest'
         type: string
+      skip_destroy:
+        description: 'Skip destroy'
+        default: 'no'
+        type: string
   schedule:
     - cron: '0 9 * * 1'
 
@@ -549,7 +553,7 @@ jobs:
         if: always()
 
       - name: Run Terraform Destroy to Clean Up
-        if: always()
+        if: ${{ always() && ((inputs.skip_destroy != '' && inputs.skip_destroy || 'no') == 'no') }}
         run: |
 
           # Get Inputs
