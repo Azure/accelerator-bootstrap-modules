@@ -438,7 +438,7 @@ jobs:
             try {
               Write-Host "Running the ALZ Module"
               $starterModuleOverrideFolderPath = "${{ env.STARTER_MODULE_FOLDER }}"
-              if($infrastructureAsCode -eq "terraform" -or $infrastructureAsCode -eq "bicep-classic") {
+              if($infrastructureAsCode -eq "terraform") {
                 $starterModuleOverrideFolderPath = "$starterModuleOverrideFolderPath/templates"
               }
               Deploy-Accelerator `
