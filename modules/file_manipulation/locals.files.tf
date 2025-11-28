@@ -1,10 +1,11 @@
 locals {
-  is_github                 = var.vcs_type == "github"
-  is_azuredevops            = var.vcs_type == "azuredevops"
-  repository_name_templates = var.use_separate_repository_for_templates ? var.resource_names.version_control_system_repository_templates : var.resource_names.version_control_system_repository
+  is_github                             = var.vcs_type == "github"
+  is_azuredevops                        = var.vcs_type == "azuredevops"
+  use_separate_repository_for_templates = coalesce(var.use_separate_repository_for_templates, false)
+  repository_name_templates             = local.use_separate_repository_for_templates ? var.resource_names.version_control_system_repository_templates : try(var.resource_names.version_control_system_repository, "")
 
-  pipeline_files          = fileset(var.pipeline_files_directory_path, "**/*.yaml")
-  pipeline_template_files = fileset(var.pipeline_template_files_directory_path, "**/*.yaml")
+  pipeline_files          = fileset(var.pipeline_files_directory_path, "**/*.*")
+  pipeline_template_files = var.pipeline_template_files_directory_path == null ? [] : fileset(var.pipeline_template_files_directory_path, "**/*.*")
 
   # Select config file based on IAC type
   starter_module_config = local.is_bicep_iac_type ? jsondecode(file("${var.module_folder_path}/${var.bicep_config_file_path}")).starter_modules[var.starter_module_name] : null
@@ -17,8 +18,8 @@ locals {
       content = templatefile("${var.pipeline_files_directory_path}/${pipeline_file}", {
         project_or_organization_name     = var.project_or_organization_name
         repository_name_templates        = local.repository_name_templates
-        ci_template_path                 = "${var.pipeline_target_folder_name}/${var.ci_template_file_name}"
-        cd_template_path                 = "${var.pipeline_target_folder_name}/${var.cd_template_file_name}"
+        ci_template_path                 = "${var.pipeline_target_folder_name}/${coalesce(var.ci_template_file_name, "empty")}"
+        cd_template_path                 = "${var.pipeline_target_folder_name}/${coalesce(var.cd_template_file_name, "empty")}"
         script_files                     = local.script_files
         script_file_groups               = local.script_file_groups
         root_module_folder_relative_path = var.root_module_folder_relative_path
@@ -70,6 +71,6 @@ locals {
   module_files_filtered = { for key, value in local.module_files_supported : key => value if !contains(local.excluded_module_files, key) }
 
   # Create final maps of all files to be included in the repositories
-  repository_files          = merge(local.cicd_files, local.module_files_filtered, var.use_separate_repository_for_templates ? {} : local.cicd_template_files, local.bicep_module_files_templated)
-  template_repository_files = var.use_separate_repository_for_templates ? local.cicd_template_files : {}
+  repository_files          = merge(local.cicd_files, local.module_files_filtered, local.use_separate_repository_for_templates ? {} : local.cicd_template_files, local.bicep_module_files_templated)
+  template_repository_files = local.use_separate_repository_for_templates ? local.cicd_template_files : {}
 }
