@@ -41,7 +41,7 @@ provider "github" {
   token             = var.github_personal_access_token
   owner             = var.github_organization_name
   base_url          = local.github_api_base_url
-  parallel_requests = true
+  parallel_requests = false
   retryable_errors  = [500, 502, 503, 504, 429, 409]
   max_retries       = 50
 }
