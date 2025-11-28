@@ -37,7 +37,7 @@ function Invoke-Workflow {
             } | ConvertTo-Json -Depth 100
         }
 
-        if($iac -eq "bicep") {
+        if($iac -like "bicep*") {
             $workflowDispatchBody = @{
                 ref = "main"
                 inputs = @{
@@ -68,7 +68,7 @@ function Wait-ForWorkflowRunToComplete {
     $workflowRunConclusion = ""
     while($workflowRunStatus -ne "completed") {
         Start-Sleep -Seconds 10
-        
+
         $workflowRun = Invoke-RestMethod -Method GET -Uri $workflowRunUrl -Headers $headers -StatusCodeVariable statusCode
         if ($statusCode -lt 300) {
             $workflowRunStatus = $workflowRun.workflow_runs[0].status

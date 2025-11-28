@@ -49,7 +49,7 @@ function Invoke-Pipeline {
             } | ConvertTo-Json -Depth 100
         }
 
-        if($iac -eq "bicep") {
+        if($iac -like "bicep*") {
             $pipelineDispatchBody = @{
                 "resources" = @{
                     "repositories" = @{
