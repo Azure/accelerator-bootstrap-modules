@@ -37,7 +37,13 @@ function Invoke-Workflow {
             } | ConvertTo-Json -Depth 100
         }
 
-        if($iac -like "bicep*") {
+        if($iac -eq "bicep") {
+            $workflowDispatchBody = @{
+                ref = "main"
+            } | ConvertTo-Json -Depth 100
+        }
+
+        if($iac -eq "bicep-classic") {
             $workflowDispatchBody = @{
                 ref = "main"
                 inputs = @{
