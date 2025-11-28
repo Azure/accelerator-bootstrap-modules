@@ -38,7 +38,7 @@ locals {
 locals {
   target_directory          = var.target_directory == "" ? ("${path.module}/${var.default_target_directory}") : var.target_directory
   script_target_folder_name = "scripts"
-  script_source_folder_name = var.iac_type == "bicep" ? "scripts-bicep" : (var.iac_type == "bicep-classic" ? "scripts" : "")
+  script_source_folder_name = var.iac_type == "bicep" ? "scripts-bicep" : (var.iac_type == "bicep-classic" ? "scripts" : null)
   script_source_folder_path = "${path.module}/${local.script_source_folder_name}"
 }
 

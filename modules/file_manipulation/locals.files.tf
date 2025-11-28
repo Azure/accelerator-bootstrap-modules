@@ -4,7 +4,7 @@ locals {
   use_separate_repository_for_templates = coalesce(var.use_separate_repository_for_templates, false)
   repository_name_templates             = local.use_separate_repository_for_templates ? var.resource_names.version_control_system_repository_templates : try(var.resource_names.version_control_system_repository, "")
 
-  pipeline_files          = fileset(var.pipeline_files_directory_path, "**/*.*")
+  pipeline_files          = var.pipeline_files_directory_path == null ? [] : fileset(var.pipeline_files_directory_path, "**/*.*")
   pipeline_template_files = var.pipeline_template_files_directory_path == null ? [] : fileset(var.pipeline_template_files_directory_path, "**/*.*")
 
   # Select config file based on IAC type
