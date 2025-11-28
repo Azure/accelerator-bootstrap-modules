@@ -11,7 +11,7 @@ terraform {
     }
     github = {
       source  = "integrations/github"
-      version = "~> 6.8.1"
+      version = "~> 6.8"
     }
     random = {
       source  = "hashicorp/random"
@@ -38,7 +38,10 @@ provider "azurerm" {
 }
 
 provider "github" {
-  token    = var.github_personal_access_token
-  owner    = var.github_organization_name
-  base_url = local.github_api_base_url
+  token             = var.github_personal_access_token
+  owner             = var.github_organization_name
+  base_url          = local.github_api_base_url
+  parallel_requests = true
+  retryable_errors  = [500, 502, 503, 504, 429, 409]
+  max_retries       = 50
 }
