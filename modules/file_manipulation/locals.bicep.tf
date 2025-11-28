@@ -28,6 +28,7 @@ locals {
     primary_location                = try(local.bicep_parameters.LOCATION_PRIMARY, "eastus")
     secondary_location              = try(local.bicep_parameters.LOCATION_SECONDARY, "westus")
     root_parent_management_group_id = var.root_parent_management_group_id
+    unique_postfix                  = local.resource_names.unique_postfix
   }
 }
 
