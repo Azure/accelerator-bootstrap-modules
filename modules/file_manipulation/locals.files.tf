@@ -27,8 +27,8 @@ locals {
     for pipeline_file in value.files : "${var.pipeline_target_folder_name}/${pipeline_file}" => {
       content = templatefile("${value.source_directory_path}/${pipeline_file}", {
         agent_pool_or_runner_configuration = var.agent_pool_or_runner_configuration
-        environment_name_plan              = var.resource_names.version_control_system_environment_plan
-        environment_name_apply             = var.resource_names.version_control_system_environment_apply
+        environment_name_plan              = try(var.resource_names.version_control_system_environment_plan, "")
+        environment_name_apply             = try(var.resource_names.version_control_system_environment_apply, "")
         variable_group_name                = local.is_azuredevops ? var.resource_names.version_control_system_variable_group : ""
         project_or_organization_name       = var.project_or_organization_name
         repository_name_templates          = local.repository_name_templates
