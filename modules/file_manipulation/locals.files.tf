@@ -22,7 +22,6 @@ locals {
         cd_template_path                 = "${var.pipeline_target_folder_name}/${coalesce(var.cd_template_file_name, "empty")}"
         script_files                     = local.script_files
         script_file_groups               = local.script_file_groups
-        
         root_module_folder_relative_path = var.root_module_folder_relative_path
       })
     }
