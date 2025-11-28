@@ -12,25 +12,20 @@ locals {
   script_files_all      = local.is_bicep_iac_type ? local.starter_module_config.deployment_files : []
   destroy_script_path   = local.is_bicep_iac_type ? local.starter_module_config.destroy_script_path : ""
 
-  # CI / CD Top Level Files
-  cicd_files = { for pipeline_file in local.pipeline_files : "${var.pipeline_target_folder_name}/${pipeline_file}" =>
-    {
-      content = templatefile("${var.pipeline_files_directory_path}/${pipeline_file}", {
-        project_or_organization_name     = var.project_or_organization_name
-        repository_name_templates        = local.repository_name_templates
-        ci_template_path                 = "${var.pipeline_target_folder_name}/${coalesce(var.ci_template_file_name, "empty")}"
-        cd_template_path                 = "${var.pipeline_target_folder_name}/${coalesce(var.cd_template_file_name, "empty")}"
-        script_files                     = local.script_files
-        script_file_groups               = local.script_file_groups
-        root_module_folder_relative_path = var.root_module_folder_relative_path
-      })
+  templated_files = {
+    main_files = {
+      source_directory_path = var.pipeline_files_directory_path
+      files = local.pipeline_files
+    }
+    template_files = {
+      source_directory_path = var.pipeline_template_files_directory_path
+      files = local.pipeline_template_files
     }
   }
 
-  # CI / CD Template Files
-  cicd_template_files = { for pipeline_template_file in local.pipeline_template_files : "${var.pipeline_target_folder_name}/${pipeline_template_file}" =>
-    {
-      content = templatefile("${var.pipeline_template_files_directory_path}/${pipeline_template_file}", {
+  templated_files_final = { for key, value in local.templated_files : key => {
+    for pipeline_file in value.files : "${var.pipeline_target_folder_name}/${pipeline_file}" => {
+      content = templatefile("${value.source_directory_path}/${pipeline_file}", {
         agent_pool_or_runner_configuration = var.agent_pool_or_runner_configuration
         environment_name_plan              = var.resource_names.version_control_system_environment_plan
         environment_name_apply             = var.resource_names.version_control_system_environment_apply
@@ -46,7 +41,11 @@ locals {
         on_demand_folder_repository        = var.on_demand_folder_repository
         on_demand_folder_artifact_name     = var.on_demand_folder_artifact_name
         concurrency_value                  = var.concurrency_value
-      })
+        ci_template_path                 = "${var.pipeline_target_folder_name}/${coalesce(var.ci_template_file_name, "empty")}"
+        cd_template_path                 = "${var.pipeline_target_folder_name}/${coalesce(var.cd_template_file_name, "empty")}"
+        script_file_groups               = local.script_file_groups
+        root_module_folder_relative_path = var.root_module_folder_relative_path
+      })}
     }
   }
 }
@@ -71,6 +70,6 @@ locals {
   module_files_filtered = { for key, value in local.module_files_supported : key => value if !contains(local.excluded_module_files, key) }
 
   # Create final maps of all files to be included in the repositories
-  repository_files          = merge(local.cicd_files, local.module_files_filtered, local.use_separate_repository_for_templates ? {} : local.cicd_template_files, local.bicep_module_files_templated)
-  template_repository_files = local.use_separate_repository_for_templates ? local.cicd_template_files : {}
+  repository_files          = merge(local.templated_files_final.main_files, local.module_files_filtered, local.use_separate_repository_for_templates ? {} : local.templated_files_final.template_files, local.bicep_module_files_templated)
+  template_repository_files = local.use_separate_repository_for_templates ? local.templated_files_final.template_files : {}
 }
