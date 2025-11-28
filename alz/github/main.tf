@@ -66,6 +66,7 @@ module "azure" {
   storage_account_blob_versioning_enabled                   = var.storage_account_blob_versioning_enabled
   storage_account_container_soft_delete_enabled             = var.storage_account_container_soft_delete_enabled
   storage_account_container_soft_delete_retention_days      = var.storage_account_container_soft_delete_retention_days
+  bootstrap_role_assignment_enabled                         = var.iac_type == "bicep"
 }
 
 module "github" {
@@ -76,8 +77,8 @@ module "github" {
   repository_name                              = local.resource_names.version_control_system_repository
   use_template_repository                      = var.use_separate_repository_for_templates
   repository_name_templates                    = local.resource_names.version_control_system_repository_templates
-  repository_files                             = local.repository_files
-  template_repository_files                    = local.template_repository_files
+  repository_files                             = module.file_manipulation.repository_files
+  template_repository_files                    = module.file_manipulation.template_repository_files
   workflows                                    = local.workflows
   managed_identity_client_ids                  = module.azure.user_assigned_managed_identity_client_ids
   azure_tenant_id                              = data.azurerm_client_config.current.tenant_id
@@ -120,4 +121,5 @@ module "file_manipulation" {
   agent_pool_or_runner_configuration     = local.agent_pool_or_runner_configuration
   pipeline_files_directory_path          = local.pipeline_files_directory_path
   pipeline_template_files_directory_path = local.pipeline_template_files_directory_path
+  concurrency_value                      = local.resource_names.storage_container
 }

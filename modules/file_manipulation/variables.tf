@@ -116,3 +116,9 @@ variable "pipeline_template_files_directory_path" {
   type        = string
   default     = null
 }
+
+variable "concurrency_value" {
+  description = "Concurrency value for pipelines"
+  type        = string
+  default     = null
+}

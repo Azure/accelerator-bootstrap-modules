@@ -16,7 +16,7 @@ jobs:
   validate:
     name: Validate Terraform
     runs-on:
-      ${runner_name}
+      ${agent_pool_or_runner_configuration}
     environment: ${environment_name_plan}
     steps:
       - name: Checkout Code
@@ -52,8 +52,8 @@ jobs:
     name: Validate Terraform Plan
     needs: validate
     runs-on:
-      ${runner_name}
-    concurrency: ${backend_azure_storage_account_container_name}
+      ${agent_pool_or_runner_configuration}
+    concurrency: ${concurrency_value}
     environment: ${environment_name_plan}
     permissions:
       # NOTE: When modifying the token subject claims and adding `environment`.

@@ -9,7 +9,7 @@ runs:
       run: |
         $latestVersion = (Find-Module AZ).Version
         Write-Host "Latest AZ PowerShell Version: $latestVersion"
-        echo "lastestPowerShellAzVersion=$latestVersion" >> $env:GITHUB_ENV
+        echo "latestPowerShellAzVersion=$latestVersion" >> $env:GITHUB_ENV
 
         $installedModule = Get-InstalledModule -Name AZ -ErrorAction SilentlyContinue
         $installedVersion = $installedModule.Version
@@ -30,9 +30,9 @@ runs:
       uses: azure/powershell@v2
       if: $${{ env.runPowerShellAzUpgrade == 'true' }}
       with:
-        azPSVersion: '$${{ env.lastestPowerShellAzVersion }}'
+        azPSVersion: '$${{ env.latestPowerShellAzVersion }}'
         inlineScript: |
-          Write-Host "Attempted Upgrade of AZ PowerShell to $${{ env.lastestPowerShellAzVersion }}"
+          Write-Host "Attempted Upgrade of AZ PowerShell to $${{ env.latestPowerShellAzVersion }}"
 
     - name: Install Bicep
       run: |

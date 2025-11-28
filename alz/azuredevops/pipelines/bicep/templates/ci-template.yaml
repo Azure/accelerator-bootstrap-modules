@@ -108,23 +108,6 @@ stages:
                     serviceConnection: '${service_connection_name_plan}'
 
 %{ for script_file in script_files ~}
-%{ if try(script_file.networkType, "") != "" ~}
-                - template: ./helpers/bicep-deploy.yaml
-                  parameters:
-                    displayName: '${script_file.displayName} (Network Type: ${script_file.networkType})'
-                    serviceConnection: '${service_connection_name_plan}'
-                    templateFilePath: '${script_file.templateFilePath}'
-                    templateParametersFilePath: '${script_file.templateParametersFilePath}'
-                    managementGroupId: '${script_file.managementGroupIdVariable}'
-                    subscriptionId: '${script_file.subscriptionIdVariable}'
-                    resourceGroupName: '${script_file.resourceGroupNameVariable}'
-                    location: '$(LOCATION)'
-                    deploymentType: '${script_file.deploymentType}'
-                    firstRunWhatIf: ${script_file.firstRunWhatIf}
-                    networkType: '${script_file.networkType}'
-                    whatIfEnabled: true
-
-%{ else ~}
                 - template: ./helpers/bicep-deploy.yaml
                   parameters:
                     displayName: '${script_file.displayName}'
@@ -139,5 +122,4 @@ stages:
                     firstRunWhatIf: ${script_file.firstRunWhatIf}
                     whatIfEnabled: true
 
-%{ endif ~}
 %{ endfor ~}

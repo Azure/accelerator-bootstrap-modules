@@ -281,6 +281,16 @@ variable "additional_role_assignment_principal_ids" {
   default = {}
 }
 
+variable "bootstrap_role_assignment_enabled" {
+  type    = bool
+  default = false
+}
+
+variable "bootstrap_role_assignment_role_definition_name" {
+  type    = string
+  default = "Reader"
+}
+
 variable "storage_account_blob_soft_delete_retention_days" {
   type    = number
   default = 7

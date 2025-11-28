@@ -33,17 +33,18 @@ locals {
         agent_pool_or_runner_configuration = var.agent_pool_or_runner_configuration
         environment_name_plan              = var.resource_names.version_control_system_environment_plan
         environment_name_apply             = var.resource_names.version_control_system_environment_apply
-        variable_group_name                = var.resource_names.version_control_system_variable_group
+        variable_group_name                = local.is_azuredevops ? var.resource_names.version_control_system_variable_group : ""
         project_or_organization_name       = var.project_or_organization_name
         repository_name_templates          = local.repository_name_templates
-        service_connection_name_plan       = var.resource_names.version_control_system_service_connection_plan
-        service_connection_name_apply      = var.resource_names.version_control_system_service_connection_apply
+        service_connection_name_plan       = local.is_azuredevops ? var.resource_names.version_control_system_service_connection_plan : ""
+        service_connection_name_apply      = local.is_azuredevops ? var.resource_names.version_control_system_service_connection_apply : ""
         self_hosted_agent                  = var.use_self_hosted_agents_runners
         script_files                       = local.script_files
         destroy_script_path                = local.destroy_script_path
         on_demand_folders                  = local.on_demand_folders
         on_demand_folder_repository        = var.on_demand_folder_repository
         on_demand_folder_artifact_name     = var.on_demand_folder_artifact_name
+        concurrency_value                  = var.concurrency_value
       })
     }
   }

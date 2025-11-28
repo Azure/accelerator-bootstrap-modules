@@ -24,9 +24,6 @@ parameters:
   - name: firstRunWhatIf
     type: boolean
     default: true
-  - name: networkType
-    type: string
-    default: ''
   - name: whatIfEnabled
     type: boolean
     default: false
