@@ -27,6 +27,7 @@ steps:
   - task: AzurePowerShell@5
     displayName: "Upgrade AZ PowerShell"
     condition: and(succeeded(), eq(variables['runPowerShellAzUpgrade'], 'true'))
+    continueOnError: true
     inputs:
       azureSubscription: $${{ parameters.serviceConnection }}
       pwsh: true
