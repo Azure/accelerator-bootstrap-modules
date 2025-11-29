@@ -230,7 +230,7 @@ jobs:
             $Inputs["github_organization_name"] = "${{ vars.VCS_ORGANIZATION }}"
             $Inputs["use_separate_repository_for_templates"] = "true"
             $Inputs["use_self_hosted_runners"] = $enableSelfHostedAgents
-            $Inputs["use_runner_group"] = "true"
+            $Inputs["use_runner_group"] = "false" # Must add a method to delete these before setting to true
             if($location -eq "swedencentral") {
               $Inputs["runner_container_zone_support"] = "false"
             }
