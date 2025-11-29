@@ -473,7 +473,7 @@ variable "runner_container_image_tag" {
     **(Optional, default: `"39b9059"`)** The container image tag/commit hash for GitHub runners.
   EOT
   type        = string
-  default     = "39b9059"
+  default     = "e116987"
 }
 
 variable "runner_container_image_folder" {
