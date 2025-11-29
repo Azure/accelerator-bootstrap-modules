@@ -39,7 +39,7 @@ locals {
 
   script_files = local.is_bicep_iac_type ? { for script_file in local.script_files_all : format("%03d", script_file.order) => {
     name                       = script_file.name
-    displayName                = script_file.displayName
+    displayName                = replace(script_file.displayName, "{{unique_postfix}}", var.resource_names.unique_postfix)
     templateFilePath           = script_file.templateFilePath
     templateParametersFilePath = script_file.templateParametersFilePath
     managementGroupIdVariable  = try(format(local.id_variable_template, script_file.managementGroupId), local.id_variable_template_empty)
