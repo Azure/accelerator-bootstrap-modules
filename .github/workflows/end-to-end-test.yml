@@ -149,7 +149,6 @@ jobs:
           $locations_with_aci_zone_support = @(
             "uksouth",
             "northeurope",
-            "eastus",
             "eastus2",
             "westeurope",
             "swedencentral"
