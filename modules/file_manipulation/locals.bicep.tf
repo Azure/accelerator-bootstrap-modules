@@ -1,7 +1,6 @@
 locals {
   is_bicep_iac_type = contains(["bicep", "bicep-classic"], var.iac_type)
   is_bicep_classic  = var.iac_type == "bicep-classic"
-  is_bicep          = var.iac_type == "bicep"
 
   bicep_parameters = try(jsondecode(file("${var.module_folder_path}/${var.bicep_parameters_file_path}")), {})
   networking_type  = local.is_bicep_iac_type ? local.bicep_parameters.NETWORK_TYPE : ""
