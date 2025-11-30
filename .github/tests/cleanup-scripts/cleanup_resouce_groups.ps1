@@ -1,6 +1,6 @@
 # This file can be used to clean up Resource Groups if there has been an issue with the End to End tests.
 # CAUTION: Make sure you are connected to the correct subscription before running this script!
-$filter = ""
+$filter = "725"
 
 az account show
 $resourceGroups = @("")

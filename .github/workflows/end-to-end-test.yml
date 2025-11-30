@@ -153,7 +153,6 @@ jobs:
             "eastus2",
             "canadacentral",
             "westeurope",
-            "westus2",
             "westus3",
             "australiaeast",
             "swedencentral"
@@ -163,9 +162,9 @@ jobs:
             "ukwest"
           )
 
-          $jobIndex = ${{ strategy.job-index }}
-          $locationIndex = $jobIndex % $locations.Length
-          $location2Index = $jobIndex % $locationsSingleAvailabilityZone.Length
+
+          $locationIndex = Get-Random -Minimum 0 -Maximum $locations.Length - 1
+          $location2Index = Get-Random -Minimum 0 -Maximum $locationsSingleAvailabilityZone.Length - 1
           $location = $locations[$locationIndex]
           $location2 = $locationsSingleAvailabilityZone[$location2Index]
 
