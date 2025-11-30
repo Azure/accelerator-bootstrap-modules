@@ -152,7 +152,6 @@ jobs:
             "eastus",
             "eastus2",
             "westeurope",
-            "westus3",
             "swedencentral"
           )
 
