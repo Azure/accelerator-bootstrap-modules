@@ -158,15 +158,9 @@ jobs:
             "swedencentral"
           )
 
-          $locationsSingleAvailabilityZone = @(
-            "ukwest"
-          )
-
-
           $locationIndex = Get-Random -Minimum 0 -Maximum ($locations.Length - 1)
-          $location2Index = Get-Random -Minimum 0 -Maximum ($locationsSingleAvailabilityZone.Length - 1)
           $location = $locations[$locationIndex]
-          $location2 = $locationsSingleAvailabilityZone[$location2Index]
+          $location2 = "ukwest"
 
           $enableSelfHostedAgents = "false"
           if($selfHostedAgents -eq "public" -or $selfHostedAgents -eq "private") {
