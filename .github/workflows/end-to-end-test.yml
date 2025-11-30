@@ -163,8 +163,8 @@ jobs:
           )
 
 
-          $locationIndex = Get-Random -Minimum 0 -Maximum $locations.Length - 1
-          $location2Index = Get-Random -Minimum 0 -Maximum $locationsSingleAvailabilityZone.Length - 1
+          $locationIndex = Get-Random -Minimum 0 -Maximum ($locations.Length - 1)
+          $location2Index = Get-Random -Minimum 0 -Maximum ($locationsSingleAvailabilityZone.Length - 1)
           $location = $locations[$locationIndex]
           $location2 = $locationsSingleAvailabilityZone[$location2Index]
 
