@@ -146,19 +146,48 @@ jobs:
           $shortName = "${{ matrix.ShortName }}"
           $deployAzureResources = "${{ matrix.deployAzureResources }}"
 
-          $locations = @(
+          $locations_with_aci_zone_support = @(
             "uksouth",
             "northeurope",
             "eastus",
             "eastus2",
             "westeurope",
             "westus3",
-            "australiaeast",
             "swedencentral"
           )
 
-          $locationIndex = Get-Random -Minimum 0 -Maximum ($locations.Length - 1)
-          $location = $locations[$locationIndex]
+          $locations = @(
+            "australiaeast",
+            "canadacentral",
+            "centralus",
+            "eastus",
+            "eastus2",
+            "francecentral",
+            "germanywestcentral",
+            "japaneast",
+            "koreacentral",
+            "northcentralus",
+            "northeurope",
+            "southcentralus",
+            "southeastasia",
+            "swedencentral",
+            "uksouth",
+            "westeurope",
+            "westus2",
+            "westus3"
+          )
+
+          $locationIndex = 0
+
+          if($selfHostedAgents -eq "none") {
+            # Use any location
+            $locationIndex = Get-Random -Minimum 0 -Maximum ($locations.Length - 1)
+            $location = $locations[$locationIndex]
+          } else {
+            # Use only locations with ACI Zone Support
+            $locationIndex = Get-Random -Minimum 0 -Maximum ($locations_with_aci_zone_support.Length - 1)
+            $location = $locations_with_aci_zone_support[$locationIndex]
+          }
           $location2 = "ukwest"
 
           $enableSelfHostedAgents = "false"
