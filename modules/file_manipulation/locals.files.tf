@@ -15,11 +15,11 @@ locals {
   templated_files = {
     main_files = {
       source_directory_path = var.pipeline_files_directory_path
-      files = local.pipeline_files
+      files                 = local.pipeline_files
     }
     template_files = {
       source_directory_path = var.pipeline_template_files_directory_path
-      files = local.pipeline_template_files
+      files                 = local.pipeline_template_files
     }
   }
 
@@ -41,11 +41,11 @@ locals {
         on_demand_folder_repository        = var.on_demand_folder_repository
         on_demand_folder_artifact_name     = var.on_demand_folder_artifact_name
         concurrency_value                  = var.concurrency_value
-        ci_template_path                 = "${var.pipeline_target_folder_name}/${coalesce(var.ci_template_file_name, "empty")}"
-        cd_template_path                 = "${var.pipeline_target_folder_name}/${coalesce(var.cd_template_file_name, "empty")}"
-        script_file_groups               = local.script_file_groups
-        root_module_folder_relative_path = var.root_module_folder_relative_path
-      })}
+        ci_template_path                   = "${var.pipeline_target_folder_name}/${coalesce(var.ci_template_file_name, "empty")}"
+        cd_template_path                   = "${var.pipeline_target_folder_name}/${coalesce(var.cd_template_file_name, "empty")}"
+        script_file_groups                 = local.script_file_groups
+        root_module_folder_relative_path   = var.root_module_folder_relative_path
+    }) }
     }
   }
 }

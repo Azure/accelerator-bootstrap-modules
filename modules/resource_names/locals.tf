@@ -6,6 +6,8 @@ resource "random_string" "alz" {
   numeric = false
 }
 
+resource "time_static" "alz" {}
+
 locals {
   formatted_postfix_number        = format("%03d", var.postfix_number)
   formatted_postfix_number_plus_1 = format("%03d", var.postfix_number + 1)
@@ -26,6 +28,8 @@ locals {
       "{{postfix_number_plus_3}}", local.formatted_postfix_number_plus_3),
     "{{random_string}}", local.random_string)
     }, {
-    "unique_postfix" = local.random_string
+    unique_postfix       = local.random_string
+    time_stamp           = time_static.alz.rfc3339
+    time_stamp_formatted = formatdate(time_static.alz.rfc3339, "yyyy-MM-dd-HH-mm-ss")
   })
 }

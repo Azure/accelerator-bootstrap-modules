@@ -21,14 +21,16 @@ locals {
   }
 
   bicep_module_file_replacements = {
-    management_subscription_id      = try(var.subscription_ids["management"], "")
-    connectivity_subscription_id    = try(var.subscription_ids["connectivity"], "")
-    identity_subscription_id        = try(var.subscription_ids["identity"], "")
-    security_subscription_id        = try(var.subscription_ids["security"], "")
-    primary_location                = try(local.bicep_parameters.LOCATION_PRIMARY, "eastus")
-    secondary_location              = try(local.bicep_parameters.LOCATION_SECONDARY, "westus")
-    root_parent_management_group_id = var.root_parent_management_group_id
-    unique_postfix                  = var.resource_names.unique_postfix
+    management_subscription_id            = try(var.subscription_ids["management"], "")
+    connectivity_subscription_id          = try(var.subscription_ids["connectivity"], "")
+    identity_subscription_id              = try(var.subscription_ids["identity"], "")
+    security_subscription_id              = try(var.subscription_ids["security"], "")
+    primary_location                      = try(local.bicep_parameters.LOCATION_PRIMARY, "eastus")
+    secondary_location                    = try(local.bicep_parameters.LOCATION_SECONDARY, "westus")
+    root_parent_management_group_id       = var.root_parent_management_group_id
+    unique_postfix                        = var.resource_names.unique_postfix
+    time_stamp                            = time_static.alz.rfc3339
+    time_stamp_formatted                  = formatdate(time_static.alz.rfc3339, "yyyy-MM-dd-HH-mm-ss")
     intermediate_root_management_group_id = try(local.bicep_parameters.INTERMEDIATE_ROOT_MANAGEMENT_GROUP_ID, "alz")
   }
 }
@@ -39,7 +41,7 @@ locals {
 
   script_files = local.is_bicep_iac_type ? { for script_file in local.script_files_all : format("%03d", script_file.order) => {
     name                       = script_file.name
-    displayName                = replace(script_file.displayName, "{{unique_postfix}}", var.resource_names.unique_postfix)
+    displayName                = replace(replace(script_file.displayName, "{{unique_postfix}}", var.resource_names.unique_postfix), "{{time_stamp}}", var.resource_names.time_stamp_formatted)
     templateFilePath           = script_file.templateFilePath
     templateParametersFilePath = script_file.templateParametersFilePath
     managementGroupIdVariable  = try(format(local.id_variable_template, script_file.managementGroupId), local.id_variable_template_empty)
