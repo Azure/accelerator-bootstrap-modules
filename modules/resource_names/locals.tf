@@ -30,6 +30,6 @@ locals {
     }, {
     unique_postfix       = local.random_string
     time_stamp           = time_static.alz.rfc3339
-    time_stamp_formatted = formatdate(time_static.alz.rfc3339, "yyyy-MM-dd-HH-mm-ss")
+    time_stamp_formatted = formatdate("yyyy-MM-dd-HH-mm-ss", time_static.alz.rfc3339)
   })
 }
