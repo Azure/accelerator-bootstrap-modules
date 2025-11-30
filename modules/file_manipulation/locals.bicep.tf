@@ -28,8 +28,8 @@ locals {
     secondary_location                    = try(local.bicep_parameters.LOCATION_SECONDARY, "westus")
     root_parent_management_group_id       = var.root_parent_management_group_id
     unique_postfix                        = var.resource_names.unique_postfix
-    time_stamp                            = time_static.alz.rfc3339
-    time_stamp_formatted                  = formatdate(time_static.alz.rfc3339, "yyyy-MM-dd-HH-mm-ss")
+    time_stamp                            = var.resource_names.time_stamp
+    time_stamp_formatted                  = var.resource_names.time_stamp_formatted
     intermediate_root_management_group_id = try(local.bicep_parameters.INTERMEDIATE_ROOT_MANAGEMENT_GROUP_ID, "alz")
   }
 }
