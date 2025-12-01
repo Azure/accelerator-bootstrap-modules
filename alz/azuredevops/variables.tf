@@ -1,21 +1,46 @@
 variable "iac_type" {
-  description = "The type of infrastructure as code to use for the deployment. (e.g. 'terraform' or 'bicep')"
+  description = <<-EOT
+    **(Required)** The type of infrastructure as code to use for the deployment.
+
+    Valid values: 'terraform' or 'bicep'
+  EOT
   type        = string
 }
 
 variable "module_folder_path" {
-  description = "The folder for the starter modules"
+  description = <<-EOT
+    **(Required)** The filesystem path to the folder containing ALZ starter modules.
+
+    This folder contains the infrastructure as code templates that will be deployed.
+  EOT
   type        = string
 }
 
 variable "root_parent_management_group_id" {
-  description = "The root parent management group ID. This will default to the Tenant Root Group ID if not supplied"
+  description = <<-EOT
+    **(Optional, default: `""`)** The root parent management group ID.
+
+    If not supplied, defaults to the Tenant Root Group ID.
+  EOT
   type        = string
   default     = ""
 }
 
 variable "subscription_ids" {
-  description = "The list of subscription IDs to deploy the Platform Landing Zones into"
+  description = <<-EOT
+    **(Optional, default: `{}`)** Map of Azure subscription IDs where Platform Landing Zone resources will be deployed.
+
+    Keys must be one of: 'management', 'connectivity', 'identity', 'security'
+    Values must be valid Azure subscription GUIDs.
+
+    Example:
+    ```
+    {
+      management   = "00000000-0000-0000-0000-000000000000"
+      connectivity = "11111111-1111-1111-1111-111111111111"
+    }
+    ```
+  EOT
   type        = map(string)
   default     = {}
   nullable    = false
@@ -30,7 +55,11 @@ variable "subscription_ids" {
 }
 
 variable "subscription_id_connectivity" {
-  description = "DEPRECATED (use subscription_ids instead): The identifier of the Connectivity Subscription"
+  description = <<-EOT
+    **(Optional, default: `null`)** **DEPRECATED** (use subscription_ids instead)
+
+    The identifier of the Connectivity Subscription.
+  EOT
   type        = string
   default     = null
   validation {
@@ -40,7 +69,11 @@ variable "subscription_id_connectivity" {
 }
 
 variable "subscription_id_identity" {
-  description = "DEPRECATED (use subscription_ids instead): The identifier of the Identity Subscription"
+  description = <<-EOT
+    **(Optional, default: `null`)** **DEPRECATED** (use subscription_ids instead)
+
+    The identifier of the Identity Subscription.
+  EOT
   type        = string
   default     = null
   validation {
@@ -50,7 +83,11 @@ variable "subscription_id_identity" {
 }
 
 variable "subscription_id_management" {
-  description = "DEPRECATED (use subscription_ids instead): The identifier of the Management Subscription"
+  description = <<-EOT
+    **(Optional, default: `null`)** **DEPRECATED** (use subscription_ids instead)
+
+    The identifier of the Management Subscription.
+  EOT
   type        = string
   default     = null
   validation {
@@ -60,53 +97,94 @@ variable "subscription_id_management" {
 }
 
 variable "configuration_file_path" {
-  description = "The name of the configuration file"
+  description = <<-EOT
+    **(Optional, default: `""`)** The filesystem path to the configuration file.
+
+    This file contains additional deployment parameters for the ALZ deployment.
+  EOT
   type        = string
   default     = ""
 }
 
 variable "starter_module_name" {
-  description = "The name of the starter module"
+  description = <<-EOT
+    **(Optional, default: `""`)** The name of the ALZ starter module to deploy.
+
+    Identifies which starter module template to use for the deployment.
+  EOT
   type        = string
   default     = ""
 }
 
 variable "on_demand_folder_repository" {
-  description = "The repository to use for the on-demand folders"
+  description = <<-EOT
+    **(Optional, default: `""`)** The Git repository URL for on-demand folder sources.
+
+    Specifies the repository containing additional deployment folders.
+  EOT
   type        = string
   default     = ""
 }
 
 variable "on_demand_folder_artifact_name" {
-  description = "The branch to use for the on-demand folders"
+  description = <<-EOT
+    **(Optional, default: `""`)** The branch or artifact name for on-demand folders.
+
+    Specifies which branch or version to use from the on-demand folder repository.
+  EOT
   type        = string
   default     = ""
 }
 
 variable "bootstrap_location" {
-  description = "Azure Deployment location for the bootstrap resources (e.g. storage account, identities, etc)"
+  description = <<-EOT
+    **(Required)** The Azure region where bootstrap resources will be deployed.
+
+    Specifies the location for storage accounts, managed identities, and other bootstrap resources.
+    Examples: 'uksouth', 'eastus', 'westeurope'
+  EOT
   type        = string
 }
 
 variable "azure_devops_personal_access_token" {
-  description = "The personal access token for Azure DevOps"
+  description = <<-EOT
+    **(Required)** The personal access token for Azure DevOps authentication.
+
+    This token is used to authenticate and manage Azure DevOps resources.
+    Requires appropriate scopes for repository and pipeline management.
+  EOT
   type        = string
   sensitive   = true
 }
 
 variable "azure_devops_organization_name" {
-  description = "The name of your Azure DevOps organization. This is the section of the url after 'dev.azure.com' or before '.visualstudio.com'. E.g. enter 'my-org' for 'https://dev.azure.com/my-org'"
+  description = <<-EOT
+    **(Required)** The name of your Azure DevOps organization.
+
+    This is the section of the URL after 'dev.azure.com' or before '.visualstudio.com'.
+    Example: enter 'my-org' for 'https://dev.azure.com/my-org'
+  EOT
   type        = string
 }
 
 variable "use_separate_repository_for_templates" {
-  description = "Controls whether to use a separate repository to store pipeline templates. This is an extra layer of security to ensure that the azure credentials can only be leveraged for the specified workload"
+  description = <<-EOT
+    **(Optional, default: `true`)** Whether to use a separate repository for pipeline templates.
+
+    This provides an extra layer of security to ensure that Azure credentials can only be leveraged
+    for the specified workload and not across all repositories.
+  EOT
   type        = bool
   default     = true
 }
 
 variable "bootstrap_subscription_id" {
-  description = "Azure Subscription ID for the bootstrap resources (e.g. storage account, identities, etc). Leave empty to use the az login subscription"
+  description = <<-EOT
+    **(Optional, default: `""`)** The Azure subscription ID where bootstrap resources will be deployed.
+
+    If empty, uses the currently logged-in subscription from Azure CLI.
+    Must be a valid GUID format.
+  EOT
   type        = string
   default     = ""
   validation {
@@ -116,7 +194,13 @@ variable "bootstrap_subscription_id" {
 }
 
 variable "service_name" {
-  description = "Used to build up the default resource names (e.g. rg-<service_name>-mgmt-uksouth-001)"
+  description = <<-EOT
+    **(Optional, default: `"alz"`)** Used to build up the default resource names.
+
+    Example: rg-**<service_name>**-mgmt-uksouth-001
+
+    Must contain only lowercase letters and numbers.
+  EOT
   type        = string
   default     = "alz"
   validation {
@@ -126,7 +210,13 @@ variable "service_name" {
 }
 
 variable "environment_name" {
-  description = "Used to build up the default resource names (e.g. rg-alz-<environment_name>-uksouth-001)"
+  description = <<-EOT
+    **(Optional, default: `"mgmt"`)** Used to build up the default resource names.
+
+    Example: rg-alz-**<environment_name>**-uksouth-001
+
+    Must contain only lowercase letters and numbers.
+  EOT
   type        = string
   default     = "mgmt"
   validation {
@@ -136,144 +226,264 @@ variable "environment_name" {
 }
 
 variable "postfix_number" {
-  description = "Used to build up the default resource names (e.g. rg-alz-mgmt-uksouth-<postfix_number>)"
+  description = <<-EOT
+    **(Optional, default: `1`)** Used to build up the default resource names.
+
+    Example: rg-alz-mgmt-uksouth-**<postfix_number>**
+  EOT
   type        = number
   default     = 1
 }
 
 variable "azure_devops_use_organisation_legacy_url" {
-  description = "Use the legacy Azure DevOps URL (<organisation>.visualstudio.com) instead of the new URL (dev.azure.com/<organization>). This is ignored if an fqdn is supplied for version_control_system_organization"
+  description = <<-EOT
+    **(Optional, default: `false`)** Use the legacy Azure DevOps URL format.
+
+    When true, uses '<organisation>.visualstudio.com' instead of 'dev.azure.com/<organization>'.
+    This is ignored if an FQDN is supplied for version_control_system_organization.
+  EOT
   type        = bool
   default     = false
 }
 
 variable "azure_devops_create_project" {
-  description = "Create the Azure DevOps project if it does not exist"
+  description = <<-EOT
+    **(Optional, default: `true`)** Create the Azure DevOps project if it does not exist.
+
+    When true, automatically creates the specified project in Azure DevOps.
+  EOT
   type        = bool
   default     = true
 }
 
 variable "azure_devops_project_name" {
-  description = "The name of the Azure DevOps project to use or create for the deployment"
+  description = <<-EOT
+    **(Required)** The name of the Azure DevOps project to use or create.
+
+    This project will contain the repositories and pipelines for the ALZ deployment.
+  EOT
   type        = string
 }
 
 variable "use_self_hosted_agents" {
-  description = "Controls whether to use self-hosted agents for the pipelines"
+  description = <<-EOT
+    **(Optional, default: `true`)** Whether to use self-hosted agents for pipeline execution.
+
+    When true, provisions container instances to run Azure DevOps agents.
+    When false, uses Microsoft-hosted agents.
+  EOT
   type        = bool
   default     = true
 }
 
 variable "azure_devops_agents_personal_access_token" {
-  description = "Personal access token for Azure DevOps self-hosted agents (the token requires the 'Agent Pools - Read & Manage' scope and should have the maximum expiry). Only required if 'use_self_hosted_runners' is 'true'"
+  description = <<-EOT
+    **(Optional, default: `""`)** Personal access token for Azure DevOps self-hosted agents.
+
+    Required only if 'use_self_hosted_agents' is true.
+    The token requires the 'Agent Pools - Read & Manage' scope and should have the maximum expiry.
+  EOT
   type        = string
   sensitive   = true
   default     = ""
 }
 
 variable "use_private_networking" {
-  description = "Controls whether to use private networking for the agent to storage account communication"
+  description = <<-EOT
+    **(Optional, default: `true`)** Whether to use private networking for agent-to-storage communication.
+
+    When true, configures private endpoints for secure communication between agents and storage accounts.
+  EOT
   type        = bool
   default     = true
 }
 
 variable "allow_storage_access_from_my_ip" {
-  description = "Allow access to the storage account from the current IP address. We recommend this is kept off for security"
+  description = <<-EOT
+    **(Optional, default: `false`)** Allow access to the storage account from the current IP address.
+
+    We recommend this is kept off for security.
+  EOT
   type        = bool
   default     = false
 }
 
 variable "apply_approvers" {
-  description = "Apply stage approvers to the action / pipeline, must be a list of SPNs separate by a comma (e.g. abcdef@microsoft.com,ghijklm@microsoft.com)"
+  description = <<-EOT
+    **(Optional, default: `[]`)** List of approvers for the apply stage in pipelines.
+
+    Must be a list of SPNs (e.g., ["abcdef@microsoft.com", "ghijklm@microsoft.com"]).
+  EOT
   type        = list(string)
   default     = []
 }
 
 variable "create_branch_policies" {
-  description = "Controls whether to create branch policies for the repositories"
+  description = <<-EOT
+    **(Optional, default: `true`)** Whether to create branch policies for the repositories.
+
+    When true, configures branch protection policies for the main branch.
+  EOT
   type        = bool
   default     = true
 }
 
 variable "additional_files" {
-  description = "Additional files to upload to the repository. This must be specified as a comma-separated list of absolute file paths (e.g. c:\\config\\config.yaml or /home/user/config/config.yaml)"
+  description = <<-EOT
+    **(Optional, default: `[]`)** Additional files to upload to the repository.
+
+    Must be specified as a list of absolute file paths.
+    Examples:
+    - Windows: ["c:\\config\\config.yaml", "c:\\scripts\\deploy.ps1"]
+    - Linux: ["/home/user/config/config.yaml", "/home/user/scripts/deploy.sh"]
+  EOT
   type        = list(string)
   default     = []
 }
 
 variable "additional_folders_path" {
-  description = "Additional folders to upload to the repository. This must be specified as a comma-separated list of absolute paths (e.g. c:\\templates\\Microsoft_Cloud_for_Industry\\Common or /templates/Microsoft_Cloud_for_Industry/Common)"
+  description = <<-EOT
+    **(Optional, default: `[]`)** Additional folders to upload to the repository.
+
+    Must be specified as a list of absolute directory paths.
+    Examples:
+    - Windows: ["c:\\templates\\Microsoft_Cloud_for_Industry\\Common"]
+    - Linux: ["/templates/Microsoft_Cloud_for_Industry/Common"]
+  EOT
   type        = list(string)
   default     = []
 }
 
 variable "agent_container_image_repository" {
-  description = "The container image repository to use for Azure DevOps Agents"
+  description = <<-EOT
+    **(Optional, default: `"https://github.com/Azure/avm-container-images-cicd-agents-and-runners"`)**
+    The Git repository URL containing the container image for Azure DevOps agents.
+  EOT
   type        = string
   default     = "https://github.com/Azure/avm-container-images-cicd-agents-and-runners"
 }
 
 variable "agent_container_image_tag" {
-  description = "The container image tag to use for Azure DevOps Agents"
+  description = <<-EOT
+    **(Optional, default: `"39b9059"`)** The container image tag/commit hash for Azure DevOps agents.
+  EOT
   type        = string
   default     = "39b9059"
 }
 
 variable "agent_container_image_folder" {
-  description = "The folder containing the Dockerfile for the container image"
+  description = <<-EOT
+    **(Optional, default: `"azure-devops-agent-aci"`)** The folder containing the Dockerfile for the container image.
+  EOT
   type        = string
   default     = "azure-devops-agent-aci"
 }
 
 variable "agent_container_image_dockerfile" {
-  description = "The Dockerfile to use for the container image"
+  description = <<-EOT
+    **(Optional, default: `"dockerfile"`)** The Dockerfile name to use for the container image.
+  EOT
   type        = string
   default     = "dockerfile"
 }
 
 variable "agent_container_cpu" {
-  description = "The container cpu default"
+  description = <<-EOT
+    **(Optional, default: `2`)** Default CPU cores allocated to each Azure DevOps agent container instance.
+
+    Specified in number of cores (e.g., 1, 2, 4). Adjust based on pipeline workload requirements.
+  EOT
   type        = number
   default     = 2
 }
 
 variable "agent_container_memory" {
-  description = "The container memory default"
+  description = <<-EOT
+    **(Optional, default: `4`)** Default memory (in GB) allocated to each Azure DevOps agent container instance.
+
+    Adjust based on pipeline memory requirements and workload complexity.
+  EOT
   type        = number
   default     = 4
 }
 
 variable "agent_container_cpu_max" {
-  description = "The container cpu default"
+  description = <<-EOT
+    **(Optional, default: `2`)** Maximum CPU cores that can be allocated to agent containers under heavy load.
+
+    Used for container bursting capabilities to handle peak workloads.
+  EOT
   type        = number
   default     = 2
 }
 
 variable "agent_container_memory_max" {
-  description = "The container memory default"
+  description = <<-EOT
+    **(Optional, default: `4`)** Maximum memory (in GB) that can be allocated to agent containers under heavy load.
+
+    Used for container bursting capabilities during intensive pipeline operations.
+  EOT
   type        = number
   default     = 4
 }
 
 variable "agent_container_zone_support" {
-  description = "The container zone support"
+  description = <<-EOT
+    **(Optional, default: `true`)** Enable availability zone support for Azure DevOps agent container instances.
+
+    When enabled, containers are distributed across availability zones for higher availability and resilience.
+  EOT
   type        = bool
   default     = true
 }
 
 variable "built_in_configuration_file_names" {
-  description = "Built-in configuration file name"
+  description = <<-EOT
+    **(Optional, default: `["config.yaml", "config-hub-and-spoke-vnet.yaml", "config-virtual-wan.yaml"]`)**
+    List of built-in configuration file names available for ALZ deployments.
+
+    These files provide pre-configured deployment options for different network topologies.
+  EOT
   type        = list(string)
   default     = ["config.yaml", "config-hub-and-spoke-vnet.yaml", "config-virtual-wan.yaml"]
 }
 
 variable "module_folder_path_relative" {
-  description = "Whether the module folder path is relative to the bootstrap module"
+  description = <<-EOT
+    **(Optional, default: `false`)** Whether the module_folder_path is relative to the bootstrap module.
+
+    When true, interprets module_folder_path as relative to the bootstrap module's location.
+    When false, interprets module_folder_path as an absolute path.
+  EOT
   type        = bool
   default     = false
 }
 
 variable "resource_names" {
+  description = <<-EOT
+    **(Optional, default: `{}`)** Custom resource name overrides for Azure bootstrap resources.
+
+    Allows customization of naming patterns using template variables:
+    - `{{service_name}}` - Replaced with var.service_name
+    - `{{environment_name}}` - Replaced with var.environment_name
+    - `{{azure_location}}` - Replaced with Azure region
+    - `{{postfix_number}}` - Replaced with var.postfix_number
+    - `{{postfix_number_plus_1}}` - Replaced with postfix_number + 1
+    - `{{random_string}}` - Replaced with generated random string
+    - `{{service_name_short}}`, `{{environment_name_short}}`, `{{azure_location_short}}` - Shortened versions
+
+    Object fields include:
+    - Resource groups: `resource_group_state`, `resource_group_identity`, `resource_group_agents`, `resource_group_network`
+    - Managed identities: `user_assigned_managed_identity_plan`, `user_assigned_managed_identity_apply`
+    - Storage: `storage_account`, `storage_container`
+    - Container instances: `container_instance_01`, `container_instance_02`, `container_instance_managed_identity`
+    - Agents: `agent_01`, `agent_02`
+    - Azure DevOps resources: `version_control_system_*` for repositories, service connections, environments, pipelines, etc.
+    - Networking: `virtual_network`, `public_ip`, `nat_gateway`, subnets, private endpoints
+    - Container registry: `container_registry`, `container_registry_private_endpoint`, `container_image_name`
+
+    All fields are optional and use default templates if not specified.
+  EOT
   type = object({
     resource_group_state                                       = optional(string, "rg-{{service_name}}-{{environment_name}}-state-{{azure_location}}-{{postfix_number}}")
     resource_group_identity                                    = optional(string, "rg-{{service_name}}-{{environment_name}}-identity-{{azure_location}}-{{postfix_number}}")
@@ -311,70 +521,124 @@ variable "resource_names" {
     container_registry_private_endpoint                        = optional(string, "pe-{{service_name}}-{{environment_name}}-{{azure_location}}-acr-{{postfix_number}}")
     container_image_name                                       = optional(string, "azure-devops-agent")
   })
-  description = "Overrides for resource names"
-  default     = {}
+  default = {}
 }
 
 variable "agent_name_environment_variable" {
-  description = "The agent name environment variable supplied to the container"
+  description = <<-EOT
+    **(Optional, default: `"AZP_AGENT_NAME"`)** The agent name environment variable supplied to the container.
+  EOT
   type        = string
   default     = "AZP_AGENT_NAME"
 }
 
 variable "agent_pool_environment_variable" {
-  description = "The agent pool environment variable supplied to the container"
+  description = <<-EOT
+    **(Optional, default: `"AZP_POOL"`)** The agent pool environment variable supplied to the container.
+  EOT
   type        = string
   default     = "AZP_POOL"
 }
 
 variable "agent_organization_environment_variable" {
-  description = "The agent organization environment variable supplied to the container"
+  description = <<-EOT
+    **(Optional, default: `"AZP_URL"`)** The agent organization environment variable supplied to the container.
+  EOT
   type        = string
   default     = "AZP_URL"
 }
 
 variable "agent_token_environment_variable" {
-  description = "The agent token environment variable supplied to the container"
+  description = <<-EOT
+    **(Optional, default: `"AZP_TOKEN"`)** The agent token environment variable supplied to the container.
+  EOT
   type        = string
   default     = "AZP_TOKEN"
 }
 
 variable "virtual_network_address_space" {
+  description = <<-EOT
+    **(Optional, default: `"10.0.0.0/24"`)** The address space for the virtual network.
+  EOT
   type        = string
-  description = "The address space for the virtual network"
   default     = "10.0.0.0/24"
 }
 
 variable "virtual_network_subnet_address_prefix_container_instances" {
+  description = <<-EOT
+    **(Optional, default: `"10.0.0.0/26"`)** Address prefix for the container instances subnet.
+  EOT
   type        = string
-  description = "Address prefix for the virtual network subnet"
   default     = "10.0.0.0/26"
 }
 
 variable "virtual_network_subnet_address_prefix_private_endpoints" {
+  description = <<-EOT
+    **(Optional, default: `"10.0.0.64/26"`)** Address prefix for the private endpoints subnet.
+  EOT
   type        = string
-  description = "Address prefix for the virtual network subnet"
   default     = "10.0.0.64/26"
 }
 
 variable "storage_account_replication_type" {
-  description = "Controls the redundancy for the storage account"
+  description = <<-EOT
+    **(Optional, default: `"ZRS"`)** The replication strategy for the Azure storage account storing state files.
+
+    Valid values:
+    - `LRS` - Locally Redundant Storage
+    - `GRS` - Geo-Redundant Storage
+    - `RAGRS` - Read-Access Geo-Redundant Storage
+    - `ZRS` - Zone-Redundant Storage (recommended for high availability)
+    - `GZRS` - Geo-Zone-Redundant Storage
+    - `RAGZRS` - Read-Access Geo-Zone-Redundant Storage
+  EOT
   type        = string
   default     = "ZRS"
 }
 
 variable "bicep_config_file_path" {
-  type    = string
-  default = ".config/ALZ-Powershell.config.json"
+  description = <<-EOT
+    **(Optional, default: `".config/ALZ-Powershell.config.json"`)** Path to the Bicep configuration file.
+
+    Contains deployment settings and parameters for the Azure Landing Zones Bicep accelerator.
+    Can be an absolute or relative path. This file configures the PowerShell-based deployment workflow.
+  EOT
+  type        = string
+  default     = ".config/ALZ-Powershell.config.json"
 }
 
 variable "bicep_parameters_file_path" {
-  type    = string
-  default = "parameters.json"
+  description = <<-EOT
+    **(Optional, default: `"parameters.json"`)** Path to the Bicep parameters file.
+
+    Contains input values for the Bicep template deployment.
+    This JSON file specifies configuration values for Azure Landing Zones resources.
+  EOT
+  type        = string
+  default     = "parameters.json"
 }
 
 variable "custom_role_definitions_terraform" {
-  description = "Custom role definitions to create for Terraform"
+  description = <<-EOT
+    **(Optional)** Custom Azure RBAC role definitions for Terraform-based deployments.
+
+    Map of role definition configurations where:
+    - **Key**: Role identifier (e.g., 'alz_management_group_contributor')
+    - **Value**: Object containing:
+      - `name` (string) - Display name (supports template variables like {{service_name}})
+      - `description` (string) - Role purpose description
+      - `permissions` (object):
+        - `actions` (list(string)) - Allowed Azure actions
+        - `not_actions` (list(string)) - Denied Azure actions
+
+    Default includes 4 predefined roles:
+    - `alz_management_group_contributor` - Manage management group hierarchy and governance
+    - `alz_management_group_reader` - Read management group structure and validate deployments
+    - `alz_subscription_owner` - Full access to platform subscriptions
+    - `alz_subscription_reader` - Read/write access for platform subscription resources
+
+    See default value for complete role action definitions.
+  EOT
   type = map(object({
     name        = string
     description = string
@@ -469,7 +733,26 @@ variable "custom_role_definitions_terraform" {
 }
 
 variable "custom_role_definitions_bicep" {
-  description = "Custom role definitions to create for Bicep"
+  description = <<-EOT
+    **(Optional)** Custom Azure RBAC role definitions for Bicep-based deployments.
+
+    Map of role definition configurations where:
+    - **Key**: Role identifier (e.g., 'alz_management_group_contributor')
+    - **Value**: Object containing:
+      - `name` (string) - Display name (supports template variables like {{service_name}})
+      - `description` (string) - Role purpose description
+      - `permissions` (object):
+        - `actions` (list(string)) - Allowed Azure actions
+        - `not_actions` (list(string)) - Denied Azure actions
+
+    Default includes 4 predefined roles:
+    - `alz_management_group_contributor` - Manage management group hierarchy and governance
+    - `alz_management_group_reader` - Run Bicep What-If validations (requires --validation-level providerNoRbac flag)
+    - `alz_subscription_owner` - Full access to platform subscriptions
+    - `alz_subscription_reader` - Run Bicep What-If for subscription deployments
+
+    See default value for complete role action definitions.
+  EOT
   type = map(object({
     name        = string
     description = string
@@ -539,7 +822,20 @@ variable "custom_role_definitions_bicep" {
 }
 
 variable "role_assignments_terraform" {
-  description = "Role assignments to create for Terraform"
+  description = <<-EOT
+    **(Optional)** RBAC role assignments for Terraform-based deployments.
+
+    Map of role assignment configurations where:
+    - **Key**: Assignment identifier (e.g., 'plan_management_group')
+    - **Value**: Object containing:
+      - `custom_role_definition_key` (string) - Key from custom_role_definitions_terraform
+      - `user_assigned_managed_identity_key` (string) - Managed identity key ('plan' or 'apply')
+      - `scope` (string) - Assignment scope ('management_group' or 'subscription')
+
+    Default includes 4 assignments:
+    - Plan and apply access for management group operations
+    - Plan and apply access for subscription operations
+  EOT
   type = map(object({
     custom_role_definition_key         = string
     user_assigned_managed_identity_key = string
@@ -570,7 +866,20 @@ variable "role_assignments_terraform" {
 }
 
 variable "role_assignments_bicep" {
-  description = "Role assignments to create for Bicep"
+  description = <<-EOT
+    **(Optional)** RBAC role assignments for Bicep-based deployments.
+
+    Map of role assignment configurations where:
+    - **Key**: Assignment identifier (e.g., 'plan_management_group')
+    - **Value**: Object containing:
+      - `custom_role_definition_key` (string) - Key from custom_role_definitions_bicep
+      - `user_assigned_managed_identity_key` (string) - Managed identity key ('plan' or 'apply')
+      - `scope` (string) - Assignment scope ('management_group' or 'subscription')
+
+    Default includes 4 assignments:
+    - Plan and apply access for management group operations
+    - Plan and apply access for subscription operations
+  EOT
   type = map(object({
     custom_role_definition_key         = string
     user_assigned_managed_identity_key = string
@@ -601,42 +910,90 @@ variable "role_assignments_bicep" {
 }
 
 variable "root_module_folder_relative_path" {
+  description = <<-EOT
+    **(Optional, default: `"."`)** The relative path from output directory to the root module folder.
+
+    Used to establish correct path references in generated deployment scripts.
+    The root module folder contains the main Terraform or Bicep configuration.
+  EOT
   type        = string
-  description = "The root module folder path"
   default     = "."
 }
 
 variable "storage_account_blob_soft_delete_retention_days" {
-  type    = number
-  default = 7
+  description = <<-EOT
+    **(Optional, default: `7`)** Number of days to retain soft-deleted blobs in the storage account.
+
+    Soft delete protects blob data from accidental deletion by retaining deleted blobs for the specified period,
+    allowing recovery if needed. Valid range: 1-365 days.
+  EOT
+  type        = number
+  default     = 7
 }
 
 variable "storage_account_blob_soft_delete_enabled" {
-  type    = bool
-  default = true
+  description = <<-EOT
+    **(Optional, default: `true`)** Enable soft delete protection for blobs in the storage account.
+
+    When enabled, deleted blobs are retained for the configured retention period and can be restored.
+    Recommended for production environments to protect against accidental Terraform state deletion.
+  EOT
+  type        = bool
+  default     = true
 }
 
 variable "storage_account_container_soft_delete_retention_days" {
-  type    = number
-  default = 7
+  description = <<-EOT
+    **(Optional, default: `7`)** Number of days to retain soft-deleted containers in the storage account.
+
+    Soft delete protects container-level data from accidental deletion by retaining deleted containers
+    for the specified period. Valid range: 1-365 days.
+  EOT
+  type        = number
+  default     = 7
 }
 
 variable "storage_account_container_soft_delete_enabled" {
-  type    = bool
-  default = true
+  description = <<-EOT
+    **(Optional, default: `true`)** Enable soft delete protection for containers in the storage account.
+
+    When enabled, deleted containers are retained for the configured retention period and can be restored.
+    Provides an additional layer of protection for Terraform state storage.
+  EOT
+  type        = bool
+  default     = true
 }
 
 variable "storage_account_blob_versioning_enabled" {
-  type    = bool
-  default = true
+  description = <<-EOT
+    **(Optional, default: `true`)** Enable blob versioning for the storage account.
+
+    When enabled, Azure automatically maintains previous versions of blobs, providing protection
+    against accidental overwrites or deletions and enabling point-in-time recovery of Terraform state files.
+  EOT
+  type        = bool
+  default     = true
 }
 
 variable "bicep_tenant_role_assignment_enabled" {
-  type    = bool
-  default = true
+  description = <<-EOT
+    **(Optional, default: `true`)** Enable tenant-level role assignment for Bicep deployments.
+
+    When enabled, assigns the specified role to the managed identity at the tenant root scope,
+    allowing management of resources across the entire Azure AD tenant.
+    Required for tenant-wide policy and management group operations.
+  EOT
+  type        = bool
+  default     = true
 }
 
 variable "bicep_tenant_role_assignment_role_definition_name" {
-  type    = string
-  default = "Landing Zone Management Owner"
+  description = <<-EOT
+    **(Optional, default: `"Landing Zone Management Owner"`)** The Azure role definition name for tenant-level assignment.
+
+    This role grants the managed identity permissions to manage Azure Landing Zones resources across the tenant.
+    Common values: 'Landing Zone Management Owner', 'Owner', or a custom role name.
+  EOT
+  type        = string
+  default     = "Landing Zone Management Owner"
 }

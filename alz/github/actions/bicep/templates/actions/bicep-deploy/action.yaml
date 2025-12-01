@@ -64,7 +64,7 @@ runs:
 
           # Generate deployment name without timestamp for consistent deployment stack names
           $deploymentPrefix = "alz"
-          $deploymentNameBase = $env:DISPLAY_NAME.Replace(" ", "-")
+          $deploymentNameBase = "$($env:DISPLAY_NAME.Replace(" ", "-"))-$($env:TIME_STAMP)"
 
           $deploymentNameMaxLength = 64 - $deploymentPrefix.Length - 1
 
