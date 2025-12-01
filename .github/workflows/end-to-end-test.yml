@@ -275,19 +275,27 @@ jobs:
           }
 
           $Inputs["apply_approvers"] = @()
-          $Inputs["root_parent_management_group_id"] = ""
+
+          # Target a nested parent MG for public to test that scenario
+          $rootParentManagementGroupId = $selfHostedAgents -eq "none" ? "" : "${{ vars.NESTED_ROOT_PARENT_MANAGEMENT_GROUP_ID }}"
+          $Inputs["root_parent_management_group_id"] = $rootParentManagementGroupId
+
+          $subscriptionIDManagement = $selfHostedAgents -eq "none" ? "${{ vars.SUBSCRIPTION_ID_NESTED_MANAGEMENT }}" : "${{ vars.SUBSCRIPTION_ID_ROOT_MANAGEMENT }}"
+          $subscriptionIDConnectivity = $selfHostedAgents -eq "none" ? "${{ vars.SUBSCRIPTION_ID_NESTED_CONNECTIVITY }}" : "${{ vars.SUBSCRIPTION_ID_ROOT_CONNECTIVITY }}"
+          $subscriptionIDIdentity = $selfHostedAgents -eq "none" ? "${{ vars.SUBSCRIPTION_ID_NESTED_IDENTITY }}" : "${{ vars.SUBSCRIPTION_ID_ROOT_IDENTITY }}"
+          $subscriptionIDSecurity = $selfHostedAgents -eq "none" ? "${{ vars.SUBSCRIPTION_ID_NESTED_SECURITY }}" : "${{ vars.SUBSCRIPTION_ID_ROOT_SECURITY }}"
 
           $Inputs["subscription_ids"] = @{
-            management = "${{ vars.ARM_SUBSCRIPTION_ID }}"
-            connectivity = "${{ vars.ARM_SUBSCRIPTION_ID }}"
-            identity = "${{ vars.ARM_SUBSCRIPTION_ID }}"
-            security = "${{ vars.ARM_SUBSCRIPTION_ID }}"
+            management   = $subscriptionIDManagement
+            connectivity = $subscriptionIDConnectivity
+            identity     = $subscriptionIDIdentity
+            security     = $subscriptionIDSecurity
           }
 
+          # Test specific inputs
           $Inputs["parent_management_group_display_name"] = "Tenant Root Group"
           $Inputs["child_management_group_display_name"] = "E2E Test"
           $Inputs["resource_group_location"] = $location
-
 
           # Bicep Classic
           if($infrastructureAsCode -eq "bicep-classic") {
