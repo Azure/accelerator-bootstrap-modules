@@ -15,7 +15,8 @@ $subscriptions = @(
 
 $subscriptions | ForEach-Object -Parallel {
     $subscription = $_
-    Write-Host "Processing subscription: $subscription"
+    $subscriptionDetails = az account show --subscription $subscription | ConvertFrom-Json
+    Write-Host "Processing subscription: $subscription - $($subscriptionDetails.name)"
 
     $resourceGroups = @("")
     while ($resourceGroups.Count -gt 0) {
@@ -30,7 +31,8 @@ $subscriptions | ForEach-Object -Parallel {
 
         $resourceGroups | ForEach-Object -Parallel {
             $subscription = $using:subscription
-            Write-Host "Deleting resource group: $($_.name)"
+            $subscriptionDetails = $using:subscriptionDetails
+            Write-Host "Deleting resource group: $($_.name) in subscription: $subscription - $($subscriptionDetails.name)"
             az group delete --subscription $subscription --name $_.name --yes
         } -ThrottleLimit 10
     }
