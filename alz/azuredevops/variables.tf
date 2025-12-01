@@ -631,12 +631,12 @@ variable "storage_account_blob_versioning_enabled" {
   default = true
 }
 
-variable "tenant_role_assignment_enabled" {
+variable "bicep_tenant_role_assignment_enabled" {
   type    = bool
-  default = false
+  default = true
 }
 
-variable "tenant_role_assignment_role_definition_name" {
+variable "bicep_tenant_role_assignment_role_definition_name" {
   type    = string
   default = "Landing Zone Management Owner"
 }
