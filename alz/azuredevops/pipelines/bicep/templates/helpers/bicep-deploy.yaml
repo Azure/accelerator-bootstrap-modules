@@ -110,7 +110,7 @@ steps:
             TemplateFile          = "$${{ parameters.templateFilePath }}"
             TemplateParameterFile = "$${{ parameters.templateParametersFilePath }}"
             WhatIf                = $true
-            ValidationLevel       = providerNoRbac
+            ValidationLevel       = "providerNoRbac"
             Verbose               = $true
           }
 
