@@ -68,4 +68,4 @@ $subscriptions | ForEach-Object -Parallel {
     }
 } -ThrottleLimit 10
 
-Write-Host "Cleanup complete."
+Write-Host "Cleanup complete. :)"
