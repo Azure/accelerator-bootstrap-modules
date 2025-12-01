@@ -473,7 +473,8 @@ variable "container_registry_dockerfile_name" {
     Typically 'Dockerfile' or a specific variant like 'dockerfile', 'Dockerfile.ubuntu', etc.
   EOT
   type        = string
-  default     = "dockerfile"
+  description = "The dockerfile to build"
+  default     = "Dockerfile"
 }
 
 variable "container_registry_image_name" {

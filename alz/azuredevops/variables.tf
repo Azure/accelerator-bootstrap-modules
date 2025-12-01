@@ -368,7 +368,7 @@ variable "agent_container_image_tag" {
     **(Optional, default: `"39b9059"`)** The container image tag/commit hash for Azure DevOps agents.
   EOT
   type        = string
-  default     = "e116987"
+  default     = "57a937f"
 }
 
 variable "agent_container_image_folder" {
@@ -384,7 +384,7 @@ variable "agent_container_image_dockerfile" {
     **(Optional, default: `"dockerfile"`)** The Dockerfile name to use for the container image.
   EOT
   type        = string
-  default     = "dockerfile"
+  default     = "Dockerfile"
 }
 
 variable "agent_container_cpu" {

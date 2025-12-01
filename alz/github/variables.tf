@@ -473,7 +473,7 @@ variable "runner_container_image_tag" {
     **(Optional, default: `"39b9059"`)** The container image tag/commit hash for GitHub runners.
   EOT
   type        = string
-  default     = "e116987"
+  default     = "57a937f"
 }
 
 variable "runner_container_image_folder" {
@@ -489,7 +489,7 @@ variable "runner_container_image_dockerfile" {
     **(Optional, default: `"dockerfile"`)** The Dockerfile name to use for the container image.
   EOT
   type        = string
-  default     = "dockerfile"
+  default     = "Dockerfile"
 }
 
 variable "runner_container_cpu" {
