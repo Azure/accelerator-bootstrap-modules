@@ -1,6 +1,13 @@
 # This file can be used to clean up Resource Groups if there has been an issue with the End to End tests.
 # CAUTION: Make sure you are connected to the correct subscription before running this script!
-$filter = ""
+$managementGroupFilter = "alz-r"
+$subscriptionFilter = ""
+
+$managementGroups = @(
+    "dac8feee-8768-4fbd-9cf9-9d96d4718018",
+    "alz-accelerator-parent-test"
+)
+
 $subscriptions = @(
     "6be58818-3390-4c43-a3bb-2666110eeb66",
     "5331601a-985a-4f45-87d1-6b4156c8acf5",
@@ -13,6 +20,25 @@ $subscriptions = @(
     "0d754f66-65b4-4f64-97f5-221f0174ad48"
 )
 
+$managementGroups | ForEach-Object -Parallel {
+    $managementGroupFilter = $using:managementGroupFilter
+    $managementGroup = $_
+    Write-Host "Processing management group: $managementGroup"
+
+    $managementGroupDetails = az account management-group show --name $managementGroup --expand | ConvertFrom-Json
+    $childManagementGroups = $managementGroupDetails.children | Where-Object { $_.type -eq "Microsoft.Management/managementGroups" }
+    if($managementGroupFilter -ne "") {
+        $childManagementGroups = $childManagementGroups | Where-Object { $_.name -like "*$managementGroupFilter*" }
+    }
+
+    $childManagementGroups | ForEach-Object -Parallel {
+        $managementGroup = $using:managementGroup
+        $childManagementGroup = $_
+        Write-Host "Deleting management group: $($childManagementGroup.name) under parent: $managementGroup"
+        az account management-group delete --name $childManagementGroup.name
+    } -ThrottleLimit 10
+} -ThrottleLimit 10
+
 $subscriptions | ForEach-Object -Parallel {
     $subscription = $_
     $subscriptionDetails = az account show --subscription $subscription | ConvertFrom-Json
@@ -20,13 +46,13 @@ $subscriptions | ForEach-Object -Parallel {
 
     $resourceGroups = @("")
     while ($resourceGroups.Count -gt 0) {
-        if($filter -eq "")
+        if($subscriptionFilter -eq "")
         {
             $resourceGroups = az group list --subscription $subscription | ConvertFrom-Json
         }
         else
         {
-            $resourceGroups = az group list --subscription $subscription --query "[?contains(name, '$filter')]" | ConvertFrom-Json
+            $resourceGroups = az group list --subscription $subscription --query "[?contains(name, '$subscriptionFilter')]" | ConvertFrom-Json
         }
 
         $resourceGroups | ForEach-Object -Parallel {
