@@ -419,7 +419,7 @@ variable "custom_role_definitions_terraform" {
     })
   }))
   default = {
-    alz_managment_group_contributor = {
+    alz_management_group_contributor = {
       name        = "Azure Landing Zones Management Group Contributor ({{service_name}}-{{environment_name}})"
       description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing the Management Group Structure."
       permissions = {
@@ -445,7 +445,7 @@ variable "custom_role_definitions_terraform" {
         not_actions = []
       }
     }
-    alz_managment_group_reader = {
+    alz_management_group_reader = {
       name        = "Azure Landing Zones Management Group Reader ({{service_name}}-{{environment_name}})"
       description = "This is a custom role created by the Azure Landing Zones Accelerator for Reading the Management Group Structure."
       permissions = {
@@ -514,60 +514,34 @@ variable "custom_role_definitions_bicep" {
     })
   }))
   default = {
-    alz_managment_group_contributor = {
+    alz_management_group_contributor = {
       name        = "Azure Landing Zones Management Group Contributor ({{service_name}}-{{environment_name}})"
-      description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing the Management Group Structure."
+      description = "This is a custom role created by the Azure Landing Zones Accelerator for creating and managing the Management Group hierarchy and its associated governance resources such as policy, RBAC etc..."
       permissions = {
         actions = [
-          "Microsoft.Management/managementGroups/delete",
-          "Microsoft.Management/managementGroups/read",
-          "Microsoft.Management/managementGroups/subscriptions/delete",
-          "Microsoft.Management/managementGroups/subscriptions/write",
-          "Microsoft.Management/managementGroups/settings/read",
-          "Microsoft.Management/managementGroups/settings/write",
-          "Microsoft.Management/managementGroups/settings/delete",
-          "Microsoft.Management/managementGroups/write",
-          "Microsoft.Management/managementGroups/subscriptions/read",
-          "Microsoft.Authorization/policyDefinitions/write",
-          "Microsoft.Authorization/policySetDefinitions/write",
-          "Microsoft.Authorization/policyAssignments/write",
-          "Microsoft.Authorization/roleDefinitions/write",
-          "Microsoft.Authorization/*/read",
-          "Microsoft.Resources/deployments/whatIf/action",
-          "Microsoft.Resources/deployments/write",
-          "Microsoft.Resources/deployments/validate/action",
-          "Microsoft.Resources/deployments/read",
-          "Microsoft.Resources/deployments/operationStatuses/read",
-          "Microsoft.Resources/deploymentStacks/read",
-          "Microsoft.Resources/deploymentStacks/write",
-          "Microsoft.Resources/deploymentStacks/delete",
-          "Microsoft.Resources/deploymentStacks/validate/action",
-          "Microsoft.Authorization/roleAssignments/write",
-          "Microsoft.Authorization/roleAssignments/delete",
-          "Microsoft.Insights/diagnosticSettings/write"
+          "*/read",
+          "Microsoft.Management/*",
+          "Microsoft.Authorization/*",
+          "Microsoft.Resources/*",
+          "Microsoft.Support/*",
+          "Microsoft.Insights/diagnosticSettings/*"
         ]
-        not_actions = []
+        not_actions = [
+          "Microsoft.Resources/subscriptions/resourceGroups/write",
+          "Microsoft.Resources/subscriptions/resourceGroups/delete"
+        ]
       }
     }
-    alz_managment_group_reader = {
+    alz_management_group_reader = {
       name        = "Azure Landing Zones Management Group What If ({{service_name}}-{{environment_name}})"
-      description = "This is a custom role created by the Azure Landing Zones Accelerator for running Bicep What If for the Management Group Structure."
+      description = "This is a custom role created by the Azure Landing Zones Accelerator for running Bicep What If for the Management Group hierarchy and its associated governance resources such as policy, RBAC etc... You must use the `--validation-level providerNoRbac` (Az CLI 2.75.0 or later) or `-ValidationLevel providerNoRbac` (Az PowerShell 13.4.0 or later (Az.Resources 7.10.0 or later)) flag when running Bicep What If with this role."
       permissions = {
         actions = [
-          "Microsoft.Management/managementGroups/read",
-          "Microsoft.Management/managementGroups/subscriptions/read",
-          "Microsoft.Management/managementGroups/settings/read",
-          "Microsoft.Authorization/*/read",
-          "Microsoft.Authorization/policyDefinitions/write",
-          "Microsoft.Authorization/policySetDefinitions/write",
-          "Microsoft.Authorization/roleDefinitions/write",
-          "Microsoft.Authorization/policyAssignments/write",
-          "Microsoft.Insights/diagnosticSettings/write",
-          "Microsoft.Insights/diagnosticSettings/read",
+          "*/read",
           "Microsoft.Resources/deployments/whatIf/action",
-          "Microsoft.Resources/deployments/write",
-          "Microsoft.Resources/deploymentStacks/read",
-          "Microsoft.Resources/deploymentStacks/validate/action"
+          "Microsoft.Resources/deployments/validate/action",
+          "Microsoft.Resources/subscriptions/operationResults/read",
+          "Microsoft.Management/operationResults/*/read"
         ]
         not_actions = []
       }
@@ -584,23 +558,14 @@ variable "custom_role_definitions_bicep" {
     }
     alz_subscription_reader = {
       name        = "Azure Landing Zones Subscription What If ({{service_name}}-{{environment_name}})"
-      description = "This is a custom role created by the Azure Landing Zones Accelerator for running Bicep What If for the platform subscriptions."
+      description = "This is a custom role created by the Azure Landing Zones Accelerator for running Bicep What If for the Management Group hierarchy and its associated governance resources such as policy, RBAC etc... You must use the `--validation-level providerNoRbac` (Az CLI 2.75.0 or later) or `-ValidationLevel providerNoRbac` (Az PowerShell 13.4.0 or later (Az.Resources 7.10.0 or later)) flag when running Bicep What If with this role."
       permissions = {
         actions = [
           "*/read",
-          "Microsoft.Resources/subscriptions/resourceGroups/write",
-          "Microsoft.ManagedIdentity/userAssignedIdentities/write",
-          "Microsoft.Automation/automationAccounts/write",
-          "Microsoft.OperationalInsights/workspaces/write",
-          "Microsoft.OperationalInsights/workspaces/linkedServices/write",
-          "Microsoft.OperationsManagement/solutions/write",
-          "Microsoft.Insights/dataCollectionRules/write",
-          "Microsoft.Authorization/locks/write",
-          "Microsoft.Network/*/write",
           "Microsoft.Resources/deployments/whatIf/action",
-          "Microsoft.Resources/deployments/write",
-          "Microsoft.Resources/deploymentStacks/read",
-          "Microsoft.SecurityInsights/onboardingStates/write"
+          "Microsoft.Resources/deployments/validate/action",
+          "Microsoft.Resources/subscriptions/operationResults/read",
+          "Microsoft.Management/operationResults/*/read"
         ]
         not_actions = []
       }
@@ -617,12 +582,12 @@ variable "role_assignments_terraform" {
   }))
   default = {
     plan_management_group = {
-      custom_role_definition_key         = "alz_managment_group_reader"
+      custom_role_definition_key         = "alz_management_group_reader"
       user_assigned_managed_identity_key = "plan"
       scope                              = "management_group"
     }
     apply_management_group = {
-      custom_role_definition_key         = "alz_managment_group_contributor"
+      custom_role_definition_key         = "alz_management_group_contributor"
       user_assigned_managed_identity_key = "apply"
       scope                              = "management_group"
     }
@@ -648,12 +613,12 @@ variable "role_assignments_bicep" {
   }))
   default = {
     plan_management_group = {
-      custom_role_definition_key         = "alz_managment_group_reader"
+      custom_role_definition_key         = "alz_management_group_reader"
       user_assigned_managed_identity_key = "plan"
       scope                              = "management_group"
     }
     apply_management_group = {
-      custom_role_definition_key         = "alz_managment_group_contributor"
+      custom_role_definition_key         = "alz_management_group_contributor"
       user_assigned_managed_identity_key = "apply"
       scope                              = "management_group"
     }
