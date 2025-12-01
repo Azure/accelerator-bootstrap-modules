@@ -277,7 +277,7 @@ jobs:
           $Inputs["apply_approvers"] = @()
 
           # Target a nested parent MG for public to test that scenario
-          $rootParentManagementGroupId = $selfHostedAgents -eq "none" ? "" : "${{ vars.NESTED_ROOT_PARENT_MANAGEMENT_GROUP_ID }}"
+          $rootParentManagementGroupId = $selfHostedAgents -eq "none" ? "${{ vars.NESTED_ROOT_PARENT_MANAGEMENT_GROUP_ID }}" : ""
           $Inputs["root_parent_management_group_id"] = $rootParentManagementGroupId
 
           $subscriptionIDManagement = $selfHostedAgents -eq "none" ? "${{ vars.SUBSCRIPTION_ID_NESTED_MANAGEMENT }}" : "${{ vars.SUBSCRIPTION_ID_ROOT_MANAGEMENT }}"
