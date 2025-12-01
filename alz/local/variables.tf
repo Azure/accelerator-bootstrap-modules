@@ -472,3 +472,13 @@ variable "storage_account_blob_versioning_enabled" {
   type    = bool
   default = true
 }
+
+variable "tenant_role_assignment_enabled" {
+  type    = bool
+  default = false
+}
+
+variable "tenant_role_assignment_role_definition_name" {
+  type    = string
+  default = "Landing Zone Management Owner"
+}

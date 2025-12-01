@@ -72,3 +72,19 @@ resource "azurerm_role_assignment" "alz_bootstrap" {
   role_definition_name = var.bootstrap_role_assignment_role_definition_name
   principal_id         = each.value.principal_id
 }
+
+# Bicep needs some permissions at tenant level to deploy management groups and policy in the same deployment
+locals {
+  bootstrap_role_assignments = {
+    for key, value in azurerm_user_assigned_identity.alz : key => {
+      principal_id = value.principal_id
+    } if var.tenant_role_assignment_enabled
+  }
+}
+
+resource "azurerm_role_assignment" "alz_tenant" {
+  for_each             = local.bootstrap_role_assignments
+  scope                = "/"
+  role_definition_name = var.tenant_role_assignment_role_definition_name
+  principal_id         = each.value.principal_id
+}
