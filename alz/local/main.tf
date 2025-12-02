@@ -4,7 +4,7 @@ module "resource_names" {
   environment_name = var.environment_name
   service_name     = var.service_name
   postfix_number   = var.postfix_number
-  resource_names   = merge(var.resource_names, local.custom_role_definitions_bicep_names, local.custom_role_definitions_terraform_names)
+  resource_names   = merge(var.resource_names, local.custom_role_definitions_bicep_names, local.custom_role_definitions_terraform_names, local.custom_role_definitions_bicep_classic_names)
 }
 
 module "files" {
@@ -32,7 +32,7 @@ module "azure" {
   storage_account_replication_type                     = var.storage_account_replication_type
   use_self_hosted_agents                               = false
   use_private_networking                               = false
-  custom_role_definitions                              = var.iac_type == "terraform" ? local.custom_role_definitions_terraform : local.custom_role_definitions_bicep
+  custom_role_definitions                              = var.iac_type == "terraform" ? local.custom_role_definitions_terraform : (var.iac_type == "bicep" ? local.custom_role_definitions_bicep : local.custom_role_definitions_bicep_classic)
   role_assignments                                     = var.iac_type == "terraform" ? var.role_assignments_terraform : var.role_assignments_bicep
   additional_role_assignment_principal_ids             = var.grant_permissions_to_current_user ? { current_user = data.azurerm_client_config.current.object_id } : {}
   storage_account_blob_soft_delete_enabled             = var.storage_account_blob_soft_delete_enabled
