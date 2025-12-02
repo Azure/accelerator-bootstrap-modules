@@ -502,7 +502,7 @@ variable "container_registry_task_timer_trigger_enabled" {
   description = <<-EOT
     **(Optional, default: `true`)** Enable timer trigger for container registry image builds
 
-    When enabled, the ACR task runs daily to rebuild the agent image,
+    When enabled, the ACR task runs to rebuild the agent image,
     ensuring it stays up-to-date with latest patches and dependencies.
     
     See container_registry_task_timer_trigger_schedule for customizing the schedule.
