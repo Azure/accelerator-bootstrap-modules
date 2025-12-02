@@ -111,7 +111,11 @@ locals {
 }
 
 locals {
-  agent_container_instance_dockerfile_url = "${var.agent_container_image_repository}#${var.agent_container_image_tag}:${var.agent_container_image_folder}"
+  # Use different image folder and tag for Container App Jobs vs Container Instances
+  agent_image_folder = var.use_container_app_jobs ? var.agent_container_app_image_folder : var.agent_container_image_folder
+  agent_image_tag    = var.use_container_app_jobs ? var.agent_container_app_image_tag : var.agent_container_image_tag
+
+  agent_container_instance_dockerfile_url = "${var.agent_container_image_repository}#${local.agent_image_tag}:${local.agent_image_folder}"
 }
 
 locals {

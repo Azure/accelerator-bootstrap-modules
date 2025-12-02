@@ -84,10 +84,16 @@ module "azure" {
   use_container_app_jobs                                    = var.use_container_app_jobs
   agent_container_cpu                                       = var.agent_container_cpu
   agent_container_memory                                    = var.agent_container_memory
+  service_name                                              = var.service_name
+  environment_name                                          = var.environment_name
+  container_app_environment_name                            = local.resource_names.container_app_environment
+  container_app_job_name                                    = local.resource_names.container_app_job
+  container_app_job_placeholder_name                        = local.resource_names.container_app_job_placeholder
+  container_app_infrastructure_resource_group_name          = local.resource_names.container_app_infrastructure_resource_group
   container_registry_name                                   = local.resource_names.container_registry
   container_registry_private_endpoint_name                  = local.resource_names.container_registry_private_endpoint
   container_registry_image_name                             = local.resource_names.container_image_name
-  container_registry_image_tag                              = var.agent_container_image_tag
+  container_registry_image_tag                              = local.agent_image_tag
   container_registry_dockerfile_name                        = var.agent_container_image_dockerfile
   container_registry_dockerfile_repository_folder_url       = local.agent_container_instance_dockerfile_url
   custom_role_definitions                                   = var.iac_type == "terraform" ? local.custom_role_definitions_terraform : local.custom_role_definitions_bicep

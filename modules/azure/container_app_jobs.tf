@@ -6,9 +6,15 @@ module "container_app_jobs" {
 
   # Required inputs
   location                            = var.azure_location
-  postfix                             = random_string.container_app_postfix[0].result
+  postfix                             = "${var.service_name}-${var.environment_name}"
   version_control_system_organization = var.agent_organization_url
   version_control_system_type         = "azuredevops"
+
+  # Override default naming to follow bootstrap naming convention
+  container_app_environment_name                   = var.container_app_environment_name
+  container_app_job_name                           = var.container_app_job_name
+  container_app_placeholder_job_name               = var.container_app_job_placeholder_name
+  container_app_infrastructure_resource_group_name = var.container_app_infrastructure_resource_group_name
 
   # Compute type
   compute_types = ["azure_container_app"]
@@ -31,6 +37,18 @@ module "container_app_jobs" {
   container_registry_dns_zone_id                       = azurerm_private_dns_zone.alz["container_registry"].id
   container_registry_private_dns_zone_creation_enabled = false
 
+  # Custom container image (use our pre-built image)
+  use_default_container_image = false
+  custom_container_registry_images = {
+    container_app = {
+      task_name            = "image-build-task"
+      dockerfile_path      = var.container_registry_dockerfile_name
+      context_path         = var.container_registry_dockerfile_repository_folder_url
+      context_access_token = "a"
+      image_names          = ["${var.container_registry_image_name}:${var.container_registry_image_tag}"]
+    }
+  }
+
   # User-assigned managed identity (BYO mode)
   user_assigned_managed_identity_creation_enabled = false
   user_assigned_managed_identity_id               = var.managed_identity_ids["agent"]
@@ -39,7 +57,7 @@ module "container_app_jobs" {
 
   # Container App Job configuration
   container_app_container_cpu            = var.agent_container_cpu
-  container_app_container_memory         = var.agent_container_memory
+  container_app_container_memory         = "${var.agent_container_memory}Gi"
   container_app_max_execution_count      = 10
   container_app_min_execution_count      = 0
   container_app_polling_interval_seconds = 30
@@ -56,13 +74,4 @@ module "container_app_jobs" {
     azurerm_role_assignment.container_registry_pull_for_agent,
     azurerm_role_assignment.container_registry_push_for_agent
   ]
-}
-
-# Random string for postfix (AVM module requires max 20 chars)
-resource "random_string" "container_app_postfix" {
-  count   = var.use_self_hosted_agents && var.use_container_app_jobs ? 1 : 0
-  length  = 6
-  special = false
-  upper   = false
-  numeric = true
 }

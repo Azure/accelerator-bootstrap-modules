@@ -168,7 +168,7 @@ variable "use_container_app_jobs" {
   description = "Whether to use Container App Jobs for self-hosted agents (Azure DevOps only). Mutually exclusive with Container Instances."
   type        = bool
   default     = false
-  
+
   validation {
     condition     = !var.use_container_app_jobs || var.use_self_hosted_agents
     error_message = "use_container_app_jobs requires use_self_hosted_agents to be true."
@@ -224,16 +224,30 @@ variable "agent_container_image_repository" {
   default     = "https://github.com/Azure/avm-container-images-cicd-agents-and-runners"
 }
 
+# Container Instances (ACI) configuration
 variable "agent_container_image_tag" {
-  description = "The container image tag to use for Azure DevOps Agents"
+  description = "The container image tag to use for Azure DevOps Agents with Container Instances"
   type        = string
   default     = "39b9059"
 }
 
 variable "agent_container_image_folder" {
-  description = "The folder containing the Dockerfile for the container image"
+  description = "The folder containing the Dockerfile for Container Instances"
   type        = string
   default     = "azure-devops-agent-aci"
+}
+
+# Container App Jobs (ACA) configuration
+variable "agent_container_app_image_tag" {
+  description = "The container image tag to use for Azure DevOps Agents with Container App Jobs"
+  type        = string
+  default     = "221742d"
+}
+
+variable "agent_container_app_image_folder" {
+  description = "The folder containing the Dockerfile for Container App Jobs"
+  type        = string
+  default     = "azure-devops-agent-aca"
 }
 
 variable "agent_container_image_dockerfile" {
@@ -323,6 +337,11 @@ variable "resource_names" {
     container_registry                                         = optional(string, "acr{{service_name}}{{environment_name}}{{azure_location_short}}{{postfix_number}}{{random_string}}")
     container_registry_private_endpoint                        = optional(string, "pe-{{service_name}}-{{environment_name}}-{{azure_location}}-acr-{{postfix_number}}")
     container_image_name                                       = optional(string, "azure-devops-agent")
+    # Container App Jobs naming (max 32 chars)
+    container_app_environment                   = optional(string, "cae-{{service_name}}-{{environment_name}}-{{azure_location_short}}-{{postfix_number}}")
+    container_app_job                           = optional(string, "caj-{{service_name}}-{{environment_name}}-{{azure_location_short}}-{{postfix_number}}")
+    container_app_job_placeholder               = optional(string, "caj-{{service_name}}-{{environment_name}}-{{azure_location_short}}-{{postfix_number}}-ph")
+    container_app_infrastructure_resource_group = optional(string, "rg-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-ca-infra")
   })
   description = "Overrides for resource names"
   default     = {}

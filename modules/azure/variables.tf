@@ -278,9 +278,44 @@ variable "agent_container_cpu" {
 }
 
 variable "agent_container_memory" {
+  type        = number
+  default     = 4
+  description = "Memory allocation for agent containers in Gibibytes"
+}
+
+# Container App Jobs naming variables
+variable "container_app_environment_name" {
   type        = string
-  default     = "4Gi"
-  description = "Memory allocation for agent containers"
+  default     = ""
+  description = "Name for the Container App Environment"
+}
+
+variable "container_app_job_name" {
+  type        = string
+  default     = ""
+  description = "Name for the Container App Job"
+}
+
+variable "container_app_job_placeholder_name" {
+  type        = string
+  default     = ""
+  description = "Name for the Container App Job placeholder"
+}
+
+variable "container_app_infrastructure_resource_group_name" {
+  type        = string
+  default     = ""
+  description = "Name for the Container Apps infrastructure resource group"
+}
+
+variable "service_name" {
+  type        = string
+  description = "Service name for resource naming"
+}
+
+variable "environment_name" {
+  type        = string
+  description = "Environment name for resource naming"
 }
 
 variable "agent_container_instance_managed_identity_name" {
