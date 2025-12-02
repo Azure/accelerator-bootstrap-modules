@@ -4,5 +4,6 @@ output "user_assigned_managed_identity_client_ids" {
 }
 
 output "role_assignments" {
-  value = local.role_assignments
+  description = "Complete configuration of all role assignments created for managed identities and additional principals. Includes role definition details, scope information, and principal assignments for audit and verification purposes."
+  value       = local.role_assignments
 }

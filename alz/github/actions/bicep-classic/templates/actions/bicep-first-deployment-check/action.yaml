@@ -1,0 +1,32 @@
+---
+name: First Deployment Check
+description: Check to see if this is the first deployment
+inputs:
+  managementGroupId:
+    description: 'The management group id'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: First Deployment Check
+      id: firstDeployment
+      uses: azure/powershell@v2
+      with:
+        azPSVersion: 'latest'
+        inlineScript: |
+          $managementGroupId = $env:MANAGEMENT_GROUP_ID
+          $managementGroups = Get-AzManagementGroup
+          $managementGroup = $managementGroups | Where-Object { $_.Name -eq $managementGroupId }
+
+          $firstDeployment = $true
+
+          if($managementGroup -eq $null) {
+            Write-Warning "Cannot find the $managementGroupId Management Group, so assuming this is the first deployment. We must skip checking some deployments since their dependent resources do not exist yet."
+          } else {
+            Write-Host "Found the $managementGroupId Management Group, so assuming this is not the first deployment."
+            $firstDeployment = $false
+          }
+          echo "firstDeployment=$firstDeployment" >> $env:GITHUB_ENV
+      env:
+        MANAGEMENT_GROUP_ID: $${{ inputs.managementGroupId }}

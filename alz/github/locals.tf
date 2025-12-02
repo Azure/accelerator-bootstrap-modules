@@ -31,8 +31,13 @@ locals {
 }
 
 locals {
-  ci_template_file_name = "workflows/ci-template.yaml"
-  cd_template_file_name = "workflows/cd-template.yaml"
+  ci_template_file_name                  = "workflows/ci-template.yaml"
+  cd_template_file_name                  = "workflows/cd-template.yaml"
+  target_folder_name                     = ".github"
+  self_hosted_runner_name                = local.use_runner_group ? "group: ${local.resource_names.version_control_system_runner_group}" : "self-hosted"
+  agent_pool_or_runner_configuration     = var.use_self_hosted_runners ? local.self_hosted_runner_name : "ubuntu-latest"
+  pipeline_files_directory_path          = "${path.module}/actions/${var.iac_type}/main"
+  pipeline_template_files_directory_path = "${path.module}/actions/${var.iac_type}/templates"
 }
 
 locals {
@@ -87,8 +92,7 @@ locals {
 }
 
 locals {
-  starter_module_folder_path      = var.module_folder_path_relative ? ("${path.module}/${var.module_folder_path}") : var.module_folder_path
-  starter_root_module_folder_path = "${local.starter_module_folder_path}/${var.root_module_folder_relative_path}"
+  starter_module_folder_path = var.module_folder_path_relative ? ("${path.module}/${var.module_folder_path}") : var.module_folder_path
 }
 
 locals {
@@ -96,8 +100,9 @@ locals {
 }
 
 locals {
-  custom_role_definitions_bicep_names     = { for key, value in var.custom_role_definitions_bicep : "custom_role_definition_bicep_${key}" => value.name }
-  custom_role_definitions_terraform_names = { for key, value in var.custom_role_definitions_terraform : "custom_role_definition_terraform_${key}" => value.name }
+  custom_role_definitions_bicep_names         = { for key, value in var.custom_role_definitions_bicep : "custom_role_definition_bicep_${key}" => value.name }
+  custom_role_definitions_terraform_names     = { for key, value in var.custom_role_definitions_terraform : "custom_role_definition_terraform_${key}" => value.name }
+  custom_role_definitions_bicep_classic_names = { for key, value in var.custom_role_definitions_bicep_classic : "custom_role_definition_bicep_classic_${key}" => value.name }
 
   custom_role_definitions_bicep = {
     for key, value in var.custom_role_definitions_bicep : key => {
@@ -114,11 +119,14 @@ locals {
       permissions = value.permissions
     }
   }
-}
 
-locals {
-  architecture_definition_name = var.architecture_definition_name
-  has_architecture_definition  = var.architecture_definition_name != null && var.architecture_definition_name != ""
+  custom_role_definitions_bicep_classic = {
+    for key, value in var.custom_role_definitions_bicep_classic : key => {
+      name        = local.resource_names["custom_role_definition_bicep_classic_${key}"]
+      description = value.description
+      permissions = value.permissions
+    }
+  }
 }
 
 locals {

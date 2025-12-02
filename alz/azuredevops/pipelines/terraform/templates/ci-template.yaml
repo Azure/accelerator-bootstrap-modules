@@ -16,7 +16,7 @@ stages:
       - job: validate
         displayName: Validate Terraform
         pool:
-          ${agent_pool_configuration}
+          ${agent_pool_or_runner_configuration}
         steps:
           - template: helpers/terraform-installer.yaml
             parameters:
@@ -42,7 +42,7 @@ stages:
         dependsOn: validate
         displayName: Validate Terraform Plan
         pool:
-          ${agent_pool_configuration}
+          ${agent_pool_or_runner_configuration}
         environment: ${environment_name_plan}
         timeoutInMinutes: 0
         strategy:
