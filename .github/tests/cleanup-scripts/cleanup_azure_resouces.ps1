@@ -20,10 +20,36 @@ $subscriptions = @(
     "eac9acf5-0a34-4db8-ae56-cdbcc7e2cf4c",
     "3a6bdc35-0830-41ac-b323-37a5a030e241",
     "c4332eb2-f966-47db-aa47-5d71e239d8aa",
-    "0aeefd1c-62c7-4071-91ad-925899603976"
+    "0aeefd1c-62c7-4071-91ad-925899603976",
+    "0d754f66-65b4-4f64-97f5-221f0174ad48"
 )
 
 $roleDefinitionsFilter = "Azure Landing Zones"
+
+$subscriptions | ForEach-Object -Parallel {
+    $subscription = $_
+    $subscriptionDetails = az account show --subscription $subscription | ConvertFrom-Json
+    Write-Host "Processing subscription: $subscription - $($subscriptionDetails.name)"
+
+    $resourceGroups = @("")
+    while ($resourceGroups.Count -gt 0) {
+        if($subscriptionFilter -eq "")
+        {
+            $resourceGroups = az group list --subscription $subscription | ConvertFrom-Json
+        }
+        else
+        {
+            $resourceGroups = az group list --subscription $subscription --query "[?contains(name, '$subscriptionFilter')]" | ConvertFrom-Json
+        }
+
+        $resourceGroups | ForEach-Object -Parallel {
+            $subscription = $using:subscription
+            $subscriptionDetails = $using:subscriptionDetails
+            Write-Host "Deleting resource group: $($_.name) in subscription: $subscription - $($subscriptionDetails.name)"
+            az group delete --subscription $subscription --name $_.name --yes
+        } -ThrottleLimit 10
+    }
+} -ThrottleLimit 10
 
 $managementGroups | ForEach-Object -Parallel {
     $managementGroupFilter = $using:managementGroupFilter
@@ -50,7 +76,7 @@ $managementGroups | ForEach-Object -Parallel {
         $managementGroup = $using:managementGroup
         $roleDefinition = $_
 
-        $roleAssignments = az role assignment list --role $roleDefinition.roleName --scope "/providers/Microsoft.Management/managementGroups/$managementGroup" --query "[].{id:id,principalName:principalName,principalId:principalId}" -o json | ConvertFrom-Json
+        $roleAssignments = az role assignment list --role $roleDefinition.name --scope "/providers/Microsoft.Management/managementGroups/$managementGroup" --query "[].{id:id,principalName:principalName,principalId:principalId}" -o json | ConvertFrom-Json
         $roleAssignments | ForEach-Object -Parallel {
             $managementGroup = $using:managementGroup
             $roleDefinition = $using:roleDefinition
@@ -59,8 +85,8 @@ $managementGroups | ForEach-Object -Parallel {
             az role assignment delete --ids $roleAssignment.id
         } -ThrottleLimit 10
 
-        foreach ( $subscription in $using:subscriptions ) {
-            $subscriptionRoleAssignments = az role assignment list --role $roleDefinition.roleName --subscription $subscription --query "[].{id:id,principalName:principalName,principalId:principalId}" -o json | ConvertFrom-Json
+        foreach ($subscription in $using:subscriptions) {
+            $subscriptionRoleAssignments = az role assignment list --role $roleDefinition.name --subscription $subscription --query "[].{id:id,principalName:principalName,principalId:principalId}" -o json | ConvertFrom-Json
             $subscriptionRoleAssignments | ForEach-Object -Parallel {
                 $roleDefinition = $using:roleDefinition
                 $subscription = $using:subscription
@@ -70,35 +96,10 @@ $managementGroups | ForEach-Object -Parallel {
             } -ThrottleLimit 10
         }
 
-        Write-Host "Deleting custom role definition: $($roleDefinition.name) in management group: $managementGroup"
-        az role definition delete --name $roleDefinition.name --management-group $managementGroup
+        Write-Host "Deleting custom role definition: $($roleDefinition.roleName) in management group: $managementGroup"
+        az role definition delete --name $roleDefinition.name --scope "/providers/Microsoft.Management/managementGroups/$managementGroup"
 
     } -ThrottleLimit 10
-} -ThrottleLimit 10
-
-$subscriptions | ForEach-Object -Parallel {
-    $subscription = $_
-    $subscriptionDetails = az account show --subscription $subscription | ConvertFrom-Json
-    Write-Host "Processing subscription: $subscription - $($subscriptionDetails.name)"
-
-    $resourceGroups = @("")
-    while ($resourceGroups.Count -gt 0) {
-        if($subscriptionFilter -eq "")
-        {
-            $resourceGroups = az group list --subscription $subscription | ConvertFrom-Json
-        }
-        else
-        {
-            $resourceGroups = az group list --subscription $subscription --query "[?contains(name, '$subscriptionFilter')]" | ConvertFrom-Json
-        }
-
-        $resourceGroups | ForEach-Object -Parallel {
-            $subscription = $using:subscription
-            $subscriptionDetails = $using:subscriptionDetails
-            Write-Host "Deleting resource group: $($_.name) in subscription: $subscription - $($subscriptionDetails.name)"
-            az group delete --subscription $subscription --name $_.name --yes
-        } -ThrottleLimit 10
-    }
 } -ThrottleLimit 10
 
 Write-Host "Cleanup complete. :)"
