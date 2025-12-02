@@ -31,17 +31,20 @@ locals {
 }
 
 locals {
-  starter_module_folder_path      = var.module_folder_path_relative ? ("${path.module}/${var.module_folder_path}") : var.module_folder_path
-  starter_root_module_folder_path = "${local.starter_module_folder_path}/${var.root_module_folder_relative_path}"
+  starter_module_folder_path = var.module_folder_path_relative ? ("${path.module}/${var.module_folder_path}") : var.module_folder_path
 }
 
 locals {
-  target_directory = var.target_directory == "" ? ("${path.module}/${var.default_target_directory}") : var.target_directory
+  target_directory          = var.target_directory == "" ? ("${path.module}/${var.default_target_directory}") : var.target_directory
+  script_target_folder_name = "scripts"
+  script_source_folder_name = var.iac_type == "bicep" ? "scripts-bicep" : (var.iac_type == "bicep-classic" ? "scripts" : null)
+  script_source_folder_path = local.script_source_folder_name == null ? null : "${path.module}/${local.script_source_folder_name}"
 }
 
 locals {
-  custom_role_definitions_bicep_names     = { for key, value in var.custom_role_definitions_bicep : "custom_role_definition_bicep_${key}" => value.name }
-  custom_role_definitions_terraform_names = { for key, value in var.custom_role_definitions_terraform : "custom_role_definition_terraform_${key}" => value.name }
+  custom_role_definitions_bicep_names         = { for key, value in var.custom_role_definitions_bicep : "custom_role_definition_bicep_${key}" => value.name }
+  custom_role_definitions_terraform_names     = { for key, value in var.custom_role_definitions_terraform : "custom_role_definition_terraform_${key}" => value.name }
+  custom_role_definitions_bicep_classic_names = { for key, value in var.custom_role_definitions_bicep_classic : "custom_role_definition_bicep_classic_${key}" => value.name }
 
   custom_role_definitions_bicep = {
     for key, value in var.custom_role_definitions_bicep : key => {
@@ -58,10 +61,12 @@ locals {
       permissions = value.permissions
     }
   }
-}
 
-locals {
-  architecture_definition_name             = var.architecture_definition_name
-  has_architecture_definition              = var.architecture_definition_name != null && var.architecture_definition_name != ""
-  architecture_definition_file_destination = var.architecture_definition_name != null && var.architecture_definition_name != "" ? "${local.target_directory}/${var.root_module_folder_relative_path}/lib/architecture_definitions/${local.architecture_definition_name}.alz_architecture_definition.json" : ""
+  custom_role_definitions_bicep_classic = {
+    for key, value in var.custom_role_definitions_bicep_classic : key => {
+      name        = local.resource_names["custom_role_definition_bicep_classic_${key}"]
+      description = value.description
+      permissions = value.permissions
+    }
+  }
 }

@@ -6,13 +6,15 @@ resource "random_string" "alz" {
   numeric = false
 }
 
+resource "time_static" "alz" {}
+
 locals {
   formatted_postfix_number        = format("%03d", var.postfix_number)
   formatted_postfix_number_plus_1 = format("%03d", var.postfix_number + 1)
   formatted_postfix_number_plus_2 = format("%03d", var.postfix_number + 2)
   formatted_postfix_number_plus_3 = format("%03d", var.postfix_number + 3)
   random_string                   = random_string.alz.result
-  resource_names = {
+  resource_names = merge({
     for key, value in var.resource_names : key => replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(value,
       "{{service_name}}", var.service_name),
       "{{service_name_short}}", substr(var.service_name, 0, 3)),
@@ -25,5 +27,9 @@ locals {
       "{{postfix_number_plus_2}}", local.formatted_postfix_number_plus_2),
       "{{postfix_number_plus_3}}", local.formatted_postfix_number_plus_3),
     "{{random_string}}", local.random_string)
-  }
+    }, {
+    unique_postfix       = local.random_string
+    time_stamp           = time_static.alz.rfc3339
+    time_stamp_formatted = formatdate("YYYY-MM-DD-hh-mm-ss", time_static.alz.rfc3339)
+  })
 }

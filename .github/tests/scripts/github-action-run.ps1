@@ -40,6 +40,12 @@ function Invoke-Workflow {
         if($iac -eq "bicep") {
             $workflowDispatchBody = @{
                 ref = "main"
+            } | ConvertTo-Json -Depth 100
+        }
+
+        if($iac -eq "bicep-classic") {
+            $workflowDispatchBody = @{
+                ref = "main"
                 inputs = @{
                     destroy = ($workflowAction -eq "destroy").ToString().ToLower()
                 }
@@ -68,7 +74,7 @@ function Wait-ForWorkflowRunToComplete {
     $workflowRunConclusion = ""
     while($workflowRunStatus -ne "completed") {
         Start-Sleep -Seconds 10
-        
+
         $workflowRun = Invoke-RestMethod -Method GET -Uri $workflowRunUrl -Headers $headers -StatusCodeVariable statusCode
         if ($statusCode -lt 300) {
             $workflowRunStatus = $workflowRun.workflow_runs[0].status

@@ -1,21 +1,46 @@
 variable "iac_type" {
-  description = "The type of infrastructure as code to use for the deployment. (e.g. 'terraform' or `bicep)"
+  description = <<-EOT
+    **(Required)** The type of infrastructure as code to use for the deployment.
+
+    Valid values: 'terraform', 'bicep', or 'bicep-classic'
+  EOT
   type        = string
 }
 
 variable "module_folder_path" {
-  description = "The folder for the starter modules"
+  description = <<-EOT
+    **(Required)** The filesystem path to the folder containing ALZ starter modules.
+
+    This folder contains the infrastructure as code templates that will be deployed.
+  EOT
   type        = string
 }
 
 variable "root_parent_management_group_id" {
-  description = "The root parent management group ID. This will default to the Tenant Root Group ID if not supplied"
+  description = <<-EOT
+    **(Optional, default: `""`)**  The root parent management group ID.
+
+    If not supplied, defaults to the Tenant Root Group ID.
+  EOT
   type        = string
   default     = ""
 }
 
 variable "subscription_ids" {
-  description = "The list of subscription IDs to deploy the Platform Landing Zones into"
+  description = <<-EOT
+    **(Optional, default: `{}`)**  Map of Azure subscription IDs where Platform Landing Zone resources will be deployed.
+
+    Keys must be one of: 'management', 'connectivity', 'identity', 'security'
+    Values must be valid Azure subscription GUIDs.
+
+    Example:
+    ```
+    {
+      management   = "00000000-0000-0000-0000-000000000000"
+      connectivity = "11111111-1111-1111-1111-111111111111"
+    }
+    ```
+  EOT
   type        = map(string)
   default     = {}
   nullable    = false
@@ -30,7 +55,11 @@ variable "subscription_ids" {
 }
 
 variable "subscription_id_connectivity" {
-  description = "DEPRECATED (use subscription_ids instead): The identifier of the Connectivity Subscription"
+  description = <<-EOT
+    **(Optional, default: `null`)** **DEPRECATED** (use subscription_ids instead)
+
+    The identifier of the Connectivity Subscription.
+  EOT
   type        = string
   default     = null
   validation {
@@ -40,7 +69,11 @@ variable "subscription_id_connectivity" {
 }
 
 variable "subscription_id_identity" {
-  description = "DEPRECATED (use subscription_ids instead): The identifier of the Identity Subscription"
+  description = <<-EOT
+    **(Optional, default: `null`)** **DEPRECATED** (use subscription_ids instead)
+
+    The identifier of the Identity Subscription.
+  EOT
   type        = string
   default     = null
   validation {
@@ -50,7 +83,11 @@ variable "subscription_id_identity" {
 }
 
 variable "subscription_id_management" {
-  description = "DEPRECATED (use subscription_ids instead): The identifier of the Management Subscription"
+  description = <<-EOT
+    **(Optional, default: `null`)** **DEPRECATED** (use subscription_ids instead)
+
+    The identifier of the Management Subscription.
+  EOT
   type        = string
   default     = null
   validation {
@@ -60,49 +97,85 @@ variable "subscription_id_management" {
 }
 
 variable "configuration_file_path" {
-  description = "The name of the configuration file"
+  description = <<-EOT
+    **(Optional, default: `""`)** The filesystem path to the configuration file.
+
+    This file contains additional deployment parameters for the ALZ deployment.
+  EOT
   type        = string
   default     = ""
 }
 
 variable "starter_module_name" {
-  description = "The name of the starter module"
+  description = <<-EOT
+    **(Optional, default: `""`)** The name of the ALZ starter module to deploy.
+
+    Identifies which starter module template to use for the deployment.
+  EOT
   type        = string
   default     = ""
 }
 
 variable "bootstrap_location" {
-  description = "Azure Deployment location for the bootstrap resources (e.g. storage account, identities, etc)"
+  description = <<-EOT
+    **(Optional, default: `""`)** The Azure region where bootstrap resources will be deployed.
+
+    Specifies the location for storage accounts, managed identities, and other bootstrap resources.
+    Examples: 'uksouth', 'eastus', 'westeurope'
+  EOT
   type        = string
   default     = ""
 }
 
 variable "on_demand_folder_repository" {
-  description = "The repository to use for the on-demand folders"
+  description = <<-EOT
+    **(Optional, default: `""`)** The Git repository URL for on-demand folder sources.
+
+    Specifies the repository containing additional deployment folders.
+  EOT
   type        = string
   default     = ""
 }
 
 variable "on_demand_folder_artifact_name" {
-  description = "The branch to use for the on-demand folders"
+  description = <<-EOT
+    **(Optional, default: `""`)** The branch or artifact name for on-demand folders.
+
+    Specifies which branch or version to use from the on-demand folder repository.
+  EOT
   type        = string
   default     = ""
 }
 
 variable "target_directory" {
-  description = "The target directory to create the landing zone files in. (e.g. 'c:\\landingzones\\my_landing_zone')"
+  description = <<-EOT
+    **(Optional, default: `""`)** The filesystem path where landing zone files will be created.
+
+    Examples:
+    - Windows: 'c:\landingzones\my_landing_zone'
+    - Linux/Mac: '/home/user/landingzones/my_landing_zone'
+  EOT
   type        = string
   default     = ""
 }
 
 variable "create_bootstrap_resources_in_azure" {
-  description = "Whether to create resources in Azure (e.g. resource group, storage account, identities, etc.)"
+  description = <<-EOT
+    **(Optional, default: `true`)** Whether to create bootstrap resources in Azure.
+
+    When true, provisions resource groups, storage accounts, managed identities, and other bootstrap infrastructure.
+  EOT
   type        = bool
   default     = true
 }
 
 variable "bootstrap_subscription_id" {
-  description = "Azure Subscription ID for the bootstrap resources (e.g. storage account, identities, etc). Leave empty to use the az login subscription"
+  description = <<-EOT
+    **(Optional, default: `""`)** The Azure subscription ID where bootstrap resources will be deployed.
+
+    If empty, uses the currently logged-in subscription from Azure CLI.
+    Must be a valid GUID format.
+  EOT
   type        = string
   default     = ""
   validation {
@@ -112,7 +185,13 @@ variable "bootstrap_subscription_id" {
 }
 
 variable "service_name" {
-  description = "Used to build up the default resource names (e.g. rg-<service_name>-mgmt-uksouth-001)"
+  description = <<-EOT
+    **(Optional, default: `"alz"`)**  Used to build up the default resource names.
+
+    Example: rg-**<service_name>**-mgmt-uksouth-001
+
+    Must contain only lowercase letters and numbers.
+  EOT
   type        = string
   default     = "alz"
   validation {
@@ -122,7 +201,13 @@ variable "service_name" {
 }
 
 variable "environment_name" {
-  description = "Used to build up the default resource names (e.g. rg-alz-<environment_name>-uksouth-001)"
+  description = <<-EOT
+    **(Optional, default: `"mgmt"`)** Used to build up the default resource names.
+
+    Example: rg-alz-**<environment_name>**-uksouth-001
+
+    Must contain only lowercase letters and numbers.
+  EOT
   type        = string
   default     = "mgmt"
   validation {
@@ -132,42 +217,97 @@ variable "environment_name" {
 }
 
 variable "postfix_number" {
-  description = "Used to build up the default resource names (e.g. rg-alz-mgmt-uksouth-<postfix_number>)"
+  description = <<-EOT
+    **(Optional, default: `1`)**  Used to build up the default resource names.
+
+    Example: rg-alz-mgmt-uksouth-**<postfix_number>**
+  EOT
   type        = number
   default     = 1
 }
 
 variable "grant_permissions_to_current_user" {
-  description = "Grant permissions to the current user on the bootstrap resources in addition to the user assinged managed identities."
+  description = <<-EOT
+    **(Optional, default: `true`)** Whether to grant permissions to the current Azure CLI user.
+
+    When true, assigns permissions to the currently authenticated user in addition to the managed identities.
+    Useful for local development and testing.
+  EOT
   type        = bool
   default     = true
 }
 
 variable "additional_files" {
-  description = "Additional files to upload to the repository. This must be specified as a comma-separated list of absolute file paths (e.g. c:\\config\\config.yaml or /home/user/config/config.yaml)"
+  description = <<-EOT
+    **(Optional, default: `[]`)** Additional files to include in the deployment.
+
+    Must be specified as a list of absolute file paths.
+    Examples:
+    - Windows: ["c:\\config\\config.yaml", "c:\\scripts\\deploy.ps1"]
+    - Linux/Mac: ["/home/user/config/config.yaml", "/home/user/scripts/deploy.sh"]
+  EOT
   type        = list(string)
   default     = []
 }
 
 variable "additional_folders_path" {
-  description = "Additional folders to upload to the repository. This must be specified as a comma-separated list of absolute paths (e.g. c:\\templates\\Microsoft_Cloud_for_Industry\\Common or /templates/Microsoft_Cloud_for_Industry/Common)"
+  description = <<-EOT
+    **(Optional, default: `[]`)** Additional folders to include in the deployment.
+
+    Must be specified as a list of absolute directory paths.
+    Examples:
+    - Windows: ["c:\\templates\\Microsoft_Cloud_for_Industry\\Common"]
+    - Linux/Mac: ["/templates/Microsoft_Cloud_for_Industry/Common"]
+  EOT
   type        = list(string)
   default     = []
 }
 
 variable "built_in_configuration_file_names" {
-  description = "Built-in configuration file name"
+  description = <<-EOT
+    **(Optional, default: `["config.yaml", "config-hub-and-spoke-vnet.yaml", "config-virtual-wan.yaml"]`)**
+    List of built-in configuration file names available for ALZ deployments.
+
+    These files provide pre-configured deployment options for different network topologies.
+  EOT
   type        = list(string)
   default     = ["config.yaml", "config-hub-and-spoke-vnet.yaml", "config-virtual-wan.yaml"]
 }
 
 variable "module_folder_path_relative" {
-  description = "Whether the module folder path is relative to the bootstrap module"
+  description = <<-EOT
+    **(Optional, default: `false`)** Whether the module_folder_path is relative to the bootstrap module.
+
+    When true, interprets module_folder_path as relative to the bootstrap module's location.
+    When false, interprets module_folder_path as an absolute path.
+  EOT
   type        = bool
   default     = false
 }
 
 variable "resource_names" {
+  description = <<-EOT
+    **(Optional, default: `{}`)** Custom resource name overrides for Azure bootstrap resources.
+
+    Allows customization of naming patterns using template variables:
+    - `{{service_name}}` - Replaced with var.service_name
+    - `{{environment_name}}` - Replaced with var.environment_name
+    - `{{azure_location}}` - Replaced with Azure region
+    - `{{postfix_number}}` - Replaced with var.postfix_number
+    - `{{random_string}}` - Replaced with generated random string
+    - `{{service_name_short}}`, `{{environment_name_short}}`, `{{azure_location_short}}` - Shortened versions
+
+    Object fields:
+    - `resource_group_state` (optional) - Resource group for Terraform/Bicep state storage
+    - `resource_group_identity` (optional) - Resource group for managed identities
+    - `user_assigned_managed_identity_plan` (optional) - Managed identity for plan operations
+    - `user_assigned_managed_identity_apply` (optional) - Managed identity for apply operations
+    - `user_assigned_managed_identity_federated_credentials_prefix` (optional) - Prefix for federated credential names
+    - `storage_account` (optional) - Storage account for state files
+    - `storage_container` (optional) - Blob container for state files
+
+    All fields are optional and use default templates if not specified.
+  EOT
   type = object({
     resource_group_state                                        = optional(string, "rg-{{service_name}}-{{environment_name}}-state-{{azure_location}}-{{postfix_number}}")
     resource_group_identity                                     = optional(string, "rg-{{service_name}}-{{environment_name}}-identity-{{azure_location}}-{{postfix_number}}")
@@ -177,12 +317,36 @@ variable "resource_names" {
     storage_account                                             = optional(string, "sto{{service_name_short}}{{environment_name_short}}{{azure_location_short}}{{postfix_number}}{{random_string}}")
     storage_container                                           = optional(string, "{{environment_name}}-tfstate")
   })
-  description = "Overrides for resource names"
-  default     = {}
+  default = {}
 }
 
 variable "federated_credentials" {
-  description = "Federated credentials for other version control systems"
+  description = <<-EOT
+    **(Optional, default: `{}`)** Configuration for OIDC federated identity credentials.
+
+    Enables keyless authentication from external CI/CD systems to Azure by establishing trust
+    relationships between Azure managed identities and external identity providers.
+
+    Map of federated credential configurations where:
+    - **Key**: Unique identifier for the credential
+    - **Value**: Object containing:
+      - `user_assigned_managed_identity_key` (string) - Key of the managed identity to federate
+      - `federated_credential_subject` (string) - Subject claim from external IdP
+      - `federated_credential_issuer` (string) - Issuer URL of external IdP
+      - `federated_credential_name` (string) - Display name for the credential
+
+    Example for GitHub Actions:
+    ```
+    {
+      github_plan = {
+        user_assigned_managed_identity_key = "plan"
+        federated_credential_subject       = "repo:my-org/my-repo:environment:plan"
+        federated_credential_issuer        = "https://token.actions.githubusercontent.com"
+        federated_credential_name          = "github-plan-credential"
+      }
+    }
+    ```
+  EOT
   type = map(object({
     user_assigned_managed_identity_key = string
     federated_credential_subject       = string
@@ -193,19 +357,53 @@ variable "federated_credentials" {
 }
 
 variable "default_target_directory" {
-  description = "The default target directory to create the landing zone files in"
+  description = <<-EOT
+    **(Optional, default: `"../../../../local-output"`)** The default directory for landing zone file output.
+
+    Used as a fallback when target_directory is not specified.
+    Relative paths are evaluated from the module's location.
+  EOT
   type        = string
   default     = "../../../../local-output"
 }
 
 variable "storage_account_replication_type" {
-  description = "Controls the redundancy for the storage account"
+  description = <<-EOT
+    **(Optional, default: `"ZRS"`)** The replication strategy for the Azure storage account storing state files.
+
+    Valid values:
+    - `LRS` - Locally Redundant Storage
+    - `GRS` - Geo-Redundant Storage
+    - `RAGRS` - Read-Access Geo-Redundant Storage
+    - `ZRS` - Zone-Redundant Storage (recommended for high availability)
+    - `GZRS` - Geo-Zone-Redundant Storage
+    - `RAGZRS` - Read-Access Geo-Zone-Redundant Storage
+  EOT
   type        = string
   default     = "ZRS"
 }
 
 variable "custom_role_definitions_terraform" {
-  description = "Custom role definitions to create for Terraform"
+  description = <<-EOT
+    **(Optional)** Custom Azure RBAC role definitions for Terraform-based deployments.
+
+    Map of role definition configurations where:
+    - **Key**: Role identifier (e.g., 'alz_management_group_contributor')
+    - **Value**: Object containing:
+      - `name` (string) - Display name (supports template variables like {{service_name}})
+      - `description` (string) - Role purpose description
+      - `permissions` (object):
+        - `actions` (list(string)) - Allowed Azure actions
+        - `not_actions` (list(string)) - Denied Azure actions
+
+    Default includes 4 predefined roles:
+    - `alz_management_group_contributor` - Manage management group hierarchy and governance
+    - `alz_management_group_reader` - Read management group structure and validate deployments
+    - `alz_subscription_owner` - Full access to platform subscriptions
+    - `alz_subscription_reader` - Read/write access for platform subscription resources
+
+    See default value for complete role action definitions.
+  EOT
   type = map(object({
     name        = string
     description = string
@@ -215,7 +413,7 @@ variable "custom_role_definitions_terraform" {
     })
   }))
   default = {
-    alz_managment_group_contributor = {
+    alz_management_group_contributor = {
       name        = "Azure Landing Zones Management Group Contributor ({{service_name}}-{{environment_name}})"
       description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing the Management Group Structure."
       permissions = {
@@ -224,18 +422,16 @@ variable "custom_role_definitions_terraform" {
           "Microsoft.Management/managementGroups/read",
           "Microsoft.Management/managementGroups/subscriptions/delete",
           "Microsoft.Management/managementGroups/subscriptions/write",
-          "Microsoft.Management/managementGroups/write",
-          "Microsoft.Management/managementGroups/subscriptions/read",
           "Microsoft.Management/managementGroups/settings/read",
           "Microsoft.Management/managementGroups/settings/write",
           "Microsoft.Management/managementGroups/settings/delete",
+          "Microsoft.Management/managementGroups/write",
+          "Microsoft.Management/managementGroups/subscriptions/read",
           "Microsoft.Authorization/policyDefinitions/write",
           "Microsoft.Authorization/policySetDefinitions/write",
           "Microsoft.Authorization/policyAssignments/write",
           "Microsoft.Authorization/roleDefinitions/write",
           "Microsoft.Authorization/*/read",
-          "Microsoft.Resources/deployments/write",
-          "Microsoft.Resources/deployments/exportTemplate/action",
           "Microsoft.Authorization/roleAssignments/write",
           "Microsoft.Authorization/roleAssignments/delete",
           "Microsoft.Insights/diagnosticSettings/write"
@@ -243,7 +439,7 @@ variable "custom_role_definitions_terraform" {
         not_actions = []
       }
     }
-    alz_managment_group_reader = {
+    alz_management_group_reader = {
       name        = "Azure Landing Zones Management Group Reader ({{service_name}}-{{environment_name}})"
       description = "This is a custom role created by the Azure Landing Zones Accelerator for Reading the Management Group Structure."
       permissions = {
@@ -252,8 +448,16 @@ variable "custom_role_definitions_terraform" {
           "Microsoft.Management/managementGroups/subscriptions/read",
           "Microsoft.Management/managementGroups/settings/read",
           "Microsoft.Authorization/*/read",
+          "Microsoft.Authorization/policyDefinitions/write",
+          "Microsoft.Authorization/policySetDefinitions/write",
+          "Microsoft.Authorization/roleDefinitions/write",
+          "Microsoft.Authorization/policyAssignments/write",
+          "Microsoft.Insights/diagnosticSettings/write",
+          "Microsoft.Insights/diagnosticSettings/read",
+          "Microsoft.Resources/deployments/whatIf/action",
           "Microsoft.Resources/deployments/write",
-          "Microsoft.Resources/deployments/exportTemplate/action"
+          "Microsoft.Resources/deploymentStacks/read",
+          "Microsoft.Resources/deploymentStacks/validate/action"
         ]
         not_actions = []
       }
@@ -263,9 +467,7 @@ variable "custom_role_definitions_terraform" {
       description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing in platform subscriptions."
       permissions = {
         actions = [
-          "*",
-          "Microsoft.Resources/deployments/write",
-          "Microsoft.Resources/deployments/exportTemplate/action"
+          "*"
         ]
         not_actions = []
       }
@@ -276,8 +478,18 @@ variable "custom_role_definitions_terraform" {
       permissions = {
         actions = [
           "*/read",
+          "Microsoft.Resources/subscriptions/resourceGroups/write",
+          "Microsoft.ManagedIdentity/userAssignedIdentities/write",
+          "Microsoft.Automation/automationAccounts/write",
+          "Microsoft.OperationalInsights/workspaces/write",
+          "Microsoft.OperationalInsights/workspaces/linkedServices/write",
+          "Microsoft.OperationsManagement/solutions/write",
+          "Microsoft.Insights/dataCollectionRules/write",
+          "Microsoft.Authorization/locks/write",
+          "Microsoft.Network/*/write",
+          "Microsoft.Resources/deployments/whatIf/action",
           "Microsoft.Resources/deployments/write",
-          "Microsoft.Resources/deployments/exportTemplate/action"
+          "Microsoft.SecurityInsights/onboardingStates/write"
         ]
         not_actions = []
       }
@@ -286,7 +498,26 @@ variable "custom_role_definitions_terraform" {
 }
 
 variable "custom_role_definitions_bicep" {
-  description = "Custom role definitions to create for Bicep"
+  description = <<-EOT
+    **(Optional)** Custom Azure RBAC role definitions for Bicep-based deployments.
+
+    Map of role definition configurations where:
+    - **Key**: Role identifier (e.g., 'alz_management_group_contributor')
+    - **Value**: Object containing:
+      - `name` (string) - Display name (supports template variables like {{service_name}})
+      - `description` (string) - Role purpose description
+      - `permissions` (object):
+        - `actions` (list(string)) - Allowed Azure actions
+        - `not_actions` (list(string)) - Denied Azure actions
+
+    Default includes 4 predefined roles:
+    - `alz_management_group_contributor` - Manage management group hierarchy and governance
+    - `alz_management_group_reader` - Run Bicep What-If validations (requires --validation-level providerNoRbac flag)
+    - `alz_subscription_owner` - Full access to platform subscriptions
+    - `alz_subscription_reader` - Run Bicep What-If for subscription deployments
+
+    See default value for complete role action definitions.
+  EOT
   type = map(object({
     name        = string
     description = string
@@ -296,7 +527,96 @@ variable "custom_role_definitions_bicep" {
     })
   }))
   default = {
-    alz_managment_group_contributor = {
+    alz_management_group_contributor = {
+      name        = "Azure Landing Zones Management Group Contributor ({{service_name}}-{{environment_name}})"
+      description = "This is a custom role created by the Azure Landing Zones Accelerator for creating and managing the Management Group hierarchy and its associated governance resources such as policy, RBAC etc..."
+      permissions = {
+        actions = [
+          "*/read",
+          "Microsoft.Management/*",
+          "Microsoft.Authorization/*",
+          "Microsoft.Resources/*",
+          "Microsoft.Support/*",
+          "Microsoft.Insights/diagnosticSettings/*"
+        ]
+        not_actions = [
+          "Microsoft.Resources/subscriptions/resourceGroups/write",
+          "Microsoft.Resources/subscriptions/resourceGroups/delete"
+        ]
+      }
+    }
+    alz_management_group_reader = {
+      name        = "Azure Landing Zones Management Group What If ({{service_name}}-{{environment_name}})"
+      description = "This is a custom role created by the Azure Landing Zones Accelerator for running Bicep What If for the Management Group hierarchy and its associated governance resources such as policy, RBAC etc... You must use the `--validation-level providerNoRbac` (Az CLI 2.75.0 or later) or `-ValidationLevel providerNoRbac` (Az PowerShell 13.4.0 or later (Az.Resources 7.10.0 or later)) flag when running Bicep What If with this role."
+      permissions = {
+        actions = [
+          "*/read",
+          "Microsoft.Resources/deployments/whatIf/action",
+          "Microsoft.Resources/deployments/validate/action",
+          "Microsoft.Resources/subscriptions/operationResults/read",
+          "Microsoft.Management/operationResults/*/read"
+        ]
+        not_actions = []
+      }
+    }
+    alz_subscription_owner = {
+      name        = "Azure Landing Zones Subscription Owner ({{service_name}}-{{environment_name}})"
+      description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing in platform subscriptions."
+      permissions = {
+        actions = [
+          "*"
+        ]
+        not_actions = []
+      }
+    }
+    alz_subscription_reader = {
+      name        = "Azure Landing Zones Subscription What If ({{service_name}}-{{environment_name}})"
+      description = "This is a custom role created by the Azure Landing Zones Accelerator for running Bicep What If for the Management Group hierarchy and its associated governance resources such as policy, RBAC etc... You must use the `--validation-level providerNoRbac` (Az CLI 2.75.0 or later) or `-ValidationLevel providerNoRbac` (Az PowerShell 13.4.0 or later (Az.Resources 7.10.0 or later)) flag when running Bicep What If with this role."
+      permissions = {
+        actions = [
+          "*/read",
+          "Microsoft.Resources/deployments/whatIf/action",
+          "Microsoft.Resources/deployments/validate/action",
+          "Microsoft.Resources/subscriptions/operationResults/read",
+          "Microsoft.Management/operationResults/*/read"
+        ]
+        not_actions = []
+      }
+    }
+  }
+}
+
+variable "custom_role_definitions_bicep_classic" {
+  description = <<-EOT
+    **(Optional)** Custom Azure RBAC role definitions for Bicep-based deployments.
+
+    Map of role definition configurations where:
+    - **Key**: Role identifier (e.g., 'alz_management_group_contributor')
+    - **Value**: Object containing:
+      - `name` (string) - Display name (supports template variables like {{service_name}})
+      - `description` (string) - Role purpose description
+      - `permissions` (object):
+        - `actions` (list(string)) - Allowed Azure actions
+        - `not_actions` (list(string)) - Denied Azure actions
+
+    Default includes 4 predefined roles:
+    - `alz_management_group_contributor` - Manage management group hierarchy and governance
+    - `alz_management_group_reader` - Run Bicep What-If validations (requires --validation-level providerNoRbac flag)
+    - `alz_subscription_owner` - Full access to platform subscriptions
+    - `alz_subscription_reader` - Run Bicep What-If for subscription deployments
+
+    See default value for complete role action definitions.
+  EOT
+  type = map(object({
+    name        = string
+    description = string
+    permissions = object({
+      actions     = list(string)
+      not_actions = list(string)
+    })
+  }))
+  default = {
+    alz_management_group_contributor = {
       name        = "Azure Landing Zones Management Group Contributor ({{service_name}}-{{environment_name}})"
       description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing the Management Group Structure."
       permissions = {
@@ -327,7 +647,7 @@ variable "custom_role_definitions_bicep" {
         not_actions = []
       }
     }
-    alz_managment_group_reader = {
+    alz_management_group_reader = {
       name        = "Azure Landing Zones Management Group What If ({{service_name}}-{{environment_name}})"
       description = "This is a custom role created by the Azure Landing Zones Accelerator for running Bicep What If for the Management Group Structure."
       permissions = {
@@ -386,7 +706,20 @@ variable "custom_role_definitions_bicep" {
 }
 
 variable "role_assignments_terraform" {
-  description = "Role assignments to create for Terraform"
+  description = <<-EOT
+    **(Optional)** RBAC role assignments for Terraform-based deployments.
+
+    Map of role assignment configurations where:
+    - **Key**: Assignment identifier (e.g., 'plan_management_group')
+    - **Value**: Object containing:
+      - `custom_role_definition_key` (string) - Key from custom_role_definitions_terraform
+      - `user_assigned_managed_identity_key` (string) - Managed identity key ('plan' or 'apply')
+      - `scope` (string) - Assignment scope ('management_group' or 'subscription')
+
+    Default includes 4 assignments:
+    - Plan and apply access for management group operations
+    - Plan and apply access for subscription operations
+  EOT
   type = map(object({
     custom_role_definition_key         = string
     user_assigned_managed_identity_key = string
@@ -394,12 +727,12 @@ variable "role_assignments_terraform" {
   }))
   default = {
     plan_management_group = {
-      custom_role_definition_key         = "alz_managment_group_reader"
+      custom_role_definition_key         = "alz_management_group_reader"
       user_assigned_managed_identity_key = "plan"
       scope                              = "management_group"
     }
     apply_management_group = {
-      custom_role_definition_key         = "alz_managment_group_contributor"
+      custom_role_definition_key         = "alz_management_group_contributor"
       user_assigned_managed_identity_key = "apply"
       scope                              = "management_group"
     }
@@ -417,7 +750,20 @@ variable "role_assignments_terraform" {
 }
 
 variable "role_assignments_bicep" {
-  description = "Role assignments to create for Bicep"
+  description = <<-EOT
+    **(Optional)** RBAC role assignments for Bicep-based deployments.
+
+    Map of role assignment configurations where:
+    - **Key**: Assignment identifier (e.g., 'plan_management_group')
+    - **Value**: Object containing:
+      - `custom_role_definition_key` (string) - Key from custom_role_definitions_bicep
+      - `user_assigned_managed_identity_key` (string) - Managed identity key ('plan' or 'apply')
+      - `scope` (string) - Assignment scope ('management_group' or 'subscription')
+
+    Default includes 4 assignments:
+    - Plan and apply access for management group operations
+    - Plan and apply access for subscription operations
+  EOT
   type = map(object({
     custom_role_definition_key         = string
     user_assigned_managed_identity_key = string
@@ -425,12 +771,12 @@ variable "role_assignments_bicep" {
   }))
   default = {
     plan_management_group = {
-      custom_role_definition_key         = "alz_managment_group_reader"
+      custom_role_definition_key         = "alz_management_group_reader"
       user_assigned_managed_identity_key = "plan"
       scope                              = "management_group"
     }
     apply_management_group = {
-      custom_role_definition_key         = "alz_managment_group_contributor"
+      custom_role_definition_key         = "alz_management_group_contributor"
       user_assigned_managed_identity_key = "apply"
       scope                              = "management_group"
     }
@@ -448,66 +794,76 @@ variable "role_assignments_bicep" {
 }
 
 variable "bicep_config_file_path" {
-  type    = string
-  default = "accelerator/.config/ALZ-Powershell-Auto.config.json"
+  description = <<-EOT
+    **(Optional, default: `".config/ALZ-Powershell.config.json"`)** Path to the Bicep configuration file.
+
+    Contains deployment settings and parameters for the Azure Landing Zones Bicep accelerator.
+    Can be an absolute or relative path. This file configures the PowerShell-based deployment workflow.
+  EOT
+  type        = string
+  default     = ".config/ALZ-Powershell.config.json"
 }
 
 variable "bicep_parameters_file_path" {
-  type    = string
-  default = "parameters.json"
-}
+  description = <<-EOT
+    **(Optional, default: `"parameters.json"`)** Path to the Bicep parameters file.
 
-variable "architecture_definition_name" {
+    Contains input values for the Bicep template deployment.
+    This JSON file specifies configuration values for Azure Landing Zones resources.
+  EOT
   type        = string
-  description = "Name of the architecture definition use by Microsoft Cloud for Industry"
-  default     = null
+  default     = "parameters.json"
 }
 
 variable "root_module_folder_relative_path" {
+  description = <<-EOT
+    **(Optional, default: `"."`)** The relative path from output directory to the root module folder.
+
+    Used to establish correct path references in generated deployment scripts.
+    The root module folder contains the main Terraform or Bicep configuration.
+  EOT
   type        = string
-  description = "The root module folder path"
   default     = "."
 }
 
-variable "architecture_definition_template_path" {
-  type        = string
-  default     = ""
-  description = "The path to the architecture definition template file to use."
-}
-
-variable "architecture_definition_override_path" {
-  type        = string
-  default     = ""
-  description = "The path to the architecture definition file to use instead of the default."
-}
-
-variable "apply_alz_archetypes_via_architecture_definition_template" {
-  type        = bool
-  default     = true
-  description = "Toggles assignment of ALZ policies. True to deploy, otherwise false. (e.g true)"
-}
-
 variable "storage_account_blob_soft_delete_retention_days" {
-  type    = number
-  default = 7
+  type        = number
+  description = "Number of days to retain soft-deleted blobs in the storage account. Soft delete protects blob data from accidental deletion by retaining deleted blobs for the specified period, allowing recovery if needed. Valid range: 1-365 days."
+  default     = 7
 }
 
 variable "storage_account_blob_soft_delete_enabled" {
-  type    = bool
-  default = true
+  type        = bool
+  description = "Enable soft delete protection for blobs in the storage account. When enabled, deleted blobs are retained for the configured retention period and can be restored. Recommended for production environments to protect against accidental Terraform state deletion."
+  default     = true
 }
 
 variable "storage_account_container_soft_delete_retention_days" {
-  type    = number
-  default = 7
+  type        = number
+  description = "Number of days to retain soft-deleted containers in the storage account. Soft delete protects container-level data from accidental deletion by retaining deleted containers for the specified period. Valid range: 1-365 days."
+  default     = 7
 }
 
 variable "storage_account_container_soft_delete_enabled" {
-  type    = bool
-  default = true
+  type        = bool
+  description = "Enable soft delete protection for containers in the storage account. When enabled, deleted containers are retained for the configured retention period and can be restored. Provides an additional layer of protection for Terraform state storage."
+  default     = true
 }
 
 variable "storage_account_blob_versioning_enabled" {
-  type    = bool
-  default = true
+  type        = bool
+  description = "Enable blob versioning for the storage account. When enabled, Azure automatically maintains previous versions of blobs, providing protection against accidental overwrites or deletions and enabling point-in-time recovery of Terraform state files."
+  default     = true
+}
+
+variable "bicep_tenant_role_assignment_enabled" {
+  type        = bool
+  description = "Enable tenant-level role assignment for Bicep deployments. When enabled, assigns the specified role to the managed identity at the tenant root scope, allowing management of resources across the entire Azure AD tenant. Required for tenant-wide policy and management group operations."
+  default     = true
+}
+
+variable "bicep_tenant_role_assignment_role_definition_name" {
+  type        = string
+  description = "The name of the Azure role definition to assign at the tenant level for Bicep deployments. This role grants the managed identity permissions to manage Azure Landing Zones resources across the tenant. Common values: 'Landing Zone Management Owner', 'Owner', or a custom role name."
+  default     = "Landing Zone Management Owner"
 }

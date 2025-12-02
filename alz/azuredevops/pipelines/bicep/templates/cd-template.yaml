@@ -1,131 +1,177 @@
 ---
+trigger: none
+
 parameters:
-  - name: skipWhatIf
-    type: boolean
-    default: false
-  - name: destroy
+  - name: skip_what_if
+    displayName: 'Skip What-If Stage'
     type: boolean
     default: false
 %{ for script_file in script_files ~}
   - name: ${script_file.name}
+    displayName: '${script_file.displayName}'
     type: boolean
     default: true
 %{ endfor ~}
 
-stages:
-  - stage: whatif
-    displayName: What If
-    condition: eq($${{ parameters.skipWhatIf }}, false)
-    variables:
-      - group: ${variable_group_name}
-      - name: parametersFileName
-        value: parameters.json
+variables:
+  PARAMETERS_FILE_NAME: 'parameters.json'
 
+stages:
+  - stage: WhatIf
+    displayName: 'What If'
+    condition: ne('$${{ parameters.skip_what_if }}', true)
     jobs:
       - deployment: whatif
-        displayName: What If with Bicep
+        displayName: 'What If Deployment'
         pool:
-          ${agent_pool_configuration}
-        environment: ${environment_name_plan}
+          ${agent_pool_or_runner_configuration}
+        environment: '${environment_name_plan}'
         timeoutInMinutes: 0
         strategy:
           runOnce:
             deploy:
               steps:
-                - checkout: self
-                  displayName: Checkout Bicep Module
-
-                - template: helpers/bicep-variables.yaml
-                  parameters:
-                    parametersFileName: $(parametersFileName)
-
-%{ for on_demand_folder in on_demand_folders ~}
-                - template: helpers/bicep-on-demand-folder.yaml
-                  parameters:
-                    repository: "${on_demand_folder_repository}"
-                    releaseArtifactName: "${on_demand_folder_artifact_name}"
-                    releaseVersion: "$(RELEASE_VERSION)"
-                    sourcePath: "${on_demand_folder.source}"
-                    targetPath: "${on_demand_folder.target}"
-
-%{ endfor ~}
-
-                - $${{ if eq(parameters.destroy, false) }}:
-                  - template: helpers/bicep-installer.yaml
-                    parameters:
-                      serviceConnection: '${service_connection_name_plan}'
-
-                  - template: helpers/bicep-templates.yaml
-                    parameters:
-                      serviceConnection: '${service_connection_name_plan}'
+                - task: PowerShell@2
+                  displayName: 'Show Parameters'
+                  inputs:
+                    targetType: 'inline'
+                    pwsh: true
+                    script: |
+                      Write-Host "Parameters:"
+                      Write-Host "skip_what_if: $${{ parameters.skip_what_if }}"
 %{ for script_file in script_files ~}
-                      ${script_file.name}: $${{ parameters.${script_file.name} }}
+                      Write-Host "${script_file.name}: $${{ parameters['${script_file.name}'] }}"
 %{ endfor ~}
-                - $${{ if eq(parameters.destroy, true) }}:
-                  - template: helpers/bicep-installer.yaml
+
+                - checkout: self
+                  displayName: 'Checkout Bicep Module'
+
+                - template: ./helpers/bicep-variables.yaml
+                  parameters:
+                    parametersFileName: $(PARAMETERS_FILE_NAME)
+
+                - task: AzurePowerShell@5
+                  displayName: 'Check for First Deployment'
+                  inputs:
+                    azureSubscription: '${service_connection_name_plan}'
+                    pwsh: true
+                    azurePowerShellVersion: LatestVersion
+                    ScriptType: "InlineScript"
+                    Inline: |
+                      $intRootMgId = "$(INTERMEDIATE_ROOT_MANAGEMENT_GROUP_ID)"
+
+                      $managementGroups = Get-AzManagementGroup
+                      $intRootMg = $managementGroups | Where-Object { $_.Name -eq $intRootMgId }
+
+                      $firstDeployment = $true
+
+                      if($intRootMg -eq $null) {
+                        Write-Warning "Cannot find the $intRootMgId Management Group, so assuming this is the first deployment. We must skip what-if for some deployments since their dependent resources do not exist yet."
+                      } else {
+                        Write-Host "Found the $intRootMgId Management Group, so assuming this is not the first deployment."
+                        $firstDeployment = $false
+                      }
+
+                      Write-Host "##vso[task.setvariable variable=FIRST_DEPLOYMENT;]$firstDeployment"
+
+                - template: ./helpers/bicep-installer.yaml
+                  parameters:
+                    serviceConnection: '${service_connection_name_plan}'
+
+%{ for script_file in script_files ~}
+                - $${{ if eq(parameters['${script_file.name}'], true) }}:
+                  - template: ./helpers/bicep-deploy.yaml
                     parameters:
+                      displayName: '${script_file.displayName}'
                       serviceConnection: '${service_connection_name_plan}'
+                      templateFilePath: '${script_file.templateFilePath}'
+                      templateParametersFilePath: '${script_file.templateParametersFilePath}'
+                      managementGroupId: '${script_file.managementGroupIdVariable}'
+                      subscriptionId: '${script_file.subscriptionIdVariable}'
+                      resourceGroupName: '${script_file.resourceGroupNameVariable}'
+                      location: '$(LOCATION)'
+                      deploymentType: '${script_file.deploymentType}'
+                      firstRunWhatIf: ${script_file.firstRunWhatIf}
+                      whatIfEnabled: true
 
-                  - template: helpers/bicep-destroy.yaml
-                    parameters:
-                      serviceConnection: '${service_connection_name_plan}'
+%{ endfor ~}
 
-  - stage: deploy
-    displayName: Deploy
-    dependsOn: whatif
-    condition: not(or(failed(), canceled()))
-    variables:
-      - group: ${variable_group_name}
-      - name: parametersFileName
-        value: parameters.json
-
+  - stage: Deploy
+    displayName: 'Deploy'
+    dependsOn: WhatIf
+    condition: and(not(failed()), not(canceled()))
     jobs:
       - deployment: deploy
-        displayName: Deploy with Bicep
+        displayName: 'Deploy Bicep'
         pool:
-          ${agent_pool_configuration}
-        environment: ${environment_name_apply}
+          ${agent_pool_or_runner_configuration}
+        environment: '${environment_name_apply}'
         timeoutInMinutes: 0
         strategy:
           runOnce:
             deploy:
               steps:
-                - checkout: self
-                  displayName: Checkout Bicep Module
-
-                - template: helpers/bicep-variables.yaml
-                  parameters:
-                    parametersFileName: $(parametersFileName)
-
-%{ for on_demand_folder in on_demand_folders ~}
-                - template: helpers/bicep-on-demand-folder.yaml
-                  parameters:
-                    repository: "${on_demand_folder_repository}"
-                    releaseArtifactName: "${on_demand_folder_artifact_name}"
-                    releaseVersion: "$(RELEASE_VERSION)"
-                    sourcePath: "${on_demand_folder.source}"
-                    targetPath: "${on_demand_folder.target}"
-
-%{ endfor ~}
-
-                - $${{ if eq(parameters.destroy, false) }}:
-                  - template: helpers/bicep-installer.yaml
-                    parameters:
-                      serviceConnection: '${service_connection_name_apply}'
-
-                  - template: helpers/bicep-templates.yaml
-                    parameters:
-                      serviceConnection: '${service_connection_name_apply}'
-                      whatIfEnabled: false
+                - task: PowerShell@2
+                  displayName: 'Show Parameters'
+                  inputs:
+                    targetType: 'inline'
+                    pwsh: true
+                    script: |
+                      Write-Host "Parameters:"
+                      Write-Host "skip_what_if: $${{ parameters.skip_what_if }}"
 %{ for script_file in script_files ~}
-                      ${script_file.name}: $${{ parameters.${script_file.name} }}
+                      Write-Host "${script_file.name}: $${{ parameters['${script_file.name}'] }}"
 %{ endfor ~}
-                - $${{ if eq(parameters.destroy, true) }}:
-                  - template: helpers/bicep-installer.yaml
-                    parameters:
-                      serviceConnection: '${service_connection_name_apply}'
 
-                  - template: helpers/bicep-destroy.yaml
+                - checkout: self
+                  displayName: 'Checkout Bicep Module'
+
+                - template: ./helpers/bicep-variables.yaml
+                  parameters:
+                    parametersFileName: $(PARAMETERS_FILE_NAME)
+
+                - task: AzurePowerShell@5
+                  displayName: 'Check for First Deployment'
+                  inputs:
+                    azureSubscription: '${service_connection_name_apply}'
+                    pwsh: true
+                    azurePowerShellVersion: LatestVersion
+                    ScriptType: "InlineScript"
+                    Inline: |
+                      $intRootMgId = "$(INTERMEDIATE_ROOT_MANAGEMENT_GROUP_ID)"
+
+                      $managementGroups = Get-AzManagementGroup
+                      $intRootMg = $managementGroups | Where-Object { $_.Name -eq $intRootMgId }
+
+                      $firstDeployment = $true
+
+                      if($intRootMg -eq $null) {
+                        Write-Warning "Cannot find the $intRootMgId Management Group, so assuming this is the first deployment."
+                      } else {
+                        Write-Host "Found the $intRootMgId Management Group, so assuming this is not the first deployment."
+                        $firstDeployment = $false
+                      }
+
+                      Write-Host "##vso[task.setvariable variable=FIRST_DEPLOYMENT;]$firstDeployment"
+
+                - template: ./helpers/bicep-installer.yaml
+                  parameters:
+                    serviceConnection: '${service_connection_name_apply}'
+
+%{ for script_file in script_files ~}
+                - $${{ if eq(parameters['${script_file.name}'], true) }}:
+                  - template: ./helpers/bicep-deploy.yaml
                     parameters:
+                      displayName: '${script_file.displayName}'
                       serviceConnection: '${service_connection_name_apply}'
+                      templateFilePath: '${script_file.templateFilePath}'
+                      templateParametersFilePath: '${script_file.templateParametersFilePath}'
+                      managementGroupId: '${script_file.managementGroupIdVariable}'
+                      subscriptionId: '${script_file.subscriptionIdVariable}'
+                      resourceGroupName: '${script_file.resourceGroupNameVariable}'
+                      location: '$(LOCATION)'
+                      deploymentType: '${script_file.deploymentType}'
+                      firstRunWhatIf: ${script_file.firstRunWhatIf}
                       whatIfEnabled: false
+
+%{ endfor ~}

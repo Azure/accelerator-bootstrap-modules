@@ -8,7 +8,7 @@ resources:
   repositories:
     - repository: templates
       type: git
-      name: ${project_name}/${repository_name_templates}
+      name: ${project_or_organization_name}/${repository_name_templates}
 
 parameters:
   - name: terraform_action

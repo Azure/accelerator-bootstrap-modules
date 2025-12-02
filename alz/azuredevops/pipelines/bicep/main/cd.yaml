@@ -5,8 +5,8 @@ trigger:
       - main
 
 parameters:
-  - name: skipWhatIf
-    displayName: Skip What If Check?
+  - name: skip_what_if
+    displayName: 'Skip What If Check?'
     type: boolean
     default: false
 %{ for script_file in script_files ~}
@@ -15,24 +15,19 @@ parameters:
     type: boolean
     default: true
 %{ endfor ~}
-  - name: destroy
-    displayName: "[DANGER!] Destroy? [DANGER!]"
-    type: boolean
-    default: false
 
 resources:
   repositories:
     - repository: templates
       type: git
-      name: ${project_name}/${repository_name_templates}
+      name: ${project_or_organization_name}/${repository_name_templates}
 
 lockBehavior: sequential
 
 extends:
   template: ${cd_template_path}@templates
   parameters:
-    skipWhatIf: $${{ parameters.skipWhatIf }}
-    destroy: $${{ parameters.destroy }}
+    skip_what_if: $${{ parameters.skip_what_if }}
 %{ for script_file in script_files ~}
-    ${script_file.name}: $${{ parameters.${script_file.name} }}
+    ${script_file.name}: $${{ parameters['${script_file.name}'] }}
 %{ endfor ~}

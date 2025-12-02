@@ -4,17 +4,7 @@ module "resource_names" {
   environment_name = var.environment_name
   service_name     = var.service_name
   postfix_number   = var.postfix_number
-  resource_names   = merge(var.resource_names, local.custom_role_definitions_bicep_names, local.custom_role_definitions_terraform_names)
-}
-
-module "architecture_definition" {
-  count                                                     = local.has_architecture_definition ? 1 : 0
-  source                                                    = "../../modules/template_architecture_definition"
-  starter_module_folder_path                                = local.starter_root_module_folder_path
-  architecture_definition_name                              = local.architecture_definition_name
-  architecture_definition_template_path                     = var.architecture_definition_template_path
-  architecture_definition_override_path                     = var.architecture_definition_override_path
-  apply_alz_archetypes_via_architecture_definition_template = var.apply_alz_archetypes_via_architecture_definition_template
+  resource_names   = merge(var.resource_names, local.custom_role_definitions_bicep_names, local.custom_role_definitions_terraform_names, local.custom_role_definitions_bicep_classic_names)
 }
 
 module "files" {
@@ -69,13 +59,15 @@ module "azure" {
   container_registry_image_tag                              = var.runner_container_image_tag
   container_registry_dockerfile_name                        = var.runner_container_image_dockerfile
   container_registry_dockerfile_repository_folder_url       = local.runner_container_instance_dockerfile_url
-  custom_role_definitions                                   = var.iac_type == "terraform" ? local.custom_role_definitions_terraform : local.custom_role_definitions_bicep
+  custom_role_definitions                                   = var.iac_type == "terraform" ? local.custom_role_definitions_terraform : (var.iac_type == "bicep" ? local.custom_role_definitions_bicep : local.custom_role_definitions_bicep_classic)
   role_assignments                                          = var.iac_type == "terraform" ? var.role_assignments_terraform : var.role_assignments_bicep
   storage_account_blob_soft_delete_enabled                  = var.storage_account_blob_soft_delete_enabled
   storage_account_blob_soft_delete_retention_days           = var.storage_account_blob_soft_delete_retention_days
   storage_account_blob_versioning_enabled                   = var.storage_account_blob_versioning_enabled
   storage_account_container_soft_delete_enabled             = var.storage_account_container_soft_delete_enabled
   storage_account_container_soft_delete_retention_days      = var.storage_account_container_soft_delete_retention_days
+  tenant_role_assignment_enabled                            = var.iac_type == "bicep" && var.bicep_tenant_role_assignment_enabled
+  tenant_role_assignment_role_definition_name               = var.bicep_tenant_role_assignment_role_definition_name
 }
 
 module "github" {
@@ -86,12 +78,12 @@ module "github" {
   repository_name                              = local.resource_names.version_control_system_repository
   use_template_repository                      = var.use_separate_repository_for_templates
   repository_name_templates                    = local.resource_names.version_control_system_repository_templates
-  repository_files                             = local.repository_files
-  template_repository_files                    = local.template_repository_files
+  repository_files                             = module.file_manipulation.repository_files
+  template_repository_files                    = module.file_manipulation.template_repository_files
   workflows                                    = local.workflows
   managed_identity_client_ids                  = module.azure.user_assigned_managed_identity_client_ids
   azure_tenant_id                              = data.azurerm_client_config.current.tenant_id
-  azure_subscription_id                        = data.azurerm_client_config.current.subscription_id
+  azure_subscription_id                        = var.subscription_ids["management"]
   backend_azure_resource_group_name            = local.resource_names.resource_group_state
   backend_azure_storage_account_name           = local.resource_names.storage_account
   backend_azure_storage_account_container_name = local.resource_names.storage_container
@@ -104,4 +96,31 @@ module "github" {
   default_runner_group_name                    = var.default_runner_group_name
   use_self_hosted_runners                      = var.use_self_hosted_runners
   create_branch_policies                       = var.create_branch_policies
+}
+
+module "file_manipulation" {
+  source                                 = "../../modules/file_manipulation"
+  vcs_type                               = "github"
+  files                                  = module.files.files
+  use_self_hosted_agents_runners         = var.use_self_hosted_runners
+  resource_names                         = local.resource_names
+  use_separate_repository_for_templates  = var.use_separate_repository_for_templates
+  iac_type                               = var.iac_type
+  module_folder_path                     = local.starter_module_folder_path
+  bicep_config_file_path                 = var.bicep_config_file_path
+  starter_module_name                    = var.starter_module_name
+  project_or_organization_name           = var.github_organization_name
+  root_module_folder_relative_path       = var.root_module_folder_relative_path
+  on_demand_folder_repository            = var.on_demand_folder_repository
+  on_demand_folder_artifact_name         = var.on_demand_folder_artifact_name
+  ci_template_file_name                  = local.ci_template_file_name
+  cd_template_file_name                  = local.cd_template_file_name
+  pipeline_target_folder_name            = local.target_folder_name
+  bicep_parameters_file_path             = var.bicep_parameters_file_path
+  subscription_ids                       = var.subscription_ids
+  root_parent_management_group_id        = var.root_parent_management_group_id
+  agent_pool_or_runner_configuration     = local.agent_pool_or_runner_configuration
+  pipeline_files_directory_path          = local.pipeline_files_directory_path
+  pipeline_template_files_directory_path = local.pipeline_template_files_directory_path
+  concurrency_value                      = local.resource_names.storage_container
 }

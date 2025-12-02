@@ -18,7 +18,7 @@ stages:
       - deployment: plan
         displayName: Plan with Terraform
         pool:
-          ${agent_pool_configuration}
+          ${agent_pool_or_runner_configuration}
         environment: ${environment_name_plan}
         timeoutInMinutes: 0
         strategy:
@@ -80,7 +80,7 @@ stages:
       - deployment: apply
         displayName: Apply with Terraform
         pool:
-          ${agent_pool_configuration}
+          ${agent_pool_or_runner_configuration}
         environment: ${environment_name_apply}
         timeoutInMinutes: 0
         strategy:
