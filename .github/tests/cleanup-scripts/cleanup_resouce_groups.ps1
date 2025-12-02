@@ -44,34 +44,35 @@ $managementGroups | ForEach-Object -Parallel {
     } -ThrottleLimit 10
 
     $roleDefinitionsFilter = $using:roleDefinitionsFilter
-    $roleDefinitions = az role definition list --management-group $managementGroup | ConvertFrom-Json | Where-Object { $_.name -like "*$roleDefinitionsFilter*" -and $_.assignableScopes -contains "/providers/Microsoft.Management/managementGroups/$managementGroup" }
+    $subscriptions = $using:subscriptions
+    $roleDefinitions = az role definition list --custom-role-only true --scope "/providers/Microsoft.Management/managementGroups/$managementGroup" --query "[].{name:name,roleName:roleName,id:id,assignableScopes:assignableScopes}" -o json  | ConvertFrom-Json | Where-Object { $_.roleName -like "*$roleDefinitionsFilter*" -and $_.assignableScopes -contains "/providers/Microsoft.Management/managementGroups/$managementGroup" }
     $roleDefinitions | ForEach-Object -Parallel {
         $managementGroup = $using:managementGroup
         $roleDefinition = $_
 
-        $roleAssignments = az role assignment list --role $roleDefinition.name --management-group $managementGroup | ConvertFrom-Json
+        $roleAssignments = az role assignment list --role $roleDefinition.roleName --scope "/providers/Microsoft.Management/managementGroups/$managementGroup" --query "[].{id:id,principalName:principalName,principalId:principalId}" -o json | ConvertFrom-Json
         $roleAssignments | ForEach-Object -Parallel {
             $managementGroup = $using:managementGroup
             $roleDefinition = $using:roleDefinition
             $roleAssignment = $_
-            Write-Host "Deleting role assignment: $($roleAssignment.name) for role definition: $($roleDefinition.name) in management group: $managementGroup"
+            Write-Host "Deleting role assignment: $($roleAssignment.id) for role definition: $($roleDefinition.roleName) in management group: $managementGroup"
             az role assignment delete --ids $roleAssignment.id
         } -ThrottleLimit 10
 
         foreach ( $subscription in $using:subscriptions ) {
-            $subscriptionRoleAssignments = az role assignment list --role $roleDefinition.name --subscription $subscription | ConvertFrom-Json
+            $subscriptionRoleAssignments = az role assignment list --role $roleDefinition.roleName --subscription $subscription --query "[].{id:id,principalName:principalName,principalId:principalId}" -o json | ConvertFrom-Json
             $subscriptionRoleAssignments | ForEach-Object -Parallel {
                 $roleDefinition = $using:roleDefinition
                 $subscription = $using:subscription
                 $roleAssignment = $_
-                Write-Host "Deleting role assignment: $($roleAssignment.name) for role definition: $($roleDefinition.name) in subscription: $subscription"
+                Write-Host "Deleting role assignment: $($roleAssignment.id) for role definition: $($roleDefinition.roleName) in subscription: $subscription"
                 az role assignment delete --ids $roleAssignment.id
             } -ThrottleLimit 10
         }
-        if($roleDefinition.isCustom -eq $true) {
-            Write-Host "Deleting custom role definition: $($roleDefinition.name) in management group: $managementGroup"
-            az role definition delete --name $roleDefinition.name --management-group $managementGroup
-        }
+
+        Write-Host "Deleting custom role definition: $($roleDefinition.name) in management group: $managementGroup"
+        az role definition delete --name $roleDefinition.name --management-group $managementGroup
+
     } -ThrottleLimit 10
 } -ThrottleLimit 10
 
