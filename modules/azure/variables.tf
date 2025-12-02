@@ -468,12 +468,12 @@ variable "container_registry_dockerfile_repository_folder_url" {
 
 variable "container_registry_dockerfile_name" {
   description = <<-EOT
-    **(Optional, default: `"dockerfile"`)** Name of the Dockerfile to build in the repository folder.
+    **(Optional, default: `"Dockerfile"`)** Name of the Dockerfile to build in the repository folder.
 
     Typically 'Dockerfile' or a specific variant like 'dockerfile', 'Dockerfile.ubuntu', etc.
   EOT
   type        = string
-  default     = "dockerfile"
+  default     = "Dockerfile"
 }
 
 variable "container_registry_image_name" {
