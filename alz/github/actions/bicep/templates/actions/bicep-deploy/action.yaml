@@ -116,7 +116,7 @@ runs:
               TemplateFile          = $env:TEMPLATE_FILE_PATH
               TemplateParameterFile = $env:TEMPLATE_PARAMETERS_FILE_PATH
               WhatIf                = $true
-              #ValidationLevel       = "providerNoRbac"
+              ValidationLevel       = "providerNoRbac"
               Verbose               = $true
             }
 
