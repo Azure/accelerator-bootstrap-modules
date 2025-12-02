@@ -1168,3 +1168,29 @@ variable "bicep_tenant_role_assignment_role_definition_name" {
   type        = string
   default     = "Landing Zone Management Owner"
 }
+
+variable "container_registry_task_timer_trigger_enabled" {
+  description = <<-EOT
+    **(Optional, default: `true`)** Enable timer trigger for container registry image builds
+
+    When enabled, the ACR task runs to rebuild the agent image,
+    ensuring it stays up-to-date with latest patches and dependencies.
+
+    See container_registry_task_timer_trigger_schedule for customizing the schedule.
+  EOT
+  nullable    = false
+  type        = bool
+  default     = true
+}
+
+variable "container_registry_task_timer_trigger_schedule" {
+  description = <<-EOT
+    **(Optional, default: `"0 0 * * 0"`)** CRON schedule for the container registry task timer trigger.
+
+    Default schedule runs at midnight on Sundays.
+    Modify as needed to fit maintenance windows or update frequency.
+  EOT
+  type        = string
+  nullable    = false
+  default     = "0 0 * * 0"
+}
