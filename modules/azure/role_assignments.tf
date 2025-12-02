@@ -56,23 +56,6 @@ resource "azurerm_role_assignment" "alz" {
   principal_id       = each.value.principal_id
 }
 
-# Bicep needs some permissions to bootstrap subscription
-locals {
-  bootstrap_role_assignments = {
-    for key, value in azurerm_user_assigned_identity.alz : key => {
-      scope        = data.azurerm_subscription.current.id
-      principal_id = value.principal_id
-    } if var.bootstrap_role_assignment_enabled && !contains(local.subscription_resource_ids, data.azurerm_subscription.current.id)
-  }
-}
-
-resource "azurerm_role_assignment" "alz_bootstrap" {
-  for_each             = local.bootstrap_role_assignments
-  scope                = each.value.scope
-  role_definition_name = var.bootstrap_role_assignment_role_definition_name
-  principal_id         = each.value.principal_id
-}
-
 # Bicep needs some permissions at tenant level to deploy management groups and policy in the same deployment
 locals {
   tenant_role_assignments = {

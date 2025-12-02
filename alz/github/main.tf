@@ -66,7 +66,6 @@ module "azure" {
   storage_account_blob_versioning_enabled                   = var.storage_account_blob_versioning_enabled
   storage_account_container_soft_delete_enabled             = var.storage_account_container_soft_delete_enabled
   storage_account_container_soft_delete_retention_days      = var.storage_account_container_soft_delete_retention_days
-  bootstrap_role_assignment_enabled                         = var.iac_type == "bicep"
   tenant_role_assignment_enabled                            = var.iac_type == "bicep" && var.bicep_tenant_role_assignment_enabled
   tenant_role_assignment_role_definition_name               = var.bicep_tenant_role_assignment_role_definition_name
 }
@@ -84,7 +83,7 @@ module "github" {
   workflows                                    = local.workflows
   managed_identity_client_ids                  = module.azure.user_assigned_managed_identity_client_ids
   azure_tenant_id                              = data.azurerm_client_config.current.tenant_id
-  azure_subscription_id                        = data.azurerm_client_config.current.subscription_id
+  azure_subscription_id                        = var.subscription_ids["management"]
   backend_azure_resource_group_name            = local.resource_names.resource_group_state
   backend_azure_storage_account_name           = local.resource_names.storage_account
   backend_azure_storage_account_container_name = local.resource_names.storage_container

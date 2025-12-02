@@ -579,27 +579,6 @@ variable "additional_role_assignment_principal_ids" {
   default     = {}
 }
 
-variable "bootstrap_role_assignment_enabled" {
-  description = <<-EOT
-    **(Optional, default: `false`)** Enable role assignment at the bootstrap subscription scope.
-
-    When enabled, grants the specified role on the subscription containing bootstrap resources,
-    allowing managed identities to manage their own infrastructure.
-  EOT
-  type        = bool
-  default     = false
-}
-
-variable "bootstrap_role_assignment_role_definition_name" {
-  description = <<-EOT
-    **(Optional, default: `"Reader"`)** Name of the built-in or custom role to assign at bootstrap subscription scope.
-
-    Typically 'Reader' for read-only access or 'Contributor' for full management.
-  EOT
-  type        = string
-  default     = "Reader"
-}
-
 variable "tenant_role_assignment_enabled" {
   description = <<-EOT
     **(Optional, default: `false`)** Enable tenant-level role assignment for managed identities.
