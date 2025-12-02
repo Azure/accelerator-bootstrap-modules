@@ -1,183 +1,259 @@
 ---
 parameters:
+  - name: displayName
+    type: string
   - name: serviceConnection
     type: string
-  - name: whatIfEnabled
+  - name: templateFilePath
+    type: string
+  - name: templateParametersFilePath
+    type: string
+  - name: managementGroupId
+    type: string
+    default: ''
+  - name: subscriptionId
+    type: string
+    default: ''
+  - name: resourceGroupName
+    type: string
+    default: ''
+  - name: location
+    type: string
+  - name: deploymentType
+    type: string
+  - name: firstRunWhatIf
     type: boolean
     default: true
-  - name: scriptFiles
-    type: object
-    default:
-      - displayName: "Example Deployment"
-        templateFilePath: "./infra-as-code/bicep/modules/example/example.bicep"
-        templateParametersFilePath: "./config/custom-parameters/example.parameters.all.json"
-        managementGroupId: "00000000-0000-0000-0000-000000000000"
-        subscriptionId: "00000000-0000-0000-0000-000000000000"
-        resourceGroupName: "example-rg"
-        location: "uksouth"
-        deploymentType: "subscription"  # tenant | managementGroup | subscription | resourceGroup
-        firstRunWhatIf: true
-        runStep: true
+  - name: whatIfEnabled
+    type: boolean
+    default: false
 
 steps:
   - task: AzurePowerShell@5
-    displayName: Check for First Deployment
-    condition: eq($${{ parameters.whatIfEnabled }}, true)
+    displayName: '$${{ parameters.displayName }}'
     inputs:
       azureSubscription: $${{ parameters.serviceConnection }}
+      azurePowerShellVersion: 'LatestVersion'
       pwsh: true
-      azurePowerShellVersion: LatestVersion
-      ScriptType: "InlineScript"
+      ScriptType: 'InlineScript'
       Inline: |
-        $managementGroupId = $env:MANAGEMENT_GROUP_ID
-        $managementGroups = Get-AzManagementGroup
-        $managementGroup = $managementGroups | Where-Object { $_.Name -eq $managementGroupId }
+        $deploymentType = "$${{ parameters.deploymentType }}"
+        $whatIfEnabled = [System.Convert]::ToBoolean("$${{ parameters.whatIfEnabled }}")
 
+        # Check if we should skip what-if for first deployment
+        $firstDeploymentString = $env:FIRST_DEPLOYMENT
         $firstDeployment = $true
-
-        if($managementGroup -eq $null) {
-          Write-Warning "Cannot find the $managementGroupId Management Group, so assuming this is the first deployment. We must skip checking some deployments since their dependent resources do not exist yet."
-        } else {
-          Write-Host "Found the $managementGroupId Management Group, so assuming this is not the first deployment."
+        if($firstDeploymentString -eq "") {
           $firstDeployment = $false
+        } else {
+          $firstDeployment = [System.Convert]::ToBoolean($firstDeploymentString)
         }
 
-        Write-Host "##vso[task.setvariable variable=FIRST_DEPLOYMENT;]$firstDeployment"
+        $firstRunWhatIf = [System.Convert]::ToBoolean("$${{ parameters.firstRunWhatIf }}")
 
-  - $${{ each scriptFile in parameters.scriptFiles }}:
-      - task: AzurePowerShell@5
-        displayName: $${{ scriptFile.displayName }}
-        condition: and(succeeded(), eq($${{ scriptFile.runStep }}, true))
-        inputs:
-          azureSubscription: $${{ parameters.serviceConnection }}
-          pwsh: true
-          azurePowerShellVersion: LatestVersion
-          ScriptType: "InlineScript"
-          Inline: |
-            $whatIf = [System.Convert]::ToBoolean("$${{ parameters.whatIfEnabled }}")
+        if($whatIfEnabled -and $firstDeployment -and !$firstRunWhatIf) {
+          Write-Warning "Skipping the What-If check as the deployment is dependent on resources that do not exist yet..."
+          exit 0
+        }
 
-            $firstDeploymentString = $env:FIRST_DEPLOYMENT
-            $firstDeployment = $true
-            if($firstDeploymentString -eq "") {
-              $firstDeployment = $false
-            } else {
-              $firstDeployment = [System.Convert]::ToBoolean($firstDeploymentString)
-            }
+        # Generate deployment name without timestamp for consistent deployment stack names
+        $deploymentPrefix = "alz"
 
-            $firstRunWhatIf = [System.Convert]::ToBoolean("$${{ scriptFile.firstRunWhatIf }}")
+        $deploymentNameBase = "$${{ parameters.displayName }}".Replace(" ", "-")
+        $deploymentNameBase = "$deploymentNameBase-$($env:TIME_STAMP)"
 
-            if($whatIf -and $firstDeployment -and !$firstRunWhatIf) {
-              Write-Warning "Skipping the WhatIf check as the deployment is dependent on resources that do not exist yet..."
-              exit 0
-            }
+        $deploymentNameMaxLength = 64 - $deploymentPrefix.Length - 1
 
-            $deploymentType = "$${{ scriptFile.deploymentType }}"
+        if ($deploymentNameBase.Length -gt $deploymentNameMaxLength) {
+          $deploymentNameBase = $deploymentNameBase.Substring(0, $deploymentNameMaxLength)
+        }
 
-            $deploymentPrefix = $env:PREFIX
-            $deploymentName = "$${{ scriptFile.displayName }}".Replace(" ", "-")
-            $deploymentTimeStamp = Get-Date -Format 'yyyyMMddHHmmss'
+        $deploymentName = "$deploymentPrefix-$deploymentNameBase"
 
-            $prefixPostFixAndHythenLength = $deploymentPrefix.Length + $deploymentTimeStamp.Length + 2
-            $deploymentNameMaxLength = 61 - $prefixPostFixAndHythenLength
+        $modeText = if ($whatIfEnabled) { "What-If" } else { "Deployment Stack" }
 
-            if($deploymentName.Length -gt $deploymentNameMaxLength) {
-              $deploymentName = $deploymentName.Substring(0, $deploymentNameMaxLength)
-            }
+        Write-Host "================================================" -ForegroundColor Blue
+        Write-Host "Starting $modeText for $deploymentName" -ForegroundColor Blue
+        Write-Host "================================================" -ForegroundColor Blue
+        Write-Host ""
+        Write-Host "Display Name: $${{ parameters.displayName }}" -ForegroundColor DarkGray
+        Write-Host "Deployment Name: $deploymentName" -ForegroundColor DarkGray
+        Write-Host "Template File Path: $${{ parameters.templateFilePath }}" -ForegroundColor DarkGray
+        Write-Host "Template Parameters File Path: $${{ parameters.templateParametersFilePath }}" -ForegroundColor DarkGray
+        Write-Host "Management Group Id: $${{ parameters.managementGroupId }}" -ForegroundColor DarkGray
+        Write-Host "Subscription Id: $${{ parameters.subscriptionId }}" -ForegroundColor DarkGray
+        Write-Host "Resource Group Name: $${{ parameters.resourceGroupName }}" -ForegroundColor DarkGray
+        Write-Host "Location: $${{ parameters.location }}" -ForegroundColor DarkGray
+        Write-Host "Deployment Type: $deploymentType" -ForegroundColor DarkGray
+        Write-Host "What-If Mode: $whatIfEnabled" -ForegroundColor DarkGray
+        Write-Host ""
 
-            $deploymentName = "$deploymentPrefix-$deploymentName-$deploymentTimeStamp"
-            Write-Host "Deployment Name: $deploymentName"
+        # Check if template files exist
+        if (-not (Test-Path "$${{ parameters.templateFilePath }}")) {
+          Write-Error "Template file not found: $${{ parameters.templateFilePath }}"
+          throw "Template file not found: $${{ parameters.templateFilePath }}"
+        }
+        Write-Host "✓ Template file exists: $${{ parameters.templateFilePath }}" -ForegroundColor Green
 
-            $inputObject = @{
-              TemplateFile          = "$${{ scriptFile.templateFilePath }}"
-              TemplateParameterFile = "$${{ scriptFile.templateParametersFilePath }}"
-              WhatIf                = $whatIf
-              Verbose               = $true
-            }
+        if (-not (Test-Path "$${{ parameters.templateParametersFilePath }}")) {
+          Write-Error "Template parameters file not found: $${{ parameters.templateParametersFilePath }}"
+          throw "Template parameters file not found: $${{ parameters.templateParametersFilePath }}"
+        }
+        Write-Host "✓ Template parameters file exists: $${{ parameters.templateParametersFilePath }}" -ForegroundColor Green
+        Write-Host ""
 
-            $retryCount = 0
-            $retryMax = 10
-            $initialRetryDelay = 20
-            $retryDelayIncrement = 10
-            $finalSuccess = $false
+        if ($whatIfEnabled) {
+          # What-If mode - validation only using standard deployment with -WhatIf parameter
+          Write-Host "Running in What-If mode (validation only)" -ForegroundColor Cyan
+          Write-Host ""
 
-            while ($retryCount -lt $retryMax) {
-              $retryAttempt = '{0:d2}' -f ($retryCount + 1)
+          $whatIfParameters = @{
+            DeploymentName        = $deploymentName
+            TemplateFile          = "$${{ parameters.templateFilePath }}"
+            TemplateParameterFile = "$${{ parameters.templateParametersFilePath }}"
+            WhatIf                = $true
+            ValidationLevel       = "providerNoRbac"
+            Verbose               = $true
+          }
 
-              if($retryCount -gt 0) {
-                $retryDelay = $initialRetryDelay + ($retryCount * $retryDelayIncrement)
-                Write-Host "Retrying deployment with attempt number $retryAttempt after $retryDelay seconds..." -ForegroundColor Green
-                Start-Sleep -Seconds $retryDelay
-                Write-Host "Retrying deployment..." -ForegroundColor Green
-              }
-
-              $inputObject.DeploymentName = "$deploymentName-$retryAttempt"
-
-              $result = $null
-
-              try {
-                if ($deploymentType -eq "tenant") {
-                  $inputObject.Location = "$${{ scriptFile.location }}"
-                  $result = New-AzTenantDeployment @inputObject
+          try {
+            switch ($deploymentType) {
+              "managementGroup" {
+                $targetManagementGroupId = "$${{ parameters.managementGroupId }}"
+                if ([string]::IsNullOrWhiteSpace($targetManagementGroupId)) {
+                  $targetManagementGroupId = (Get-AzContext).Tenant.TenantId
                 }
 
-                if ($deploymentType -eq "managementGroup") {
-                  $inputObject.Location = "$${{ scriptFile.location }}"
-                  $inputObject.ManagementGroupId = "$${{ scriptFile.managementGroupId }}"
-                  if ($inputObject.ManagementGroupId -eq "") {
-                    $inputObject.ManagementGroupId = (Get-AzContext).Tenant.TenantId
+                Write-Host "Running Management Group What-If: $deploymentName" -ForegroundColor Cyan
+                $whatIfParameters.Location = "$${{ parameters.location }}"
+                $whatIfParameters.ManagementGroupId = $targetManagementGroupId
+                $result = New-AzManagementGroupDeployment @whatIfParameters
+              }
+              "subscription" {
+                if (-not [string]::IsNullOrWhiteSpace("$${{ parameters.subscriptionId }}")) {
+                  Write-Host "Setting subscription context to: $${{ parameters.subscriptionId }}" -ForegroundColor Cyan
+                  Select-AzSubscription -SubscriptionId "$${{ parameters.subscriptionId }}" | Out-Null
+                }
+
+                Write-Host "Running Subscription What-If: $deploymentName" -ForegroundColor Cyan
+                $whatIfParameters.Location = "$${{ parameters.location }}"
+                $result = New-AzSubscriptionDeployment @whatIfParameters
+              }
+              "resourceGroup" {
+                if (-not [string]::IsNullOrWhiteSpace("$${{ parameters.subscriptionId }}")) {
+                  Write-Host "Setting subscription context to: $${{ parameters.subscriptionId }}" -ForegroundColor Cyan
+                  Select-AzSubscription -SubscriptionId "$${{ parameters.subscriptionId }}" | Out-Null
+                }
+
+                Write-Host "Running Resource Group What-If: $deploymentName" -ForegroundColor Cyan
+                $whatIfParameters.ResourceGroupName = "$${{ parameters.resourceGroupName }}"
+                $result = New-AzResourceGroupDeployment @whatIfParameters
+              }
+              default {
+                Write-Error "Invalid deployment type: $deploymentType"
+                throw "Invalid deployment type: $deploymentType"
+              }
+            }
+
+            Write-Host ""
+            Write-Host "================================================" -ForegroundColor Green
+            Write-Host "✓ What-If Validation Succeeded: $deploymentName" -ForegroundColor Green
+            Write-Host "================================================" -ForegroundColor Green
+            Write-Host ""
+
+          } catch {
+            Write-Error "What-If validation failed: $($_.Exception.Message)"
+            throw
+          }
+
+        } else {
+          # Deployment Stack mode - actual deployment
+          $stackParameters = @{
+            Name                  = $deploymentName
+            TemplateFile          = "$${{ parameters.templateFilePath }}"
+            TemplateParameterFile = "$${{ parameters.templateParametersFilePath }}"
+            DenySettingsMode      = "None"
+            ActionOnUnmanage      = "DeleteAll"
+            Force                 = $true
+            Verbose               = $true
+          }
+
+          $retryCount = 0
+          $retryMax = 20
+          $initialRetryDelay = 20
+          $retryDelayIncrement = 10
+          $finalSuccess = $false
+
+          while ($retryCount -lt $retryMax) {
+            if ($retryCount -gt 0) {
+              $retryDelay = $initialRetryDelay + ($retryCount * $retryDelayIncrement)
+              Write-Host "Retrying deployment stack after $retryDelay seconds..." -ForegroundColor Yellow
+              Start-Sleep -Seconds $retryDelay
+              Write-Host "Retry attempt $retryCount" -ForegroundColor Yellow
+            }
+
+            $result = $null
+
+            try {
+              switch ($deploymentType) {
+                "managementGroup" {
+                  $targetManagementGroupId = "$${{ parameters.managementGroupId }}"
+                  if ([string]::IsNullOrWhiteSpace($targetManagementGroupId)) {
+                    $targetManagementGroupId = (Get-AzContext).Tenant.TenantId
                   }
-                  $result = New-AzManagementGroupDeployment @inputObject
-                }
 
-                if ($deploymentType -eq "subscription") {
-                  $inputObject.Location = "$${{ scriptFile.location }}"
-                  Select-AzSubscription -SubscriptionId "$${{ scriptFile.subscriptionId }}"
-                  $result = New-AzSubscriptionDeployment @inputObject
+                  Write-Host "Creating Management Group Deployment Stack: $deploymentName" -ForegroundColor Cyan
+                  $result = New-AzManagementGroupDeploymentStack @stackParameters -ManagementGroupId $targetManagementGroupId -Location "$${{ parameters.location }}"
                 }
+                "subscription" {
+                  if (-not [string]::IsNullOrWhiteSpace("$${{ parameters.subscriptionId }}")) {
+                    Write-Host "Setting subscription context to: $${{ parameters.subscriptionId }}" -ForegroundColor Cyan
+                    Select-AzSubscription -SubscriptionId "$${{ parameters.subscriptionId }}" | Out-Null
+                  }
 
-                if ($deploymentType -eq "resourceGroup") {
-                  $inputObject.ResourceGroupName = "$${{ scriptFile.resourceGroupName }}"
-                  Select-AzSubscription -SubscriptionId "$${{ scriptFile.subscriptionId }}"
-                  $result = New-AzResourceGroupDeployment @inputObject
+                  Write-Host "Creating Subscription Deployment Stack: $deploymentName" -ForegroundColor Cyan
+                  $result = New-AzSubscriptionDeploymentStack @stackParameters -Location "$${{ parameters.location }}"
                 }
-              } catch {
-                Write-Host $_ -ForegroundColor Red
-                Write-Host "Deployment failed with exception, this is likely an intermittent failure so entering retry loop..." -ForegroundColor Red
-                $retryCount++
-                continue
+                "resourceGroup" {
+                  if (-not [string]::IsNullOrWhiteSpace("$${{ parameters.subscriptionId }}")) {
+                    Write-Host "Setting subscription context to: $${{ parameters.subscriptionId }}" -ForegroundColor Cyan
+                    Select-AzSubscription -SubscriptionId "$${{ parameters.subscriptionId }}" | Out-Null
+                  }
+
+                  Write-Host "Creating Resource Group Deployment Stack: $deploymentName" -ForegroundColor Cyan
+                  $result = New-AzResourceGroupDeploymentStack @stackParameters -ResourceGroupName "$${{ parameters.resourceGroupName }}"
+                }
+                default {
+                  Write-Error "Invalid deployment type: $deploymentType"
+                  throw "Invalid deployment type: $deploymentType"
+                }
               }
 
-              if ($whatIf) {
-                $result | Format-List | Out-Host
-                exit 0
-              }
-
-              $resultId = ""
-
-              if($deploymentType -eq "resourceGroup") {
-                $resultId = "/subscriptions/$${{ scriptFile.subscriptionId }}/resourceGroups/$${{ scriptFile.resourceGroupName }}/providers/Microsoft.Resources/deployments/$deploymentName"
-              } else {
-                $resultId = $result.Id
-              }
-
-              $resultIdEscaped = $resultId.Replace("/", "%2F")
-              $resultUrl = "https://portal.azure.com/#view/HubsExtension/DeploymentDetailsBlade/~/overview/id/$resultIdEscaped"
-
-              Write-Host "Deployment Name: $deploymentName"
-              Write-Host "Deployment ID: $resultId"
-              Write-Host "Deployment Url: $resultUrl"
-              $result | Format-List | Out-Host
-
-              if($result.ProvisioningState -ne "Succeeded") {
-                Write-Host "Deployment failed with unsuccessful provisioning state, this is likely an intermittent failure so entering retry loop..." -ForegroundColor Red
-                $retryCount++
-              } else {
+              if ($result.ProvisioningState -eq "Succeeded") {
                 $finalSuccess = $true
+                Write-Host ""
+                Write-Host "================================================" -ForegroundColor Green
+                Write-Host "✓ Deployment Stack Succeeded: $deploymentName" -ForegroundColor Green
+                Write-Host "================================================" -ForegroundColor Green
+                Write-Host ""
                 break
+              } else {
+                Write-Warning "Deployment stack finished with state: $($result.ProvisioningState)"
+                $retryCount++
+              }
+            } catch {
+              Write-Warning "Deployment stack failed with error: $($_.Exception.Message)"
+              $retryCount++
+
+              if ($retryCount -ge $retryMax) {
+                Write-Error "Deployment stack failed after $retryMax attempts"
+                throw
               }
             }
+          }
 
-            if($finalSuccess -eq $false) {
-              Write-Error "Deployment failed after $retryMax attempts..."
-              exit 1
-            }
+          if (-not $finalSuccess) {
+            Write-Error "Deployment stack did not succeed after $retryMax attempts"
+            throw "Deployment stack did not succeed after $retryMax attempts"
+          }
+        }

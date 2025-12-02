@@ -4,23 +4,7 @@ module "resource_names" {
   environment_name = var.environment_name
   service_name     = var.service_name
   postfix_number   = var.postfix_number
-  resource_names   = merge(var.resource_names, local.custom_role_definitions_bicep_names, local.custom_role_definitions_terraform_names)
-}
-
-module "architecture_definition" {
-  count                                                     = local.has_architecture_definition ? 1 : 0
-  source                                                    = "../../modules/template_architecture_definition"
-  starter_module_folder_path                                = local.starter_root_module_folder_path
-  architecture_definition_name                              = local.architecture_definition_name
-  architecture_definition_template_path                     = var.architecture_definition_template_path
-  architecture_definition_override_path                     = var.architecture_definition_override_path
-  apply_alz_archetypes_via_architecture_definition_template = var.apply_alz_archetypes_via_architecture_definition_template
-}
-
-resource "local_file" "architecture_definition_file" {
-  count    = local.has_architecture_definition ? 1 : 0
-  content  = module.architecture_definition[0].architecture_definition_json
-  filename = local.architecture_definition_file_destination
+  resource_names   = merge(var.resource_names, local.custom_role_definitions_bicep_names, local.custom_role_definitions_terraform_names, local.custom_role_definitions_bicep_classic_names)
 }
 
 module "files" {
@@ -48,7 +32,7 @@ module "azure" {
   storage_account_replication_type                     = var.storage_account_replication_type
   use_self_hosted_agents                               = false
   use_private_networking                               = false
-  custom_role_definitions                              = var.iac_type == "terraform" ? local.custom_role_definitions_terraform : local.custom_role_definitions_bicep
+  custom_role_definitions                              = var.iac_type == "terraform" ? local.custom_role_definitions_terraform : (var.iac_type == "bicep" ? local.custom_role_definitions_bicep : local.custom_role_definitions_bicep_classic)
   role_assignments                                     = var.iac_type == "terraform" ? var.role_assignments_terraform : var.role_assignments_bicep
   additional_role_assignment_principal_ids             = var.grant_permissions_to_current_user ? { current_user = data.azurerm_client_config.current.object_id } : {}
   storage_account_blob_soft_delete_enabled             = var.storage_account_blob_soft_delete_enabled
@@ -56,10 +40,31 @@ module "azure" {
   storage_account_blob_versioning_enabled              = var.storage_account_blob_versioning_enabled
   storage_account_container_soft_delete_enabled        = var.storage_account_container_soft_delete_enabled
   storage_account_container_soft_delete_retention_days = var.storage_account_container_soft_delete_retention_days
+  tenant_role_assignment_enabled                       = var.iac_type == "bicep" && var.bicep_tenant_role_assignment_enabled
+  tenant_role_assignment_role_definition_name          = var.bicep_tenant_role_assignment_role_definition_name
+}
+
+module "file_manipulation" {
+  source                           = "../../modules/file_manipulation"
+  vcs_type                         = "local"
+  files                            = module.files.files
+  resource_names                   = local.resource_names
+  iac_type                         = var.iac_type
+  module_folder_path               = local.starter_module_folder_path
+  bicep_config_file_path           = var.bicep_config_file_path
+  starter_module_name              = var.starter_module_name
+  root_module_folder_relative_path = var.root_module_folder_relative_path
+  on_demand_folder_repository      = var.on_demand_folder_repository
+  on_demand_folder_artifact_name   = var.on_demand_folder_artifact_name
+  pipeline_target_folder_name      = local.script_target_folder_name
+  bicep_parameters_file_path       = var.bicep_parameters_file_path
+  subscription_ids                 = var.subscription_ids
+  root_parent_management_group_id  = var.root_parent_management_group_id
+  pipeline_files_directory_path    = local.script_source_folder_path
 }
 
 resource "local_file" "alz" {
-  for_each = local.final_module_files
+  for_each = module.file_manipulation.repository_files
   content  = each.value.content
   filename = "${local.target_directory}/${each.key}"
 }

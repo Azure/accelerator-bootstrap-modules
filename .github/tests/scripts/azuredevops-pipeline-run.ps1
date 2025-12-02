@@ -58,6 +58,18 @@ function Invoke-Pipeline {
                         }
                     }
                 }
+            } | ConvertTo-Json -Depth 100
+        }
+
+        if($iac -eq "bicep-classic") {
+            $pipelineDispatchBody = @{
+                "resources" = @{
+                    "repositories" = @{
+                        "self" = @{
+                            "refName" = "refs/heads/main"
+                        }
+                    }
+                }
                 "templateParameters" = @{
                     "destroy" = ($pipelineAction -eq "destroy").ToString().ToLower()
                 }

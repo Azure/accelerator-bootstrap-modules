@@ -60,4 +60,5 @@ if($deployApproved -ne "yes") {
     -firstRunWhatIf ${script_file.firstRunWhatIf} `
     -firstDeployment $isFirstDeployment `
 
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 %{ endfor ~}
