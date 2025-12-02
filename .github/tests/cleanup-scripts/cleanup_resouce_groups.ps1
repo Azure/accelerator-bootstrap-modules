@@ -23,6 +23,8 @@ $subscriptions = @(
     "0aeefd1c-62c7-4071-91ad-925899603976"
 )
 
+$roleDefinitionsFilter = "Azure Landing Zones"
+
 $managementGroups | ForEach-Object -Parallel {
     $managementGroupFilter = $using:managementGroupFilter
     $managementGroup = $_
@@ -39,6 +41,37 @@ $managementGroups | ForEach-Object -Parallel {
         $childManagementGroup = $_
         Write-Host "Deleting management group: $($childManagementGroup.name) under parent: $managementGroup"
         az account management-group delete --name $childManagementGroup.name
+    } -ThrottleLimit 10
+
+    $roleDefinitionsFilter = $using:roleDefinitionsFilter
+    $roleDefinitions = az role definition list --management-group $managementGroup | ConvertFrom-Json | Where-Object { $_.name -like "*$roleDefinitionsFilter*" -and $_.assignableScopes -contains "/providers/Microsoft.Management/managementGroups/$managementGroup" }
+    $roleDefinitions | ForEach-Object -Parallel {
+        $managementGroup = $using:managementGroup
+        $roleDefinition = $_
+
+        $roleAssignments = az role assignment list --role $roleDefinition.name --management-group $managementGroup | ConvertFrom-Json
+        $roleAssignments | ForEach-Object -Parallel {
+            $managementGroup = $using:managementGroup
+            $roleDefinition = $using:roleDefinition
+            $roleAssignment = $_
+            Write-Host "Deleting role assignment: $($roleAssignment.name) for role definition: $($roleDefinition.name) in management group: $managementGroup"
+            az role assignment delete --ids $roleAssignment.id
+        } -ThrottleLimit 10
+
+        foreach ( $subscription in $using:subscriptions ) {
+            $subscriptionRoleAssignments = az role assignment list --role $roleDefinition.name --subscription $subscription | ConvertFrom-Json
+            $subscriptionRoleAssignments | ForEach-Object -Parallel {
+                $roleDefinition = $using:roleDefinition
+                $subscription = $using:subscription
+                $roleAssignment = $_
+                Write-Host "Deleting role assignment: $($roleAssignment.name) for role definition: $($roleDefinition.name) in subscription: $subscription"
+                az role assignment delete --ids $roleAssignment.id
+            } -ThrottleLimit 10
+        }
+        if($roleDefinition.isCustom -eq $true) {
+            Write-Host "Deleting custom role definition: $($roleDefinition.name) in management group: $managementGroup"
+            az role definition delete --name $roleDefinition.name --management-group $managementGroup
+        }
     } -ThrottleLimit 10
 } -ThrottleLimit 10
 

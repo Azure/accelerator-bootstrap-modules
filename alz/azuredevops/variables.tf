@@ -785,20 +785,11 @@ variable "custom_role_definitions_bicep" {
       description = "This is a custom role created by the Azure Landing Zones Accelerator for running Bicep What If for the Management Group hierarchy and its associated governance resources such as policy, RBAC etc... You must use the `--validation-level providerNoRbac` (Az CLI 2.75.0 or later) or `-ValidationLevel providerNoRbac` (Az PowerShell 13.4.0 or later (Az.Resources 7.10.0 or later)) flag when running Bicep What If with this role."
       permissions = {
         actions = [
-          "Microsoft.Management/managementGroups/read",
-          "Microsoft.Management/managementGroups/subscriptions/read",
-          "Microsoft.Management/managementGroups/settings/read",
-          "Microsoft.Authorization/*/read",
-          "Microsoft.Authorization/policyDefinitions/write",
-          "Microsoft.Authorization/policySetDefinitions/write",
-          "Microsoft.Authorization/roleDefinitions/write",
-          "Microsoft.Authorization/policyAssignments/write",
-          "Microsoft.Insights/diagnosticSettings/write",
-          "Microsoft.Insights/diagnosticSettings/read",
+          "*/read",
           "Microsoft.Resources/deployments/whatIf/action",
-          "Microsoft.Resources/deployments/write",
-          "Microsoft.Resources/deploymentStacks/read",
-          "Microsoft.Resources/deploymentStacks/validate/action"
+          "Microsoft.Resources/deployments/validate/action",
+          "Microsoft.Resources/subscriptions/operationResults/read",
+          "Microsoft.Management/operationResults/*/read"
         ]
         not_actions = []
       }
