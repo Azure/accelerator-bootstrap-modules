@@ -486,7 +486,7 @@ variable "runner_container_image_folder" {
 
 variable "runner_container_image_dockerfile" {
   description = <<-EOT
-    **(Optional, default: `"dockerfile"`)** The Dockerfile name to use for the container image.
+    **(Optional, default: `"Dockerfile"`)** The Dockerfile name to use for the container image.
   EOT
   type        = string
   default     = "Dockerfile"
