@@ -507,6 +507,7 @@ variable "container_registry_task_timer_trigger_enabled" {
     
     See container_registry_task_timer_trigger_schedule for customizing the schedule.
   EOT
+  nullable    = false
   type        = bool
   default     = true
 }
@@ -519,6 +520,7 @@ variable "container_registry_task_timer_trigger_schedule" {
     Modify as needed to fit maintenance windows or update frequency.
   EOT
   type        = string
+  nullable    = false
   default     = "0 0 * * 0"
 }
 
