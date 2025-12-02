@@ -20,8 +20,7 @@ $subscriptions = @(
     "eac9acf5-0a34-4db8-ae56-cdbcc7e2cf4c",
     "3a6bdc35-0830-41ac-b323-37a5a030e241",
     "c4332eb2-f966-47db-aa47-5d71e239d8aa",
-    "0aeefd1c-62c7-4071-91ad-925899603976",
-    "0d754f66-65b4-4f64-97f5-221f0174ad48"
+    "0aeefd1c-62c7-4071-91ad-925899603976"
 )
 
 $managementGroups | ForEach-Object -Parallel {

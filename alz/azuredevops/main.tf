@@ -84,7 +84,7 @@ module "azure_devops" {
   repository_name_templates                    = local.resource_names.version_control_system_repository_templates
   variable_group_name                          = local.resource_names.version_control_system_variable_group
   azure_tenant_id                              = data.azurerm_client_config.current.tenant_id
-  azure_subscription_id                        = data.azurerm_client_config.management.subscription_id
+  azure_subscription_id                        = var.subscription_ids["management"]
   azure_subscription_name                      = data.azurerm_subscription.management.display_name
   pipelines                                    = local.pipelines
   backend_azure_resource_group_name            = local.resource_names.resource_group_state
