@@ -31,7 +31,7 @@ parameters:
 steps:
   - task: AzurePowerShell@5
     displayName: '$${{ parameters.displayName }}'
-    retryCountOnTaskFailure: 20
+    retryCountOnTaskFailure: 10
     inputs:
       azureSubscription: $${{ parameters.serviceConnection }}
       azurePowerShellVersion: 'LatestVersion'
