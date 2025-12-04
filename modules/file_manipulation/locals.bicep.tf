@@ -20,10 +20,10 @@ locals {
   }
 
   bicep_module_file_dynamic_replacements = { for flattened_result in flatten([ for key, value in local.starter_module_config.inputs :
-    [ for target in value.targets : {
+    [ for i, target in [ for t in value.targets : t if t.Destination == "Environment" ] : {
       key = key
       value = local.bicep_parameters[target.Name]
-    } if target.Destination == "Environment" ]
+    } if i == 0 ]
   ]) : flattened_result.key => flattened_result.value
   }
 
