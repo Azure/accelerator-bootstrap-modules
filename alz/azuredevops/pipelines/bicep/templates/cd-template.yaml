@@ -50,6 +50,10 @@ stages:
                   parameters:
                     parametersFileName: $(PARAMETERS_FILE_NAME)
 
+                - template: ./helpers/bicep-installer.yaml
+                  parameters:
+                    serviceConnection: '${service_connection_name_plan}'
+
                 - task: AzurePowerShell@5
                   displayName: 'Check for First Deployment'
                   inputs:
@@ -73,10 +77,6 @@ stages:
                       }
 
                       Write-Host "##vso[task.setvariable variable=FIRST_DEPLOYMENT;]$firstDeployment"
-
-                - template: ./helpers/bicep-installer.yaml
-                  parameters:
-                    serviceConnection: '${service_connection_name_plan}'
 
 %{ for script_file in script_files ~}
                 - $${{ if eq(parameters['${script_file.name}'], true) }}:
