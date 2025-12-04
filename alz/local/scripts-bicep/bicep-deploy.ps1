@@ -59,7 +59,7 @@ $stackParameters = @{
 }
 
 $retryCount = 0
-$retryMax = 20
+$retryMax = 10
 $initialRetryDelay = 20
 $retryDelayIncrement = 10
 $finalSuccess = $false
