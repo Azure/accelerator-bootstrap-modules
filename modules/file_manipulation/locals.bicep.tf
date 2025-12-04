@@ -19,19 +19,19 @@ locals {
     }
   }
 
-  bicep_module_file_replacements = {
-    management_subscription_id            = try(var.subscription_ids["management"], "")
-    connectivity_subscription_id          = try(var.subscription_ids["connectivity"], "")
-    identity_subscription_id              = try(var.subscription_ids["identity"], "")
-    security_subscription_id              = try(var.subscription_ids["security"], "")
-    primary_location                      = try(local.bicep_parameters.LOCATION_PRIMARY, "eastus")
-    secondary_location                    = try(local.bicep_parameters.LOCATION_SECONDARY, "westus")
-    root_parent_management_group_id       = var.root_parent_management_group_id
+  bicep_module_file_dynamic_replacements = { for flattened_result in flatten([ for key, value in local.starter_module_config.inputs :
+    [ for target in value.targets : {
+      key = key
+      value = local.bicep_parameters[target.Name]
+    } if target.Destination == "Environment" ]
+  ]) : flattened_result.key => flattened_result.value
+  }
+
+  bicep_module_file_replacements = merge({
     unique_postfix                        = var.resource_names.unique_postfix
     time_stamp                            = var.resource_names.time_stamp
     time_stamp_formatted                  = var.resource_names.time_stamp_formatted
-    intermediate_root_management_group_id = try(local.bicep_parameters.INTERMEDIATE_ROOT_MANAGEMENT_GROUP_ID, "alz")
-  }
+  }, local.bicep_module_file_dynamic_replacements)
 }
 
 locals {
