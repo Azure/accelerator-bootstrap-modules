@@ -74,13 +74,11 @@ while ($retryCount -lt $retryMax) {
 
     $result = $null
 
-    # Clean up previous deployments on retry (batch delete for speed)
     if ($retryCount -gt 0) {
         Write-Host ""
         Write-Host "================================================" -ForegroundColor Yellow
         Write-Host "⚠ Retry Attempt Detected (Attempt #$($retryCount + 1))" -ForegroundColor Yellow
         Write-Host "================================================" -ForegroundColor Yellow
-        Write-Host "Cleaning up previous failed deployment..." -ForegroundColor Yellow
         Write-Host ""
     }
 
@@ -92,26 +90,26 @@ while ($retryCount -lt $retryMax) {
                     $targetManagementGroupId = (Get-AzContext).Tenant.TenantId
                 }
 
-                # Clean up previous deployments on retry (batch delete for speed)
-                if ($retryCount -gt 0) {
-                    try {
-                        Write-Host "Cleaning up all existing deployments in management group..." -ForegroundColor Yellow
-                        $allDeployments = Get-AzManagementGroupDeployment -ManagementGroupId $targetManagementGroupId -ErrorAction SilentlyContinue
-                        if ($allDeployments -and $allDeployments.Count -gt 0) {
-                            Write-Host "Found $($allDeployments.Count) deployment(s) to clean up" -ForegroundColor Yellow
-                            $batchSize = 200
-                            for ($i = 0; $i -lt $allDeployments.Count; $i += $batchSize) {
-                                $batch = $allDeployments | Select-Object -Skip $i -First $batchSize
-                                Write-Host "  Deleting batch of $($batch.Count) deployments..." -ForegroundColor Gray
-                                $batch | ForEach-Object -Parallel {
-                                    Remove-AzManagementGroupDeployment -ManagementGroupId $using:targetManagementGroupId -Name $_.DeploymentName -ErrorAction SilentlyContinue
-                                } -ThrottleLimit 100
-                            }
-                            Write-Host "✓ All deployments cleaned up" -ForegroundColor Green
+                # Clean up all deployments before each deployment to avoid quota issues
+                try {
+                    Write-Host "Cleaning up existing deployments in management group..." -ForegroundColor Cyan
+                    $allDeployments = Get-AzManagementGroupDeployment -ManagementGroupId $targetManagementGroupId -ErrorAction SilentlyContinue
+                    if ($allDeployments -and $allDeployments.Count -gt 0) {
+                        Write-Host "Found $($allDeployments.Count) deployment(s) to clean up" -ForegroundColor Yellow
+                        $batchSize = 200
+                        for ($i = 0; $i -lt $allDeployments.Count; $i += $batchSize) {
+                            $batch = $allDeployments | Select-Object -Skip $i -First $batchSize
+                            Write-Host "  Deleting batch of $($batch.Count) deployments..." -ForegroundColor Gray
+                            $batch | ForEach-Object -Parallel {
+                                Remove-AzManagementGroupDeployment -ManagementGroupId $using:targetManagementGroupId -Name $_.DeploymentName -ErrorAction SilentlyContinue
+                            } -ThrottleLimit 100
                         }
-                    } catch {
-                        Write-Warning "Could not remove previous deployments: $($_.Exception.Message)"
+                        Write-Host "✓ All deployments cleaned up" -ForegroundColor Green
+                    } else {
+                        Write-Host "No deployments to clean up" -ForegroundColor Green
                     }
+                } catch {
+                    Write-Warning "Could not clean up deployments: $($_.Exception.Message)"
                 }
 
                 $result = New-AzManagementGroupDeploymentStack @stackParameters -ManagementGroupId $targetManagementGroupId -Location $location -Verbose
@@ -121,26 +119,26 @@ while ($retryCount -lt $retryMax) {
                     Select-AzSubscription -SubscriptionId $subscriptionId | Out-Null
                 }
 
-                # Clean up previous deployments on retry (batch delete for speed)
-                if ($retryCount -gt 0) {
-                    try {
-                        Write-Host "Cleaning up all existing deployments in subscription..." -ForegroundColor Yellow
-                        $allDeployments = Get-AzSubscriptionDeployment -ErrorAction SilentlyContinue
-                        if ($allDeployments -and $allDeployments.Count -gt 0) {
-                            Write-Host "Found $($allDeployments.Count) deployment(s) to clean up" -ForegroundColor Yellow
-                            $batchSize = 200
-                            for ($i = 0; $i -lt $allDeployments.Count; $i += $batchSize) {
-                                $batch = $allDeployments | Select-Object -Skip $i -First $batchSize
-                                Write-Host "  Deleting batch of $($batch.Count) deployments..." -ForegroundColor Gray
-                                $batch | ForEach-Object -Parallel {
-                                    Remove-AzSubscriptionDeployment -Name $_.DeploymentName -ErrorAction SilentlyContinue
-                                } -ThrottleLimit 100
-                            }
-                            Write-Host "✓ All deployments cleaned up" -ForegroundColor Green
+                # Clean up all deployments before each deployment to avoid quota issues
+                try {
+                    Write-Host "Cleaning up existing deployments in subscription..." -ForegroundColor Cyan
+                    $allDeployments = Get-AzSubscriptionDeployment -ErrorAction SilentlyContinue
+                    if ($allDeployments -and $allDeployments.Count -gt 0) {
+                        Write-Host "Found $($allDeployments.Count) deployment(s) to clean up" -ForegroundColor Yellow
+                        $batchSize = 200
+                        for ($i = 0; $i -lt $allDeployments.Count; $i += $batchSize) {
+                            $batch = $allDeployments | Select-Object -Skip $i -First $batchSize
+                            Write-Host "  Deleting batch of $($batch.Count) deployments..." -ForegroundColor Gray
+                            $batch | ForEach-Object -Parallel {
+                                Remove-AzSubscriptionDeployment -Name $_.DeploymentName -ErrorAction SilentlyContinue
+                            } -ThrottleLimit 100
                         }
-                    } catch {
-                        Write-Warning "Could not remove previous deployments: $($_.Exception.Message)"
+                        Write-Host "✓ All deployments cleaned up" -ForegroundColor Green
+                    } else {
+                        Write-Host "No deployments to clean up" -ForegroundColor Green
                     }
+                } catch {
+                    Write-Warning "Could not clean up deployments: $($_.Exception.Message)"
                 }
 
                 $result = New-AzSubscriptionDeploymentStack @stackParameters -Location $location -Verbose
@@ -150,26 +148,26 @@ while ($retryCount -lt $retryMax) {
                     Select-AzSubscription -SubscriptionId $subscriptionId | Out-Null
                 }
 
-                # Clean up previous deployments on retry (batch delete for speed)
-                if ($retryCount -gt 0) {
-                    try {
-                        Write-Host "Cleaning up all existing deployments in resource group..." -ForegroundColor Yellow
-                        $allDeployments = Get-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
-                        if ($allDeployments -and $allDeployments.Count -gt 0) {
-                            Write-Host "Found $($allDeployments.Count) deployment(s) to clean up" -ForegroundColor Yellow
-                            $batchSize = 200
-                            for ($i = 0; $i -lt $allDeployments.Count; $i += $batchSize) {
-                                $batch = $allDeployments | Select-Object -Skip $i -First $batchSize
-                                Write-Host "  Deleting batch of $($batch.Count) deployments..." -ForegroundColor Gray
-                                $batch | ForEach-Object -Parallel {
-                                    Remove-AzResourceGroupDeployment -ResourceGroupName $using:resourceGroupName -Name $_.DeploymentName -ErrorAction SilentlyContinue
-                                } -ThrottleLimit 100
-                            }
-                            Write-Host "✓ All deployments cleaned up" -ForegroundColor Green
+                # Clean up all deployments before each deployment to avoid quota issues
+                try {
+                    Write-Host "Cleaning up existing deployments in resource group..." -ForegroundColor Cyan
+                    $allDeployments = Get-AzResourceGroupDeployment -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
+                    if ($allDeployments -and $allDeployments.Count -gt 0) {
+                        Write-Host "Found $($allDeployments.Count) deployment(s) to clean up" -ForegroundColor Yellow
+                        $batchSize = 200
+                        for ($i = 0; $i -lt $allDeployments.Count; $i += $batchSize) {
+                            $batch = $allDeployments | Select-Object -Skip $i -First $batchSize
+                            Write-Host "  Deleting batch of $($batch.Count) deployments..." -ForegroundColor Gray
+                            $batch | ForEach-Object -Parallel {
+                                Remove-AzResourceGroupDeployment -ResourceGroupName $using:resourceGroupName -Name $_.DeploymentName -ErrorAction SilentlyContinue
+                            } -ThrottleLimit 100
                         }
-                    } catch {
-                        Write-Warning "Could not remove previous deployments: $($_.Exception.Message)"
+                        Write-Host "✓ All deployments cleaned up" -ForegroundColor Green
+                    } else {
+                        Write-Host "No deployments to clean up" -ForegroundColor Green
                     }
+                } catch {
+                    Write-Warning "Could not clean up deployments: $($_.Exception.Message)"
                 }
 
                 $result = New-AzResourceGroupDeploymentStack @stackParameters -ResourceGroupName $resourceGroupName -Location $location -Verbose
