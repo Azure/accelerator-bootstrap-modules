@@ -38,8 +38,8 @@ steps:
       pwsh: true
       ScriptType: 'InlineScript'
       Inline: |
-        $deploymentType = "$${{ parameters.deploymentType }}"
-        $whatIfEnabled = [System.Convert]::ToBoolean("$${{ parameters.whatIfEnabled }}")
+       $deploymentType = "${{ parameters.deploymentType }}"
+        $whatIfEnabled = [System.Convert]::ToBoolean("${{ parameters.whatIfEnabled }}")
 
         # Check if we should skip what-if for first deployment
         $firstDeploymentString = $env:FIRST_DEPLOYMENT
@@ -50,17 +50,28 @@ steps:
           $firstDeployment = [System.Convert]::ToBoolean($firstDeploymentString)
         }
 
-        $firstRunWhatIf = [System.Convert]::ToBoolean("$${{ parameters.firstRunWhatIf }}")
+        $firstRunWhatIf = [System.Convert]::ToBoolean("${{ parameters.firstRunWhatIf }}")
 
         if($whatIfEnabled -and $firstDeployment -and !$firstRunWhatIf) {
           Write-Warning "Skipping the What-If check as the deployment is dependent on resources that do not exist yet..."
           exit 0
         }
 
+        # Check if this is a retry attempt and clean up previous deployments
+        $isRetry = $env:AGENT_JOBATTEMPT -and [int]$env:AGENT_JOBATTEMPT -gt 1
+        if ($isRetry) {
+          Write-Host ""
+          Write-Host "================================================" -ForegroundColor Yellow
+          Write-Host "⚠ Retry Attempt Detected (Attempt #$($env:AGENT_JOBATTEMPT))" -ForegroundColor Yellow
+          Write-Host "================================================" -ForegroundColor Yellow
+          Write-Host "Cleaning up previous failed deployment..." -ForegroundColor Yellow
+          Write-Host ""
+        }
+
         # Generate deployment name without timestamp for consistent deployment stack names
         $deploymentPrefix = "alz"
 
-        $deploymentNameBase = "$${{ parameters.displayName }}".Replace(" ", "-")
+        $deploymentNameBase = "${{ parameters.displayName }}".Replace(" ", "-")
         $deploymentNameBase = "$deploymentNameBase-$($env:TIME_STAMP)"
 
         $deploymentNameMaxLength = 64 - $deploymentPrefix.Length - 1
@@ -77,30 +88,30 @@ steps:
         Write-Host "Starting $modeText for $deploymentName" -ForegroundColor Blue
         Write-Host "================================================" -ForegroundColor Blue
         Write-Host ""
-        Write-Host "Display Name: $${{ parameters.displayName }}" -ForegroundColor DarkGray
+        Write-Host "Display Name: ${{ parameters.displayName }}" -ForegroundColor DarkGray
         Write-Host "Deployment Name: $deploymentName" -ForegroundColor DarkGray
-        Write-Host "Template File Path: $${{ parameters.templateFilePath }}" -ForegroundColor DarkGray
-        Write-Host "Template Parameters File Path: $${{ parameters.templateParametersFilePath }}" -ForegroundColor DarkGray
-        Write-Host "Management Group Id: $${{ parameters.managementGroupId }}" -ForegroundColor DarkGray
-        Write-Host "Subscription Id: $${{ parameters.subscriptionId }}" -ForegroundColor DarkGray
-        Write-Host "Resource Group Name: $${{ parameters.resourceGroupName }}" -ForegroundColor DarkGray
-        Write-Host "Location: $${{ parameters.location }}" -ForegroundColor DarkGray
+        Write-Host "Template File Path: ${{ parameters.templateFilePath }}" -ForegroundColor DarkGray
+        Write-Host "Template Parameters File Path: ${{ parameters.templateParametersFilePath }}" -ForegroundColor DarkGray
+        Write-Host "Management Group Id: ${{ parameters.managementGroupId }}" -ForegroundColor DarkGray
+        Write-Host "Subscription Id: ${{ parameters.subscriptionId }}" -ForegroundColor DarkGray
+        Write-Host "Resource Group Name: ${{ parameters.resourceGroupName }}" -ForegroundColor DarkGray
+        Write-Host "Location: ${{ parameters.location }}" -ForegroundColor DarkGray
         Write-Host "Deployment Type: $deploymentType" -ForegroundColor DarkGray
         Write-Host "What-If Mode: $whatIfEnabled" -ForegroundColor DarkGray
         Write-Host ""
 
         # Check if template files exist
-        if (-not (Test-Path "$${{ parameters.templateFilePath }}")) {
-          Write-Error "Template file not found: $${{ parameters.templateFilePath }}"
-          throw "Template file not found: $${{ parameters.templateFilePath }}"
+        if (-not (Test-Path "${{ parameters.templateFilePath }}")) {
+          Write-Error "Template file not found: ${{ parameters.templateFilePath }}"
+          throw "Template file not found: ${{ parameters.templateFilePath }}"
         }
-        Write-Host "✓ Template file exists: $${{ parameters.templateFilePath }}" -ForegroundColor Green
+        Write-Host "✓ Template file exists: ${{ parameters.templateFilePath }}" -ForegroundColor Green
 
-        if (-not (Test-Path "$${{ parameters.templateParametersFilePath }}")) {
-          Write-Error "Template parameters file not found: $${{ parameters.templateParametersFilePath }}"
-          throw "Template parameters file not found: $${{ parameters.templateParametersFilePath }}"
+        if (-not (Test-Path "${{ parameters.templateParametersFilePath }}")) {
+          Write-Error "Template parameters file not found: ${{ parameters.templateParametersFilePath }}"
+          throw "Template parameters file not found: ${{ parameters.templateParametersFilePath }}"
         }
-        Write-Host "✓ Template parameters file exists: $${{ parameters.templateParametersFilePath }}" -ForegroundColor Green
+        Write-Host "✓ Template parameters file exists: ${{ parameters.templateParametersFilePath }}" -ForegroundColor Green
         Write-Host ""
 
         if ($whatIfEnabled) {
@@ -110,8 +121,8 @@ steps:
 
           $whatIfParameters = @{
             DeploymentName        = $deploymentName
-            TemplateFile          = "$${{ parameters.templateFilePath }}"
-            TemplateParameterFile = "$${{ parameters.templateParametersFilePath }}"
+            TemplateFile          = "${{ parameters.templateFilePath }}"
+            TemplateParameterFile = "${{ parameters.templateParametersFilePath }}"
             WhatIf                = $true
             ValidationLevel       = "providerNoRbac"
             Verbose               = $true
@@ -120,34 +131,34 @@ steps:
           try {
             switch ($deploymentType) {
               "managementGroup" {
-                $targetManagementGroupId = "$${{ parameters.managementGroupId }}"
+                $targetManagementGroupId = "${{ parameters.managementGroupId }}"
                 if ([string]::IsNullOrWhiteSpace($targetManagementGroupId)) {
                   $targetManagementGroupId = (Get-AzContext).Tenant.TenantId
                 }
 
                 Write-Host "Running Management Group What-If: $deploymentName" -ForegroundColor Cyan
-                $whatIfParameters.Location = "$${{ parameters.location }}"
+                $whatIfParameters.Location = "${{ parameters.location }}"
                 $whatIfParameters.ManagementGroupId = $targetManagementGroupId
                 $result = New-AzManagementGroupDeployment @whatIfParameters
               }
               "subscription" {
-                if (-not [string]::IsNullOrWhiteSpace("$${{ parameters.subscriptionId }}")) {
-                  Write-Host "Setting subscription context to: $${{ parameters.subscriptionId }}" -ForegroundColor Cyan
-                  Select-AzSubscription -SubscriptionId "$${{ parameters.subscriptionId }}" | Out-Null
+                if (-not [string]::IsNullOrWhiteSpace("${{ parameters.subscriptionId }}")) {
+                  Write-Host "Setting subscription context to: ${{ parameters.subscriptionId }}" -ForegroundColor Cyan
+                  Select-AzSubscription -SubscriptionId "${{ parameters.subscriptionId }}" | Out-Null
                 }
 
                 Write-Host "Running Subscription What-If: $deploymentName" -ForegroundColor Cyan
-                $whatIfParameters.Location = "$${{ parameters.location }}"
+                $whatIfParameters.Location = "${{ parameters.location }}"
                 $result = New-AzSubscriptionDeployment @whatIfParameters
               }
               "resourceGroup" {
-                if (-not [string]::IsNullOrWhiteSpace("$${{ parameters.subscriptionId }}")) {
-                  Write-Host "Setting subscription context to: $${{ parameters.subscriptionId }}" -ForegroundColor Cyan
-                  Select-AzSubscription -SubscriptionId "$${{ parameters.subscriptionId }}" | Out-Null
+                if (-not [string]::IsNullOrWhiteSpace("${{ parameters.subscriptionId }}")) {
+                  Write-Host "Setting subscription context to: ${{ parameters.subscriptionId }}" -ForegroundColor Cyan
+                  Select-AzSubscription -SubscriptionId "${{ parameters.subscriptionId }}" | Out-Null
                 }
 
                 Write-Host "Running Resource Group What-If: $deploymentName" -ForegroundColor Cyan
-                $whatIfParameters.ResourceGroupName = "$${{ parameters.resourceGroupName }}"
+                $whatIfParameters.ResourceGroupName = "${{ parameters.resourceGroupName }}"
                 $result = New-AzResourceGroupDeployment @whatIfParameters
               }
               default {
@@ -170,8 +181,8 @@ steps:
           # Deployment Stack mode - actual deployment
           $stackParameters = @{
             Name                  = $deploymentName
-            TemplateFile          = "$${{ parameters.templateFilePath }}"
-            TemplateParameterFile = "$${{ parameters.templateParametersFilePath }}"
+            TemplateFile          = "${{ parameters.templateFilePath }}"
+            TemplateParameterFile = "${{ parameters.templateParametersFilePath }}"
             DenySettingsMode      = "None"
             ActionOnUnmanage      = "DeleteAll"
             Force                 = $true
@@ -183,31 +194,97 @@ steps:
           try {
             switch ($deploymentType) {
               "managementGroup" {
-                $targetManagementGroupId = "$${{ parameters.managementGroupId }}"
+                $targetManagementGroupId = "${{ parameters.managementGroupId }}"
                 if ([string]::IsNullOrWhiteSpace($targetManagementGroupId)) {
                   $targetManagementGroupId = (Get-AzContext).Tenant.TenantId
                 }
 
+                # Clean up previous deployments on retry (batch delete for speed)
+                if ($isRetry) {
+                  try {
+                    Write-Host "Cleaning up all existing deployments in management group..." -ForegroundColor Yellow
+                    $allDeployments = Get-AzManagementGroupDeployment -ManagementGroupId $targetManagementGroupId -ErrorAction SilentlyContinue
+                    if ($allDeployments -and $allDeployments.Count -gt 0) {
+                      Write-Host "Found $($allDeployments.Count) deployment(s) to clean up" -ForegroundColor Yellow
+                      $batchSize = 200
+                      for ($i = 0; $i -lt $allDeployments.Count; $i += $batchSize) {
+                        $batch = $allDeployments | Select-Object -Skip $i -First $batchSize
+                        Write-Host "  Deleting batch of $($batch.Count) deployments..." -ForegroundColor Gray
+                        $batch | ForEach-Object -Parallel {
+                          Remove-AzManagementGroupDeployment -ManagementGroupId $using:targetManagementGroupId -Name $_.DeploymentName -ErrorAction SilentlyContinue
+                        } -ThrottleLimit 100
+                      }
+                      Write-Host "✓ All deployments cleaned up" -ForegroundColor Green
+                    }
+                  } catch {
+                    Write-Warning "Could not remove previous deployments: $($_.Exception.Message)"
+                  }
+                }
+
                 Write-Host "Creating Management Group Deployment Stack: $deploymentName" -ForegroundColor Cyan
-                $result = New-AzManagementGroupDeploymentStack @stackParameters -ManagementGroupId $targetManagementGroupId -Location "$${{ parameters.location }}"
+                $result = New-AzManagementGroupDeploymentStack @stackParameters -ManagementGroupId $targetManagementGroupId -Location "${{ parameters.location }}"
               }
               "subscription" {
-                if (-not [string]::IsNullOrWhiteSpace("$${{ parameters.subscriptionId }}")) {
-                  Write-Host "Setting subscription context to: $${{ parameters.subscriptionId }}" -ForegroundColor Cyan
-                  Select-AzSubscription -SubscriptionId "$${{ parameters.subscriptionId }}" | Out-Null
+                if (-not [string]::IsNullOrWhiteSpace("${{ parameters.subscriptionId }}")) {
+                  Write-Host "Setting subscription context to: ${{ parameters.subscriptionId }}" -ForegroundColor Cyan
+                  Select-AzSubscription -SubscriptionId "${{ parameters.subscriptionId }}" | Out-Null
+                }
+
+                # Clean up previous deployments on retry (batch delete for speed)
+                if ($isRetry) {
+                  try {
+                    Write-Host "Cleaning up all existing deployments in subscription..." -ForegroundColor Yellow
+                    $allDeployments = Get-AzSubscriptionDeployment -ErrorAction SilentlyContinue
+                    if ($allDeployments -and $allDeployments.Count -gt 0) {
+                      Write-Host "Found $($allDeployments.Count) deployment(s) to clean up" -ForegroundColor Yellow
+                      $batchSize = 200
+                      for ($i = 0; $i -lt $allDeployments.Count; $i += $batchSize) {
+                        $batch = $allDeployments | Select-Object -Skip $i -First $batchSize
+                        Write-Host "  Deleting batch of $($batch.Count) deployments..." -ForegroundColor Gray
+                        $batch | ForEach-Object -Parallel {
+                          Remove-AzSubscriptionDeployment -Name $_.DeploymentName -ErrorAction SilentlyContinue
+                        } -ThrottleLimit 100
+                      }
+                      Write-Host "✓ All deployments cleaned up" -ForegroundColor Green
+                    }
+                  } catch {
+                    Write-Warning "Could not remove previous deployments: $($_.Exception.Message)"
+                  }
                 }
 
                 Write-Host "Creating Subscription Deployment Stack: $deploymentName" -ForegroundColor Cyan
-                $result = New-AzSubscriptionDeploymentStack @stackParameters -Location "$${{ parameters.location }}"
+                $result = New-AzSubscriptionDeploymentStack @stackParameters -Location "${{ parameters.location }}"
               }
               "resourceGroup" {
-                if (-not [string]::IsNullOrWhiteSpace("$${{ parameters.subscriptionId }}")) {
-                  Write-Host "Setting subscription context to: $${{ parameters.subscriptionId }}" -ForegroundColor Cyan
-                  Select-AzSubscription -SubscriptionId "$${{ parameters.subscriptionId }}" | Out-Null
+                if (-not [string]::IsNullOrWhiteSpace("${{ parameters.subscriptionId }}")) {
+                  Write-Host "Setting subscription context to: ${{ parameters.subscriptionId }}" -ForegroundColor Cyan
+                  Select-AzSubscription -SubscriptionId "${{ parameters.subscriptionId }}" | Out-Null
+                }
+
+                # Clean up previous deployments on retry (batch delete for speed)
+                if ($isRetry) {
+                  try {
+                    Write-Host "Cleaning up all existing deployments in resource group..." -ForegroundColor Yellow
+                    $allDeployments = Get-AzResourceGroupDeployment -ResourceGroupName "${{ parameters.resourceGroupName }}" -ErrorAction SilentlyContinue
+                    if ($allDeployments -and $allDeployments.Count -gt 0) {
+                      Write-Host "Found $($allDeployments.Count) deployment(s) to clean up" -ForegroundColor Yellow
+                      $batchSize = 200
+                      for ($i = 0; $i -lt $allDeployments.Count; $i += $batchSize) {
+                        $batch = $allDeployments | Select-Object -Skip $i -First $batchSize
+                        Write-Host "  Deleting batch of $($batch.Count) deployments..." -ForegroundColor Gray
+                        $batch | ForEach-Object -Parallel {
+                          Remove-AzResourceGroupDeployment -ResourceGroupName $using:parameters.resourceGroupName -Name $_.DeploymentName -ErrorAction SilentlyContinue
+                        } -ThrottleLimit 100
+                      }
+                      Write-Host "✓ All deployments cleaned up" -ForegroundColor Green
+                    }
+                  } catch {
+                    Write-Warning "Could not remove previous deployments: $($_.Exception.Message)"
+                  }
                 }
 
                 Write-Host "Creating Resource Group Deployment Stack: $deploymentName" -ForegroundColor Cyan
-                $result = New-AzResourceGroupDeploymentStack @stackParameters -ResourceGroupName "$${{ parameters.resourceGroupName }}"
+                $result = New-AzResourceGroupDeploymentStack @stackParameters -ResourceGroupName "${{ parameters.resourceGroupName }}"
               }
               default {
                 Write-Error "Invalid deployment type: $deploymentType"
