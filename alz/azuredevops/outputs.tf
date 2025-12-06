@@ -5,3 +5,7 @@ output "details" {
     starter_module_name = var.starter_module_name
   }
 }
+
+output "test" {
+  value = module.file_manipulation.test
+}
