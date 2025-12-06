@@ -116,8 +116,6 @@ module "file_manipulation" {
   cd_template_file_name                  = local.cd_template_file_name
   pipeline_target_folder_name            = local.target_folder_name
   bicep_parameters_file_path             = var.bicep_parameters_file_path
-  subscription_ids                       = var.subscription_ids
-  root_parent_management_group_id        = var.root_parent_management_group_id
   agent_pool_or_runner_configuration     = local.agent_pool_or_runner_configuration
   pipeline_files_directory_path          = local.pipeline_files_directory_path
   pipeline_template_files_directory_path = local.pipeline_template_files_directory_path
