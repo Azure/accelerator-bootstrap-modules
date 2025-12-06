@@ -667,7 +667,7 @@ variable "bicep_parameters_file_path" {
     This JSON file specifies configuration values for Azure Landing Zones resources.
   EOT
   type        = string
-  default     = "parameters.all.json"
+  default     = "template-parameters.json"
 }
 
 variable "custom_role_definitions_terraform" {
