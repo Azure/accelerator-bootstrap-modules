@@ -3,7 +3,7 @@ locals {
   is_bicep_classic  = var.iac_type == "bicep-classic"
 
   bicep_parameters = try(jsondecode(file("${var.module_folder_path}/${var.bicep_parameters_file_path}")), {})
-  networking_type  = local.is_bicep_iac_type ? local.bicep_parameters.NETWORK_TYPE : ""
+  networking_type  = local.is_bicep_iac_type ? try(local.bicep_parameters.network_type, local.bicep_parameters.networkType) : ""
 }
 
 locals {
@@ -19,19 +19,11 @@ locals {
     }
   }
 
-  bicep_module_file_dynamic_replacements = { for flattened_result in flatten([ for key, value in local.starter_module_config.inputs :
-    [ for i, target in [ for t in value.targets : t if t.Destination == "Environment" ] : {
-      key = key
-      value = local.bicep_parameters[target.Name]
-    } if i == 0 ]
-  ]) : flattened_result.key => flattened_result.value
-  }
-
   bicep_module_file_replacements = merge({
-    unique_postfix                        = var.resource_names.unique_postfix
-    time_stamp                            = var.resource_names.time_stamp
-    time_stamp_formatted                  = var.resource_names.time_stamp_formatted
-  }, local.bicep_module_file_dynamic_replacements)
+    unique_postfix       = var.resource_names.unique_postfix
+    time_stamp           = var.resource_names.time_stamp
+    time_stamp_formatted = var.resource_names.time_stamp_formatted
+  }, local.bicep_parameters)
 }
 
 locals {
