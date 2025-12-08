@@ -6,10 +6,6 @@ locals {
   networking_type  = local.is_bicep_iac_type ? try(local.bicep_parameters.network_type, local.bicep_parameters.networkType) : ""
 }
 
-output "test" {
-  value = local.bicep_module_files_defaults_found
-}
-
 locals {
   bicep_module_files_defaults_found = distinct(flatten([for key, value in local.module_files_filtered : [
     for template in regexall("(\\{\\{[\\s]*.*?[\\s]*\\}\\})", value.content) :
