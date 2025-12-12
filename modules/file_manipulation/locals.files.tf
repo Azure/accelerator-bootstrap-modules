@@ -59,7 +59,7 @@ locals {
   }
 
   # Build a map of module files with types that are supported
-  module_files_supported = { for key, value in local.module_files : key => value if value.content != "unsupported_file_type" && !endswith(key, "-cache.json") && !endswith(key, var.bicep_config_file_path) }
+  module_files_supported = { for key, value in local.module_files : key => value if value.content != "unsupported_file_type" && !endswith(key, "-cache.json") && !endswith(key, var.bicep_config_file_path) && !endswith(key, var.bicep_parameters_file_path) }
 
   # Build a list of files to exclude from the repository based on the on-demand folders
   excluded_module_files = distinct(flatten([for exclusion in local.on_demand_folders :
