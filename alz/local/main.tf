@@ -58,8 +58,6 @@ module "file_manipulation" {
   on_demand_folder_artifact_name   = var.on_demand_folder_artifact_name
   pipeline_target_folder_name      = local.script_target_folder_name
   bicep_parameters_file_path       = var.bicep_parameters_file_path
-  subscription_ids                 = var.subscription_ids
-  root_parent_management_group_id  = var.root_parent_management_group_id
   pipeline_files_directory_path    = local.script_source_folder_path
 }
 

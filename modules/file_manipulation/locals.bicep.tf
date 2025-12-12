@@ -3,13 +3,25 @@ locals {
   is_bicep_classic  = var.iac_type == "bicep-classic"
 
   bicep_parameters = try(jsondecode(file("${var.module_folder_path}/${var.bicep_parameters_file_path}")), {})
-  networking_type  = local.is_bicep_iac_type ? local.bicep_parameters.NETWORK_TYPE : ""
+  networking_type  = local.is_bicep_iac_type ? try(local.bicep_parameters.network_type, local.bicep_parameters.networkType) : ""
+}
+
+locals {
+  bicep_module_files_defaults_found = distinct(flatten([for key, value in local.module_files_filtered : [
+    for template in regexall("(\\{\\{[\\s]*.*?[\\s]*\\}\\})", value.content) :
+    replace(replace(template[0], "{{", ""), "}}", "") if length(template) > 0 && strcontains(template[0], "||")
+    ] if endswith(key, ".bicepparam")
+  ]))
+
+  bicep_module_files_defaults = { for item in local.bicep_module_files_defaults_found :
+    (split("||", item)[0]) => split("||", item)[1]
+  }
 }
 
 locals {
   bicep_module_files_prepped_for_templating = { for key, value in local.module_files_filtered : key =>
     {
-      content = replace(replace(replace(value.content, "$${", "$$${"), "{{", "$${"), "}}", "}")
+      content = replace(replace(replace(replace(value.content, "/(\\|\\|[\\s]*.*?[\\s]*\\}\\})/", "}}"), "$${", "$$${"), "{{", "$${"), "}}", "}")
     } if endswith(key, ".bicepparam")
   }
 
@@ -19,19 +31,13 @@ locals {
     }
   }
 
-  bicep_module_file_replacements = {
-    management_subscription_id            = try(var.subscription_ids["management"], "")
-    connectivity_subscription_id          = try(var.subscription_ids["connectivity"], "")
-    identity_subscription_id              = try(var.subscription_ids["identity"], "")
-    security_subscription_id              = try(var.subscription_ids["security"], "")
-    primary_location                      = try(local.bicep_parameters.LOCATION_PRIMARY, "eastus")
-    secondary_location                    = try(local.bicep_parameters.LOCATION_SECONDARY, "westus")
-    root_parent_management_group_id       = var.root_parent_management_group_id
-    unique_postfix                        = var.resource_names.unique_postfix
-    time_stamp                            = var.resource_names.time_stamp
-    time_stamp_formatted                  = var.resource_names.time_stamp_formatted
-    intermediate_root_management_group_id = try(local.bicep_parameters.INTERMEDIATE_ROOT_MANAGEMENT_GROUP_ID, "alz")
-  }
+  bicep_module_file_replacements = merge({
+    unique_postfix       = var.resource_names.unique_postfix
+    time_stamp           = var.resource_names.time_stamp
+    time_stamp_formatted = var.resource_names.time_stamp_formatted
+    },
+    local.bicep_module_files_defaults,
+  local.bicep_parameters)
 }
 
 locals {

@@ -31,13 +31,14 @@ parameters:
 steps:
   - task: AzurePowerShell@5
     displayName: '$${{ parameters.displayName }}'
+    retryCountOnTaskFailure: 10
     inputs:
       azureSubscription: $${{ parameters.serviceConnection }}
       azurePowerShellVersion: 'LatestVersion'
       pwsh: true
       ScriptType: 'InlineScript'
       Inline: |
-        $deploymentType = "$${{ parameters.deploymentType }}"
+       $deploymentType = "$${{ parameters.deploymentType }}"
         $whatIfEnabled = [System.Convert]::ToBoolean("$${{ parameters.whatIfEnabled }}")
 
         # Check if we should skip what-if for first deployment
@@ -54,6 +55,17 @@ steps:
         if($whatIfEnabled -and $firstDeployment -and !$firstRunWhatIf) {
           Write-Warning "Skipping the What-If check as the deployment is dependent on resources that do not exist yet..."
           exit 0
+        }
+
+        # Check if this is a retry attempt and clean up previous deployments
+        $isRetry = $env:AGENT_JOBATTEMPT -and [int]$env:AGENT_JOBATTEMPT -gt 1
+        if ($isRetry) {
+          Write-Host ""
+          Write-Host "================================================" -ForegroundColor Yellow
+          Write-Host "⚠ Retry Attempt Detected (Attempt #$($env:AGENT_JOBATTEMPT))" -ForegroundColor Yellow
+          Write-Host "================================================" -ForegroundColor Yellow
+          Write-Host "Cleaning up previous failed deployment..." -ForegroundColor Yellow
+          Write-Host ""
         }
 
         # Generate deployment name without timestamp for consistent deployment stack names
@@ -165,7 +177,6 @@ steps:
             Write-Error "What-If validation failed: $($_.Exception.Message)"
             throw
           }
-
         } else {
           # Deployment Stack mode - actual deployment
           $stackParameters = @{
@@ -178,82 +189,79 @@ steps:
             Verbose               = $true
           }
 
-          $retryCount = 0
-          $retryMax = 20
-          $initialRetryDelay = 20
-          $retryDelayIncrement = 10
-          $finalSuccess = $false
+          $result = $null
 
-          while ($retryCount -lt $retryMax) {
-            if ($retryCount -gt 0) {
-              $retryDelay = $initialRetryDelay + ($retryCount * $retryDelayIncrement)
-              Write-Host "Retrying deployment stack after $retryDelay seconds..." -ForegroundColor Yellow
-              Start-Sleep -Seconds $retryDelay
-              Write-Host "Retry attempt $retryCount" -ForegroundColor Yellow
-            }
+          try {
+            switch ($deploymentType) {
+              "managementGroup" {
+                $targetManagementGroupId = "$${{ parameters.managementGroupId }}"
+                if ([string]::IsNullOrWhiteSpace($targetManagementGroupId)) {
+                  $targetManagementGroupId = (Get-AzContext).Tenant.TenantId
+                }
 
-            $result = $null
-
-            try {
-              switch ($deploymentType) {
-                "managementGroup" {
-                  $targetManagementGroupId = "$${{ parameters.managementGroupId }}"
-                  if ([string]::IsNullOrWhiteSpace($targetManagementGroupId)) {
-                    $targetManagementGroupId = (Get-AzContext).Tenant.TenantId
+                # Clean up all deployments before each deployment to avoid quota issues
+                try {
+                  Write-Host "Cleaning up existing deployments in management group..." -ForegroundColor Cyan
+                  $allDeployments = Get-AzManagementGroupDeployment -ManagementGroupId $targetManagementGroupId -ErrorAction SilentlyContinue
+                  if ($allDeployments -and $allDeployments.Count -gt 0) {
+                    Write-Host "Found $($allDeployments.Count) deployment(s) to clean up" -ForegroundColor Yellow
+                    $batchSize = 200
+                    for ($i = 0; $i -lt $allDeployments.Count; $i += $batchSize) {
+                      $batch = $allDeployments | Select-Object -Skip $i -First $batchSize
+                      Write-Host "  Deleting batch of $($batch.Count) deployments..." -ForegroundColor Gray
+                      $batch | ForEach-Object -Parallel {
+                        Remove-AzManagementGroupDeployment -ManagementGroupId $using:targetManagementGroupId -Name $_.DeploymentName -ErrorAction SilentlyContinue
+                      } -ThrottleLimit 100
+                    }
+                    Write-Host "✓ All deployments cleaned up" -ForegroundColor Green
+                  } else {
+                    Write-Host "No deployments to clean up" -ForegroundColor Green
                   }
+                } catch {
+                  Write-Warning "Could not clean up deployments: $($_.Exception.Message)"
+                }
 
-                  Write-Host "Creating Management Group Deployment Stack: $deploymentName" -ForegroundColor Cyan
-                  $result = New-AzManagementGroupDeploymentStack @stackParameters -ManagementGroupId $targetManagementGroupId -Location "$${{ parameters.location }}"
-                }
-                "subscription" {
-                  if (-not [string]::IsNullOrWhiteSpace("$${{ parameters.subscriptionId }}")) {
-                    Write-Host "Setting subscription context to: $${{ parameters.subscriptionId }}" -ForegroundColor Cyan
-                    Select-AzSubscription -SubscriptionId "$${{ parameters.subscriptionId }}" | Out-Null
-                  }
-
-                  Write-Host "Creating Subscription Deployment Stack: $deploymentName" -ForegroundColor Cyan
-                  $result = New-AzSubscriptionDeploymentStack @stackParameters -Location "$${{ parameters.location }}"
-                }
-                "resourceGroup" {
-                  if (-not [string]::IsNullOrWhiteSpace("$${{ parameters.subscriptionId }}")) {
-                    Write-Host "Setting subscription context to: $${{ parameters.subscriptionId }}" -ForegroundColor Cyan
-                    Select-AzSubscription -SubscriptionId "$${{ parameters.subscriptionId }}" | Out-Null
-                  }
-
-                  Write-Host "Creating Resource Group Deployment Stack: $deploymentName" -ForegroundColor Cyan
-                  $result = New-AzResourceGroupDeploymentStack @stackParameters -ResourceGroupName "$${{ parameters.resourceGroupName }}"
-                }
-                default {
-                  Write-Error "Invalid deployment type: $deploymentType"
-                  throw "Invalid deployment type: $deploymentType"
-                }
+                Write-Host "Creating Management Group Deployment Stack: $deploymentName" -ForegroundColor Cyan
+                $result = New-AzManagementGroupDeploymentStack @stackParameters -ManagementGroupId $targetManagementGroupId -Location "$${{ parameters.location }}"
               }
+              "subscription" {
+                if (-not [string]::IsNullOrWhiteSpace("$${{ parameters.subscriptionId }}")) {
+                  Write-Host "Setting subscription context to: $${{ parameters.subscriptionId }}" -ForegroundColor Cyan
+                  Select-AzSubscription -SubscriptionId "$${{ parameters.subscriptionId }}" | Out-Null
+                }
 
-              if ($result.ProvisioningState -eq "Succeeded") {
-                $finalSuccess = $true
-                Write-Host ""
-                Write-Host "================================================" -ForegroundColor Green
-                Write-Host "✓ Deployment Stack Succeeded: $deploymentName" -ForegroundColor Green
-                Write-Host "================================================" -ForegroundColor Green
-                Write-Host ""
-                break
-              } else {
-                Write-Warning "Deployment stack finished with state: $($result.ProvisioningState)"
-                $retryCount++
+                Write-Host "Creating Subscription Deployment Stack: $deploymentName" -ForegroundColor Cyan
+                $result = New-AzSubscriptionDeploymentStack @stackParameters -Location "$${{ parameters.location }}"
               }
-            } catch {
-              Write-Warning "Deployment stack failed with error: $($_.Exception.Message)"
-              $retryCount++
+              "resourceGroup" {
+                if (-not [string]::IsNullOrWhiteSpace("$${{ parameters.subscriptionId }}")) {
+                  Write-Host "Setting subscription context to: $${{ parameters.subscriptionId }}" -ForegroundColor Cyan
+                  Select-AzSubscription -SubscriptionId "$${{ parameters.subscriptionId }}" | Out-Null
+                }
 
-              if ($retryCount -ge $retryMax) {
-                Write-Error "Deployment stack failed after $retryMax attempts"
-                throw
+                Write-Host "Creating Resource Group Deployment Stack: $deploymentName" -ForegroundColor Cyan
+                $result = New-AzResourceGroupDeploymentStack @stackParameters -ResourceGroupName "$${{ parameters.resourceGroupName }}"
+              }
+              default {
+                Write-Error "Invalid deployment type: $deploymentType"
+                throw "Invalid deployment type: $deploymentType"
               }
             }
-          }
 
-          if (-not $finalSuccess) {
-            Write-Error "Deployment stack did not succeed after $retryMax attempts"
-            throw "Deployment stack did not succeed after $retryMax attempts"
+            if ($result.ProvisioningState -eq "Succeeded") {
+              $finalSuccess = $true
+              Write-Host ""
+              Write-Host "================================================" -ForegroundColor Green
+              Write-Host "✓ Deployment Stack Succeeded: $deploymentName" -ForegroundColor Green
+              Write-Host "================================================" -ForegroundColor Green
+              Write-Host ""
+              break
+            } else {
+              Write-Error "Deployment stack finished with state: $($result.ProvisioningState)"
+              exit 1
+            }
+          } catch {
+            Write-Error "Deployment stack failed with error: $($_.Exception.Message)"
+            exit 1
           }
         }

@@ -155,28 +155,6 @@ variable "bicep_parameters_file_path" {
   type        = string
 }
 
-variable "subscription_ids" {
-  description = <<-EOT
-    **(Required)** Map of platform landing zone subscription IDs by purpose.
-
-    Keys must be one of: 'management', 'connectivity', 'identity', 'security'
-    Values must be valid Azure subscription GUIDs.
-
-    Used to populate configuration files and deployment parameters with target subscription values for each landing zone component.
-  EOT
-  type        = map(string)
-}
-
-variable "root_parent_management_group_id" {
-  description = <<-EOT
-    **(Required)** ID of the root parent management group where the Azure Landing Zones hierarchy will be created.
-
-    Defaults to Tenant Root Group if not specified.
-    Used in configuration files and deployment parameters to define the top-level scope.
-  EOT
-  type        = string
-}
-
 variable "ci_template_file_name" {
   description = <<-EOT
     **(Optional, default: `null`)** Filename of the CI (Continuous Integration) template to use for validation and testing stages.

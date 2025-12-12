@@ -310,6 +310,10 @@ jobs:
           if($infrastructureAsCode -eq "bicep") {
             $Inputs["network_type"] = "none"
             $Inputs["intermediate_root_management_group_id"] = "alz-$uniqueId"
+            $Inputs["management_group_id_prefix"] = ""
+            $Inputs["management_group_id_postfix"] = ""
+            $Inputs["management_group_name_prefix"] = ""
+            $Inputs["management_group_name_postfix"] = ""
           }
 
           $json = ConvertTo-Json $Inputs -Depth 100
