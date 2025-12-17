@@ -37,18 +37,6 @@ steps:
         }
       }
 
-      $unzipdir = Join-Path -Path $TOOLS_PATH -ChildPath "terraform_$TF_VERSION"
-      if (Test-Path $unzipdir) {
-        Write-Host "Terraform $TF_VERSION already installed."
-        if($os -eq "windows") {
-          $env:PATH = "$($unzipdir);$env:PATH"
-        } else {
-          $env:PATH = "$($unzipdir):$env:PATH"
-        }
-        Write-Host "##vso[task.setvariable variable=PATH]$env:PATH"
-        return
-      }
-
       $os = ""
       if ($IsWindows) {
         $os = "windows"
@@ -60,58 +48,66 @@ steps:
         $os = "darwin"
       }
 
-      # Enum values can be seen here: https://learn.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.architecture?view=net-7.0#fields
-      $architecture = ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture).ToString().ToLower()
+      $unzipdir = Join-Path -Path $TOOLS_PATH -ChildPath "terraform_$TF_VERSION"
+      if (Test-Path $unzipdir) {
+        Write-Host "Terraform $TF_VERSION already installed."
+      } else {
+        # Enum values can be seen here: https://learn.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.architecture?view=net-7.0#fields
+        $architecture = ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture).ToString().ToLower()
 
-      if($architecture -eq "x64") {
-        $architecture = "amd64"
-      }
-      if($architecture -eq "x86") {
-        $architecture = "386"
-      }
+        if($architecture -eq "x64") {
+          $architecture = "amd64"
+        }
+        if($architecture -eq "x86") {
+          $architecture = "386"
+        }
 
-      $osAndArchitecture = "$($os)_$($architecture)"
+        $osAndArchitecture = "$($os)_$($architecture)"
 
-      $supportedOsAndArchitectures = @(
-        "darwin_amd64",
-        "darwin_arm64",
-        "linux_386",
-        "linux_amd64",
-        "linux_arm64",
-        "windows_386",
-        "windows_amd64"
-      )
+        $supportedOsAndArchitectures = @(
+          "darwin_amd64",
+          "darwin_arm64",
+          "linux_386",
+          "linux_amd64",
+          "linux_arm64",
+          "windows_386",
+          "windows_amd64"
+        )
 
-      if($supportedOsAndArchitectures -notcontains $osAndArchitecture) {
-        Write-Error "Unsupported OS and architecture combination: $osAndArchitecture"
-        exit 1
-      }
+        if($supportedOsAndArchitectures -notcontains $osAndArchitecture) {
+          Write-Error "Unsupported OS and architecture combination: $osAndArchitecture"
+          exit 1
+        }
 
-      $zipfilePath = "$unzipdir.zip"
+        $zipfilePath = "$unzipdir.zip"
 
-      $url = $release.builds | Where-Object { $_.arch -eq $architecture -and $_.os -eq $os } | Select-Object -First 1 -ExpandProperty url
+        $url = $release.builds | Where-Object { $_.arch -eq $architecture -and $_.os -eq $os } | Select-Object -First 1 -ExpandProperty url
 
-      if(!(Test-Path $TOOLS_PATH)) {
-        New-Item -ItemType Directory -Path $TOOLS_PATH| Out-String | Write-Verbose
-      }
+        if(!(Test-Path $TOOLS_PATH)) {
+          New-Item -ItemType Directory -Path $TOOLS_PATH| Out-String | Write-Verbose
+        }
 
-      Invoke-WebRequest -Uri $url -OutFile "$zipfilePath" | Out-String | Write-Verbose
+        Invoke-WebRequest -Uri $url -OutFile "$zipfilePath" | Out-String | Write-Verbose
 
-      Expand-Archive -Path $zipfilePath -DestinationPath $unzipdir
+        Expand-Archive -Path $zipfilePath -DestinationPath $unzipdir
 
-      $toolFileName = "terraform"
+        $toolFileName = "terraform"
 
-      if($os -eq "windows") {
-        $toolFileName = "$($toolFileName).exe"
-      }
+        if($os -eq "windows") {
+          $toolFileName = "$($toolFileName).exe"
+        }
 
-      $toolFilePath = Join-Path -Path $unzipdir -ChildPath $toolFileName
+        $toolFilePath = Join-Path -Path $unzipdir -ChildPath $toolFileName
 
-      if($os -ne "windows") {
-          $isExecutable = $(test -x $toolFilePath; 0 -eq $LASTEXITCODE)
-          if(!($isExecutable)) {
-            chmod +x $toolFilePath
-          }
+        if($os -ne "windows") {
+            $isExecutable = $(test -x $toolFilePath; 0 -eq $LASTEXITCODE)
+            if(!($isExecutable)) {
+              chmod +x $toolFilePath
+            }
+        }
+
+        Remove-Item $zipfilePath
+        Write-Host "Installed Terraform version $TF_VERSION"
       }
 
       if($os -eq "windows") {
@@ -120,8 +116,6 @@ steps:
         $env:PATH = "$($unzipdir):$env:PATH"
       }
       Write-Host "##vso[task.setvariable variable=PATH]$env:PATH"
-      Remove-Item $zipfilePath
-      Write-Host "Installed Terraform version $TF_VERSION"
 
     displayName: Install Terraform
     env:
