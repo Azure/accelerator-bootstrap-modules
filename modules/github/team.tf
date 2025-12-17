@@ -22,7 +22,7 @@ locals {
 
 locals {
   team_id        = var.create_team ? github_team.alz[0].id : var.existing_team_name == null ? null : data.github_team.alz[0].id
-  approver_count = var.create_team ? length(local.approvers) : var.existing_team_name == null ? 0 : (data.github_team.alz[0].members)
+  approver_count = var.create_team ? length(local.approvers) : var.existing_team_name == null ? 0 : length(data.github_team.alz[0].members)
 }
 
 data "github_team" "alz" {
