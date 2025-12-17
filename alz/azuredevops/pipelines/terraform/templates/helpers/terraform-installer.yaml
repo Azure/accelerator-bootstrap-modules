@@ -48,15 +48,22 @@ steps:
         $os = "darwin"
       }
 
+      # Function to set PATH based on OS
+      function Set-TerraformPath {
+        param([string]$toolPath, [string]$operatingSystem)
+
+        if($operatingSystem -eq "windows") {
+          $env:PATH = "$($toolPath);$env:PATH"
+        } else {
+          $env:PATH = "$($toolPath):$env:PATH"
+        }
+        Write-Host "##vso[task.setvariable variable=PATH]$env:PATH"
+      }
+
       $unzipdir = Join-Path -Path $TOOLS_PATH -ChildPath "terraform_$TF_VERSION"
       if (Test-Path $unzipdir) {
         Write-Host "Terraform $TF_VERSION already installed."
-        if($os -eq "windows") {
-          $env:PATH = "$($unzipdir);$env:PATH"
-        } else {
-          $env:PATH = "$($unzipdir):$env:PATH"
-        }
-        Write-Host "##vso[task.setvariable variable=PATH]$env:PATH"
+        Set-TerraformPath -toolPath $unzipdir -operatingSystem $os
         return
       }
 
@@ -114,12 +121,7 @@ steps:
           }
       }
 
-      if($os -eq "windows") {
-        $env:PATH = "$($unzipdir);$env:PATH"
-      } else {
-        $env:PATH = "$($unzipdir):$env:PATH"
-      }
-      Write-Host "##vso[task.setvariable variable=PATH]$env:PATH"
+      Set-TerraformPath -toolPath $unzipdir -operatingSystem $os
       Remove-Item $zipfilePath
       Write-Host "Installed Terraform version $TF_VERSION"
 
