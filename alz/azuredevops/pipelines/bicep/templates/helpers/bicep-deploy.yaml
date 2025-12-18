@@ -71,7 +71,7 @@ steps:
         }
 
         # Generate deployment stack name
-        $deploymentPrefix = $env:INTERMEDIATE_ROOT_MANAGEMENT_GROUP_ID
+        $deploymentPrefix = $env:MANAGEMENT_GROUP_ID_PREFIX + $env:INTERMEDIATE_ROOT_MANAGEMENT_GROUP_ID + $env:MANAGEMENT_GROUP_ID_POSTFIX
         $deploymentNameBase = "$${{ parameters.name }}".Replace(" ", "-")
         $deploymentNameMaxLength = 64 - $deploymentPrefix.Length - 1
         if ($deploymentNameBase.Length -gt $deploymentNameMaxLength) {
