@@ -139,7 +139,7 @@ stages:
                     azurePowerShellVersion: LatestVersion
                     ScriptType: "InlineScript"
                     Inline: |
-                      $intRootMgId = "$(INTERMEDIATE_ROOT_MANAGEMENT_GROUP_ID)"
+                      $intRootMgId = "$(MANAGEMENT_GROUP_ID_PREFIX)$(INTERMEDIATE_ROOT_MANAGEMENT_GROUP_ID)$(MANAGEMENT_GROUP_ID_POSTFIX)"
 
                       $managementGroups = Get-AzManagementGroup
                       $intRootMg = $managementGroups | Where-Object { $_.Name -eq $intRootMgId }
