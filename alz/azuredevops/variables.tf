@@ -45,54 +45,16 @@ variable "subscription_ids" {
   default     = {}
   nullable    = false
   validation {
-    condition     = length(var.subscription_ids) == 0 || alltrue([for id in values(var.subscription_ids) : can(regex("^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$", id))])
+    condition     = alltrue([for id in values(var.subscription_ids) : can(regex("^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$", id))])
     error_message = "All subscription IDs must be valid GUIDs"
   }
   validation {
-    condition     = length(var.subscription_ids) == 0 || alltrue([for id in keys(var.subscription_ids) : contains(["management", "connectivity", "identity", "security"], id)])
+    condition     = alltrue([for id in keys(var.subscription_ids) : contains(["management", "connectivity", "identity", "security"], id)])
     error_message = "The keys of the subscription_ids map must be one of 'management', 'connectivity', 'identity' or 'security'"
   }
-}
-
-variable "subscription_id_connectivity" {
-  description = <<-EOT
-    **(Optional, default: `null`)** **DEPRECATED** (use subscription_ids instead)
-
-    The identifier of the Connectivity Subscription.
-  EOT
-  type        = string
-  default     = null
   validation {
-    condition     = var.subscription_id_connectivity == null || can(regex("^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$", var.subscription_id_connectivity))
-    error_message = "The subscription ID must be a valid GUID"
-  }
-}
-
-variable "subscription_id_identity" {
-  description = <<-EOT
-    **(Optional, default: `null`)** **DEPRECATED** (use subscription_ids instead)
-
-    The identifier of the Identity Subscription.
-  EOT
-  type        = string
-  default     = null
-  validation {
-    condition     = var.subscription_id_identity == null || can(regex("^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$", var.subscription_id_identity))
-    error_message = "The subscription ID must be a valid GUID"
-  }
-}
-
-variable "subscription_id_management" {
-  description = <<-EOT
-    **(Optional, default: `null`)** **DEPRECATED** (use subscription_ids instead)
-
-    The identifier of the Management Subscription.
-  EOT
-  type        = string
-  default     = null
-  validation {
-    condition     = var.subscription_id_management == null || can(regex("^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$", var.subscription_id_management))
-    error_message = "The subscription ID must be a valid GUID"
+    condition     = contains(keys(var.subscription_ids), "management") && contains(keys(var.subscription_ids), "connectivity") && contains(keys(var.subscription_ids), "identity")
+    error_message = "You must provide subscription IDs for: 'management', 'connectivity', and 'identity'"
   }
 }
 

@@ -61,6 +61,7 @@ jobs:
         uses: ${project_or_organization_name}/${repository_name_templates}/.github/actions/bicep-deploy@main
         if: $${{ inputs.${script_file.name} }}
         with:
+          name: '${script_file.name}'
           displayName: '${script_file.displayName}'
           templateFilePath: '${script_file.templateFilePath}'
           templateParametersFilePath: '${script_file.templateParametersFilePath}'
@@ -118,6 +119,7 @@ jobs:
         uses: ${project_or_organization_name}/${repository_name_templates}/.github/actions/bicep-deploy@main
         if: $${{ inputs.${script_file.name} }}
         with:
+          name: '${script_file.name}'
           displayName: '${script_file.displayName}'
           templateFilePath: '${script_file.templateFilePath}'
           templateParametersFilePath: '${script_file.templateParametersFilePath}'

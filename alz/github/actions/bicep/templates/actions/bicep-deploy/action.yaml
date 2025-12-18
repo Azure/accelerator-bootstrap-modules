@@ -2,6 +2,9 @@
 name: Run Bicep Deploy with Deployment Stack
 description: Run Bicep Deployment using Azure Deployment Stacks
 inputs:
+  name:
+    description: 'Name'
+    required: true
   displayName:
     description: 'Display Name'
     required: true
@@ -62,16 +65,13 @@ runs:
             exit 0
           }
 
-          # Generate deployment name without timestamp for consistent deployment stack names
-          $deploymentPrefix = "alz"
-          $deploymentNameBase = "$($env:DISPLAY_NAME.Replace(" ", "-"))-$($env:TIME_STAMP)"
-
+          # Generate deployment stack name
+          $deploymentPrefix = $env:INTERMEDIATE_ROOT_MANAGEMENT_GROUP_ID
+          $deploymentNameBase = ($env:NAME).Replace(" ", "-")
           $deploymentNameMaxLength = 64 - $deploymentPrefix.Length - 1
-
           if ($deploymentNameBase.Length -gt $deploymentNameMaxLength) {
             $deploymentNameBase = $deploymentNameBase.Substring(0, $deploymentNameMaxLength)
           }
-
           $deploymentName = "$deploymentPrefix-$deploymentNameBase"
 
           $modeText = if ($whatIfEnabled) { "What-If" } else { "Deployment Stack" }
@@ -336,6 +336,7 @@ runs:
             }
           }
       env:
+        NAME: $${{ inputs.name }}
         DISPLAY_NAME: $${{ inputs.displayName }}
         TEMPLATE_FILE_PATH: $${{ inputs.templateFilePath }}
         TEMPLATE_PARAMETERS_FILE_PATH: $${{ inputs.templateParametersFilePath }}
