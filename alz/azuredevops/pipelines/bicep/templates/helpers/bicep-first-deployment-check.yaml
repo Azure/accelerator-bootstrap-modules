@@ -1,0 +1,29 @@
+---
+parameters:
+  - name: serviceConnection
+    type: string
+
+steps:
+  - task: AzurePowerShell@5
+    displayName: 'Check for First Deployment'
+    inputs:
+      azureSubscription: $${{ parameters.serviceConnection }}
+      pwsh: true
+      azurePowerShellVersion: LatestVersion
+      ScriptType: "InlineScript"
+      Inline: |
+        $intRootMgId = "$(MANAGEMENT_GROUP_ID_PREFIX)$(INTERMEDIATE_ROOT_MANAGEMENT_GROUP_ID)$(MANAGEMENT_GROUP_ID_POSTFIX)"
+
+        $managementGroups = Get-AzManagementGroup
+        $intRootMg = $managementGroups | Where-Object { $_.Name -eq $intRootMgId }
+
+        $firstDeployment = $true
+
+        if($intRootMg -eq $null) {
+          Write-Warning "Cannot find the $intRootMgId Management Group, so assuming this is the first deployment."
+        } else {
+          Write-Host "Found the $intRootMgId Management Group, so assuming this is not the first deployment."
+          $firstDeployment = $false
+        }
+
+        Write-Host "##vso[task.setvariable variable=FIRST_DEPLOYMENT;]$firstDeployment"

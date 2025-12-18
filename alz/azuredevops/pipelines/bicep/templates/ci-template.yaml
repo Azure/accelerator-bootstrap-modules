@@ -70,29 +70,9 @@ stages:
                   parameters:
                     serviceConnection: '${service_connection_name_plan}'
 
-                - task: AzurePowerShell@5
-                  displayName: 'Check for First Deployment'
-                  inputs:
-                    azureSubscription: '${service_connection_name_plan}'
-                    pwsh: true
-                    azurePowerShellVersion: LatestVersion
-                    ScriptType: "InlineScript"
-                    Inline: |
-                      $intRootMgId = "$(MANAGEMENT_GROUP_ID_PREFIX)$(INTERMEDIATE_ROOT_MANAGEMENT_GROUP_ID)$(MANAGEMENT_GROUP_ID_POSTFIX)"
-
-                      $managementGroups = Get-AzManagementGroup
-                      $intRootMg = $managementGroups | Where-Object { $_.Name -eq $intRootMgId }
-
-                      $firstDeployment = $true
-
-                      if($intRootMg -eq $null) {
-                        Write-Warning "Cannot find the $intRootMgId Management Group, so assuming this is the first deployment. We must skip what-if for some deployments since their dependent resources do not exist yet."
-                      } else {
-                        Write-Host "Found the $intRootMgId Management Group, so assuming this is not the first deployment."
-                        $firstDeployment = $false
-                      }
-
-                      Write-Host "##vso[task.setvariable variable=FIRST_DEPLOYMENT;]$firstDeployment"
+                - template: ./helpers/bicep-first-deployment-check.yaml
+                  parameters:
+                    serviceConnection: '${service_connection_name_plan}'
 
 %{ for script_file in script_files ~}
                 - template: ./helpers/bicep-deploy.yaml
