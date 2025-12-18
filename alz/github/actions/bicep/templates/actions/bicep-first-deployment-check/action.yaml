@@ -16,7 +16,7 @@ runs:
         azPSVersion: 'latest'
         inlineScript: |
           $intRootMgId = $env:MANAGEMENT_GROUP_ID_PREFIX + $env:INTERMEDIATE_ROOT_MANAGEMENT_GROUP_ID + $env:MANAGEMENT_GROUP_ID_POSTFIX
-          
+
           $managementGroups = Get-AzManagementGroup
           $intRootMg = $managementGroups | Where-Object { $_.Name -eq $intRootMgId }
 
