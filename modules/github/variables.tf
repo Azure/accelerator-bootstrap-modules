@@ -270,3 +270,7 @@ variable "create_branch_policies" {
   EOT
   type        = bool
 }
+
+variable "repository_visibility" {
+  type = string
+}

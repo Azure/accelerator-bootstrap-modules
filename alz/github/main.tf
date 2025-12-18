@@ -76,6 +76,7 @@ module "github" {
   organization_name                            = var.github_organization_name
   environments                                 = local.environments
   repository_name                              = local.resource_names.version_control_system_repository
+  repository_visibility                        = var.repository_visibility
   use_template_repository                      = var.use_separate_repository_for_templates
   repository_name_templates                    = local.resource_names.version_control_system_repository_templates
   repository_files                             = module.file_manipulation.repository_files

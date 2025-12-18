@@ -188,6 +188,16 @@ variable "use_separate_repository_for_templates" {
   default     = true
 }
 
+variable "repository_visibility" {
+  description = "Can be public or private. If your organization is associated with an enterprise account using GitHub Enterprise Cloud or GitHub Enterprise Server 2.20+, visibility can also be internal. The visibility parameter overrides the private parameter."
+  type        = string
+  default     = "private"
+  validation {
+    condition     = contains(["private", "public", "internal"], var.repository_visibility)
+    error_message = "The repository visibility must be either of (private|public|internal)"
+  }
+}
+
 variable "bootstrap_subscription_id" {
   description = <<-EOT
     **(Optional, default: `""`)** The Azure subscription ID where bootstrap resources will be deployed.
