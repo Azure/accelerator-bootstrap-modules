@@ -1,5 +1,7 @@
 ---
 parameters:
+  - name: name
+    type: string
   - name: displayName
     type: string
   - name: serviceConnection
@@ -68,18 +70,13 @@ steps:
           Write-Host ""
         }
 
-        # Generate deployment name without timestamp for consistent deployment stack names
-        $deploymentPrefix = "alz"
-
-        $deploymentNameBase = "$${{ parameters.displayName }}".Replace(" ", "-")
-        $deploymentNameBase = "$deploymentNameBase-$($env:TIME_STAMP)"
-
+        # Generate deployment stack name
+        $deploymentPrefix = $env:MANAGEMENT_GROUP_ID_PREFIX + $env:INTERMEDIATE_ROOT_MANAGEMENT_GROUP_ID + $env:MANAGEMENT_GROUP_ID_POSTFIX
+        $deploymentNameBase = "$${{ parameters.name }}".Replace(" ", "-")
         $deploymentNameMaxLength = 64 - $deploymentPrefix.Length - 1
-
         if ($deploymentNameBase.Length -gt $deploymentNameMaxLength) {
           $deploymentNameBase = $deploymentNameBase.Substring(0, $deploymentNameMaxLength)
         }
-
         $deploymentName = "$deploymentPrefix-$deploymentNameBase"
 
         $modeText = if ($whatIfEnabled) { "What-If" } else { "Deployment Stack" }

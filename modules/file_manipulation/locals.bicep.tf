@@ -45,7 +45,7 @@ locals {
   id_variable_template_empty = local.is_github ? "" : (local.is_azuredevops ? "" : "\"\"")
 
   script_files = local.is_bicep_iac_type ? { for script_file in local.script_files_all : format("%03d", script_file.order) => {
-    name                       = script_file.name
+    name                       = replace(replace(script_file.name, "{{unique_postfix}}", var.resource_names.unique_postfix), "{{time_stamp}}", var.resource_names.time_stamp_formatted)
     displayName                = replace(replace(script_file.displayName, "{{unique_postfix}}", var.resource_names.unique_postfix), "{{time_stamp}}", var.resource_names.time_stamp_formatted)
     templateFilePath           = script_file.templateFilePath
     templateParametersFilePath = script_file.templateParametersFilePath
