@@ -139,7 +139,6 @@ while ($retryCount -lt $retryMax) {
 
 if($finalSuccess -eq $false) {
     Write-Error "Deployment failed after $retryMax attempts..."
-    exit 1
 }
 
 Write-Host "<---------------------------------------------------------------------------->" -ForegroundColor DarkMagenta
