@@ -288,3 +288,13 @@ variable "create_branch_policies" {
   EOT
   type        = bool
 }
+
+variable "create_variable_group" {
+  description = <<-EOT
+    **(Required)** Whether to create an Azure Pipelines variable group for shared configuration.
+
+    When true, creates a variable group containing backend and subscription details
+    used across multiple pipelines.
+  EOT
+  type        = bool
+}

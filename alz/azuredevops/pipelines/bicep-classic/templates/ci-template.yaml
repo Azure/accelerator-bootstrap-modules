@@ -3,7 +3,6 @@ stages:
   - stage: validate
     displayName: Validation Bicep
     variables:
-      - group: ${variable_group_name}
       - name: parametersFileName
         value: parameters.json
 

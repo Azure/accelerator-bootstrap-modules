@@ -96,6 +96,7 @@ module "github" {
   default_runner_group_name                    = var.default_runner_group_name
   use_self_hosted_runners                      = var.use_self_hosted_runners
   create_branch_policies                       = var.create_branch_policies
+  create_storage_account_variables = var.iac_type == "terraform"
 }
 
 module "file_manipulation" {

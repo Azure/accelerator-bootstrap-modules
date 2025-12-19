@@ -270,3 +270,13 @@ variable "create_branch_policies" {
   EOT
   type        = bool
 }
+
+variable "create_storage_account_variables" {
+  description = <<-EOT
+    **(Required)** Whether to create GitHub Actions variables for Azure storage account details.
+
+    When true: Creates repository-level variables for backend storage configuration
+    When false: Assumes variables are managed externally
+  EOT
+  type        = bool
+}
