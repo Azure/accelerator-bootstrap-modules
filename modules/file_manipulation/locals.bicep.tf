@@ -53,7 +53,7 @@ locals {
     subscriptionIdVariable     = try(format(local.id_variable_template, script_file.subscriptionId), local.id_variable_template_empty)
     resourceGroupNameVariable  = try(format(local.id_variable_template, script_file.resourceGroupName), local.id_variable_template_empty)
     deploymentType             = script_file.deploymentType
-    firstRunWhatIf             = local.is_local ? format("$%s",script_file.firstRunWhatIf) : script_file.firstRunWhatIf
+    firstRunWhatIf             = local.is_local ? format("$%s", script_file.firstRunWhatIf) : script_file.firstRunWhatIf
     group                      = script_file.group
     networkType                = try(script_file.networkType, "")
   } if try(script_file.networkType, "") == "" || try(script_file.networkType, "") == local.networking_type } : {}
