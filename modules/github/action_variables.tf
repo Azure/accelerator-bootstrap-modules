@@ -40,16 +40,16 @@ resource "github_actions_variable" "backend_azure_storage_account_container_name
 }
 
 moved {
-  from = "github_actions_variable.backend_azure_resource_group_name"
-  to   = "github_actions_variable.backend_azure_resource_group_name[0]"
+  from = github_actions_variable.backend_azure_resource_group_name
+  to   = github_actions_variable.backend_azure_resource_group_name[0]
 }
 
 moved {
-  from = "github_actions_variable.backend_azure_storage_account_name"
-  to   = "github_actions_variable.backend_azure_storage_account_name[0]"
+  from = github_actions_variable.backend_azure_storage_account_name
+  to   = github_actions_variable.backend_azure_storage_account_name[0]
 }
 
 moved {
-  from = "github_actions_variable.backend_azure_storage_account_container_name"
-  to   = "github_actions_variable.backend_azure_storage_account_container_name[0]"
+  from = github_actions_variable.backend_azure_storage_account_container_name
+  to   = github_actions_variable.backend_azure_storage_account_container_name[0]
 }

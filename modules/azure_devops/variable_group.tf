@@ -22,6 +22,6 @@ resource "azuredevops_variable_group" "alz" {
 }
 
 moved {
-  from = "azuredevops_variable_group.example"
-  to   = "azuredevops_variable_group.alz[0]"
+  from = azuredevops_variable_group.example
+  to   = azuredevops_variable_group.alz[0]
 }
