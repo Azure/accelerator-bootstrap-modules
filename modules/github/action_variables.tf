@@ -19,21 +19,21 @@ resource "github_actions_variable" "azure_tenant_id" {
 }
 
 resource "github_actions_variable" "backend_azure_resource_group_name" {
-  count = var.create_storage_account_variables ? 1 : 0
+  count         = var.create_storage_account_variables ? 1 : 0
   repository    = github_repository.alz.name
   variable_name = "BACKEND_AZURE_RESOURCE_GROUP_NAME"
   value         = var.backend_azure_resource_group_name
 }
 
 resource "github_actions_variable" "backend_azure_storage_account_name" {
-  count = var.create_storage_account_variables ? 1 : 0
+  count         = var.create_storage_account_variables ? 1 : 0
   repository    = github_repository.alz.name
   variable_name = "BACKEND_AZURE_STORAGE_ACCOUNT_NAME"
   value         = var.backend_azure_storage_account_name
 }
 
 resource "github_actions_variable" "backend_azure_storage_account_container_name" {
-  count = var.create_storage_account_variables ? 1 : 0
+  count         = var.create_storage_account_variables ? 1 : 0
   repository    = github_repository.alz.name
   variable_name = "BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME"
   value         = var.backend_azure_storage_account_container_name
