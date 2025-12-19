@@ -1,6 +1,7 @@
 locals {
   is_github                             = var.vcs_type == "github"
   is_azuredevops                        = var.vcs_type == "azuredevops"
+  is_local                              = var.vcs_type == "local"
   use_separate_repository_for_templates = coalesce(var.use_separate_repository_for_templates, false)
   repository_name_templates             = local.use_separate_repository_for_templates ? var.resource_names.version_control_system_repository_templates : try(var.resource_names.version_control_system_repository, "")
 
