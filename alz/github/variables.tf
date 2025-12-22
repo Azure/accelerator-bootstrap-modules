@@ -256,6 +256,12 @@ variable "use_self_hosted_runners" {
   default     = true
 }
 
+variable "use_container_app_jobs" {
+  description = "NOT SUPPORTED FOR GITHUB. Container App Jobs are only supported with Azure DevOps. This variable exists for validation purposes only."
+  type        = bool
+  default     = false
+}
+
 variable "github_runners_personal_access_token" {
   description = <<-EOT
     **(Optional, default: `""`)** Personal access token for GitHub self-hosted runners.
@@ -1129,4 +1135,11 @@ variable "bicep_tenant_role_assignment_role_definition_name" {
   EOT
   type        = string
   default     = "Landing Zone Management Owner"
+}
+
+
+variable "tags" {
+  type        = map(string)
+  default     = {}
+  description = "Tags to apply to Azure resources"
 }

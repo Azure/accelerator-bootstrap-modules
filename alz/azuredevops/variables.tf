@@ -238,6 +238,17 @@ variable "use_self_hosted_agents" {
   default     = true
 }
 
+variable "use_container_app_jobs" {
+  description = "Whether to use Container App Jobs for self-hosted agents (Azure DevOps only). Mutually exclusive with Container Instances."
+  type        = bool
+  default     = false
+
+  validation {
+    condition     = !var.use_container_app_jobs || var.use_self_hosted_agents
+    error_message = "use_container_app_jobs requires use_self_hosted_agents to be true."
+  }
+}
+
 variable "azure_devops_agents_personal_access_token" {
   description = <<-EOT
     **(Optional, default: `""`)** Personal access token for Azure DevOps self-hosted agents.
@@ -325,9 +336,10 @@ variable "agent_container_image_repository" {
   default     = "https://github.com/Azure/avm-container-images-cicd-agents-and-runners"
 }
 
+# Container Instances (ACI) configuration
 variable "agent_container_image_tag" {
   description = <<-EOT
-    **(Optional, default: `"39b9059"`)** The container image tag/commit hash for Azure DevOps agents.
+    **(Optional, default: `"39b9059"`)** The container image tag/commit hash for Azure DevOps agents with Container Instances.
   EOT
   type        = string
   default     = "57a937f"
@@ -335,10 +347,23 @@ variable "agent_container_image_tag" {
 
 variable "agent_container_image_folder" {
   description = <<-EOT
-    **(Optional, default: `"azure-devops-agent-aci"`)** The folder containing the Dockerfile for the container image.
+    **(Optional, default: `"azure-devops-agent-aci"`)** The folder containing the Dockerfile for Container Instances.
   EOT
   type        = string
   default     = "azure-devops-agent-aci"
+}
+
+# Container App Jobs (ACA) configuration
+variable "agent_container_app_image_tag" {
+  description = "The container image tag to use for Azure DevOps Agents with Container App Jobs"
+  type        = string
+  default     = "221742d"
+}
+
+variable "agent_container_app_image_folder" {
+  description = "The folder containing the Dockerfile for Container App Jobs"
+  type        = string
+  default     = "azure-devops-agent-aca"
 }
 
 variable "agent_container_image_dockerfile" {
@@ -453,6 +478,7 @@ variable "resource_names" {
     resource_group_network                                     = optional(string, "rg-{{service_name}}-{{environment_name}}-network-{{azure_location}}-{{postfix_number}}")
     user_assigned_managed_identity_plan                        = optional(string, "id-{{service_name}}-{{environment_name}}-{{azure_location}}-plan-{{postfix_number}}")
     user_assigned_managed_identity_apply                       = optional(string, "id-{{service_name}}-{{environment_name}}-{{azure_location}}-apply-{{postfix_number}}")
+    user_assigned_managed_identity_agent                       = optional(string, "id-{{service_name}}-{{environment_name}}-{{azure_location}}-agent-{{postfix_number}}")
     user_assigned_managed_identity_federated_credentials_plan  = optional(string, "id-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-plan")
     user_assigned_managed_identity_federated_credentials_apply = optional(string, "id-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-apply")
     storage_account                                            = optional(string, "sto{{service_name_short}}{{environment_name_short}}{{azure_location_short}}{{postfix_number}}{{random_string}}")
@@ -478,10 +504,16 @@ variable "resource_names" {
     nat_gateway                                                = optional(string, "nat-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}")
     subnet_container_instances                                 = optional(string, "subnet-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-aci")
     subnet_private_endpoints                                   = optional(string, "subnet-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-pe")
+    subnet_container_apps                                      = optional(string, "subnet-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-ca")
     storage_account_private_endpoint                           = optional(string, "pe-{{service_name}}-{{environment_name}}-{{azure_location}}-sto-{{postfix_number}}")
     container_registry                                         = optional(string, "acr{{service_name}}{{environment_name}}{{azure_location_short}}{{postfix_number}}{{random_string}}")
     container_registry_private_endpoint                        = optional(string, "pe-{{service_name}}-{{environment_name}}-{{azure_location}}-acr-{{postfix_number}}")
     container_image_name                                       = optional(string, "azure-devops-agent")
+    # Container App Jobs naming (max 32 chars)
+    container_app_environment                   = optional(string, "cae-{{service_name}}-{{environment_name}}-{{azure_location_short}}-{{postfix_number}}")
+    container_app_job                           = optional(string, "caj-{{service_name}}-{{environment_name}}-{{azure_location_short}}-{{postfix_number}}")
+    container_app_job_placeholder               = optional(string, "caj-{{service_name}}-{{environment_name}}-{{azure_location_short}}-{{postfix_number}}-ph")
+    container_app_infrastructure_resource_group = optional(string, "rg-{{service_name}}-{{environment_name}}-{{azure_location}}-{{postfix_number}}-ca-infra")
   })
   default = {}
 }
@@ -540,6 +572,12 @@ variable "virtual_network_subnet_address_prefix_private_endpoints" {
   EOT
   type        = string
   default     = "10.0.0.64/26"
+}
+
+variable "virtual_network_subnet_address_prefix_container_apps" {
+  type        = string
+  description = "Address prefix for the Container Apps subnet"
+  default     = "10.0.0.128/26"
 }
 
 variable "storage_account_replication_type" {
@@ -1077,4 +1115,10 @@ variable "bicep_tenant_role_assignment_role_definition_name" {
   EOT
   type        = string
   default     = "Landing Zone Management Owner"
+}
+
+variable "tags" {
+  type        = map(string)
+  default     = {}
+  description = "Tags to apply to Azure resources"
 }

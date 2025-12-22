@@ -4,10 +4,8 @@ resource "azurerm_resource_group" "state" {
   location = var.azure_location
 }
 
-resource "azurerm_resource_group" "identity" {
-  name     = var.resource_group_identity_name
-  location = var.azure_location
-}
+# Identity resource group is now created by the identities module
+# Variable kept for backwards compatibility but resource removed
 
 resource "azurerm_resource_group" "agents" {
   count    = var.use_self_hosted_agents ? 1 : 0

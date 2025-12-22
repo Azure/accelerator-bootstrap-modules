@@ -829,3 +829,9 @@ variable "bicep_tenant_role_assignment_role_definition_name" {
   description = "The name of the Azure role definition to assign at the tenant level for Bicep deployments. This role grants the managed identity permissions to manage Azure Landing Zones resources across the tenant. Common values: 'Landing Zone Management Owner', 'Owner', or a custom role name."
   default     = "Landing Zone Management Owner"
 }
+
+variable "tags" {
+  type        = map(string)
+  description = "(Optional) Tags to apply to resources."
+  default     = {}
+}

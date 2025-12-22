@@ -16,9 +16,25 @@ module "files" {
   additional_folders_path           = var.additional_folders_path
 }
 
+# ========================================
+# IDENTITY MANAGEMENT
+# ========================================
+# Create all bootstrap identities (plan, apply) in a dedicated module
+# This must happen before azure_devops module to get federated credentials
+
+module "identities" {
+  source              = "../../modules/identities"
+  resource_group_name = local.resource_names.resource_group_identity
+  location            = var.bootstrap_location
+  managed_identities  = local.managed_identities
+  # Federated credentials created after azure_devops module provides subjects/issuers
+  federated_credentials = local.federated_credentials_for_identities
+  tags                  = var.tags
+}
+
 module "azure" {
   source                                                    = "../../modules/azure"
-  resource_group_identity_name                              = local.resource_names.resource_group_identity
+  resource_group_identity_name                              = module.identities.resource_group_name
   resource_group_agents_name                                = local.resource_names.resource_group_agents
   resource_group_network_name                               = local.resource_names.resource_group_network
   resource_group_state_name                                 = local.resource_names.resource_group_state
@@ -26,8 +42,9 @@ module "azure" {
   storage_account_name                                      = local.resource_names.storage_account
   storage_container_name                                    = local.resource_names.storage_container
   azure_location                                            = var.bootstrap_location
-  user_assigned_managed_identities                          = local.managed_identities
-  federated_credentials                                     = local.federated_credentials
+  managed_identity_ids                                      = module.identities.managed_identity_ids
+  managed_identity_client_ids                               = module.identities.managed_identity_client_ids
+  managed_identity_principal_ids                            = module.identities.managed_identity_principal_ids
   agent_container_instances                                 = local.agent_container_instances
   agent_container_instance_managed_identity_name            = local.resource_names.container_instance_managed_identity
   agent_organization_url                                    = module.azure_devops.organization_url
@@ -42,20 +59,31 @@ module "azure" {
   virtual_network_name                                      = local.resource_names.virtual_network
   virtual_network_subnet_name_container_instances           = local.resource_names.subnet_container_instances
   virtual_network_subnet_name_private_endpoints             = local.resource_names.subnet_private_endpoints
+  virtual_network_subnet_name_container_apps                = var.use_container_app_jobs ? local.resource_names.subnet_container_apps : ""
   storage_account_private_endpoint_name                     = local.resource_names.storage_account_private_endpoint
   use_private_networking                                    = local.use_private_networking
   allow_storage_access_from_my_ip                           = local.allow_storage_access_from_my_ip
   virtual_network_address_space                             = var.virtual_network_address_space
   virtual_network_subnet_address_prefix_container_instances = var.virtual_network_subnet_address_prefix_container_instances
   virtual_network_subnet_address_prefix_private_endpoints   = var.virtual_network_subnet_address_prefix_private_endpoints
+  virtual_network_subnet_address_prefix_container_apps      = var.virtual_network_subnet_address_prefix_container_apps
   storage_account_replication_type                          = var.storage_account_replication_type
   public_ip_name                                            = local.resource_names.public_ip
   nat_gateway_name                                          = local.resource_names.nat_gateway
   use_self_hosted_agents                                    = var.use_self_hosted_agents
+  use_container_app_jobs                                    = var.use_container_app_jobs
+  agent_container_cpu                                       = var.agent_container_cpu
+  agent_container_memory                                    = var.agent_container_memory
+  service_name                                              = var.service_name
+  environment_name                                          = var.environment_name
+  container_app_environment_name                            = local.resource_names.container_app_environment
+  container_app_job_name                                    = local.resource_names.container_app_job
+  container_app_job_placeholder_name                        = local.resource_names.container_app_job_placeholder
+  container_app_infrastructure_resource_group_name          = local.resource_names.container_app_infrastructure_resource_group
   container_registry_name                                   = local.resource_names.container_registry
   container_registry_private_endpoint_name                  = local.resource_names.container_registry_private_endpoint
   container_registry_image_name                             = local.resource_names.container_image_name
-  container_registry_image_tag                              = var.agent_container_image_tag
+  container_registry_image_tag                              = local.agent_image_tag
   container_registry_dockerfile_name                        = var.agent_container_image_dockerfile
   container_registry_dockerfile_repository_folder_url       = local.agent_container_instance_dockerfile_url
   custom_role_definitions                                   = var.iac_type == "terraform" ? local.custom_role_definitions_terraform : (var.iac_type == "bicep" ? local.custom_role_definitions_bicep : local.custom_role_definitions_bicep_classic)
@@ -76,7 +104,7 @@ module "azure_devops" {
   create_project                               = var.azure_devops_create_project
   project_name                                 = var.azure_devops_project_name
   environments                                 = local.environments
-  managed_identity_client_ids                  = module.azure.user_assigned_managed_identity_client_ids
+  managed_identity_client_ids                  = module.identities.managed_identity_client_ids
   repository_name                              = local.resource_names.version_control_system_repository
   repository_files                             = module.file_manipulation.repository_files
   template_repository_files                    = module.file_manipulation.template_repository_files
@@ -120,4 +148,34 @@ module "file_manipulation" {
   agent_pool_or_runner_configuration     = local.agent_pool_or_runner_configuration
   pipeline_files_directory_path          = local.pipeline_files_directory_path
   pipeline_template_files_directory_path = local.pipeline_template_files_directory_path
+}
+
+# ========================================
+# STATE MIGRATION (Backwards Compatibility)
+# ========================================
+# These moved blocks ensure existing deployments migrate smoothly to the new identity module structure
+
+moved {
+  from = module.azure.azurerm_resource_group.identity
+  to   = module.identities.azurerm_resource_group.identity
+}
+
+moved {
+  from = module.azure.azurerm_user_assigned_identity.alz["plan"]
+  to   = module.identities.azurerm_user_assigned_identity.identities["plan"]
+}
+
+moved {
+  from = module.azure.azurerm_user_assigned_identity.alz["apply"]
+  to   = module.identities.azurerm_user_assigned_identity.identities["apply"]
+}
+
+moved {
+  from = module.azure.azurerm_federated_identity_credential.alz["plan"]
+  to   = module.identities.azurerm_federated_identity_credential.credentials["plan"]
+}
+
+moved {
+  from = module.azure.azurerm_federated_identity_credential.alz["apply"]
+  to   = module.identities.azurerm_federated_identity_credential.credentials["apply"]
 }

@@ -59,3 +59,24 @@ resource "azurerm_subnet" "private_endpoints" {
   address_prefixes                  = [var.virtual_network_subnet_address_prefix_private_endpoints]
   private_endpoint_network_policies = "Enabled"
 }
+
+resource "azurerm_subnet" "container_apps" {
+  count                = var.use_private_networking && var.use_self_hosted_agents && var.use_container_app_jobs ? 1 : 0
+  name                 = var.virtual_network_subnet_name_container_apps
+  resource_group_name  = azurerm_resource_group.network[0].name
+  virtual_network_name = azurerm_virtual_network.alz[0].name
+  address_prefixes     = [var.virtual_network_subnet_address_prefix_container_apps]
+  delegation {
+    name = "container-app-delegation"
+    service_delegation {
+      name    = "Microsoft.App/environments"
+      actions = ["Microsoft.Network/virtualNetworks/subnets/join/action"]
+    }
+  }
+}
+
+resource "azurerm_subnet_nat_gateway_association" "container_apps" {
+  count          = var.use_private_networking && var.use_self_hosted_agents && var.use_container_app_jobs ? 1 : 0
+  subnet_id      = azurerm_subnet.container_apps[0].id
+  nat_gateway_id = azurerm_nat_gateway.alz[0].id
+}

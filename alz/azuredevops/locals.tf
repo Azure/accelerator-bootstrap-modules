@@ -12,7 +12,8 @@ locals {
 }
 
 locals {
-  use_private_networking          = var.use_self_hosted_agents && var.use_private_networking
+  # Auto-enable private networking when using Container App Jobs (Container App Environment requires VNET)
+  use_private_networking          = var.use_self_hosted_agents && (var.use_private_networking || var.use_container_app_jobs)
   allow_storage_access_from_my_ip = local.use_private_networking && var.allow_storage_access_from_my_ip
 }
 
@@ -38,23 +39,31 @@ locals {
 }
 
 locals {
-  managed_identities = {
-    (local.plan_key)  = local.resource_names.user_assigned_managed_identity_plan
-    (local.apply_key) = local.resource_names.user_assigned_managed_identity_apply
-  }
+  managed_identities = merge(
+    {
+      (local.plan_key)  = local.resource_names.user_assigned_managed_identity_plan
+      (local.apply_key) = local.resource_names.user_assigned_managed_identity_apply
+    },
+    var.use_self_hosted_agents && var.use_container_app_jobs ? {
+      agent = local.resource_names.user_assigned_managed_identity_agent
+    } : {}
+  )
 
-  federated_credentials = {
+  # Federated credentials for the identities module (includes audience)
+  federated_credentials_for_identities = {
     (local.plan_key) = {
       user_assigned_managed_identity_key = local.plan_key
       federated_credential_subject       = module.azure_devops.subjects[local.plan_key]
       federated_credential_issuer        = module.azure_devops.issuers[local.plan_key]
       federated_credential_name          = local.resource_names.user_assigned_managed_identity_federated_credentials_plan
+      audience                           = ["api://AzureADTokenExchange"]
     }
     (local.apply_key) = {
       user_assigned_managed_identity_key = local.apply_key
       federated_credential_subject       = module.azure_devops.subjects[local.apply_key]
       federated_credential_issuer        = module.azure_devops.issuers[local.apply_key]
       federated_credential_name          = local.resource_names.user_assigned_managed_identity_federated_credentials_apply
+      audience                           = ["api://AzureADTokenExchange"]
     }
   }
 
@@ -105,7 +114,11 @@ locals {
 }
 
 locals {
-  agent_container_instance_dockerfile_url = "${var.agent_container_image_repository}#${var.agent_container_image_tag}:${var.agent_container_image_folder}"
+  # Use different image folder and tag for Container App Jobs vs Container Instances
+  agent_image_folder = var.use_container_app_jobs ? var.agent_container_app_image_folder : var.agent_container_image_folder
+  agent_image_tag    = var.use_container_app_jobs ? var.agent_container_app_image_tag : var.agent_container_image_tag
+
+  agent_container_instance_dockerfile_url = "${var.agent_container_image_repository}#${local.agent_image_tag}:${local.agent_image_folder}"
 }
 
 locals {
