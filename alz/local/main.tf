@@ -16,12 +16,28 @@ module "files" {
   additional_folders_path           = var.additional_folders_path
 }
 
+# ========================================
+# IDENTITY MANAGEMENT (Optional for local deployment)
+# ========================================
+# Create bootstrap identities only if deploying Azure resources
+
+module "identities" {
+  count                 = var.create_bootstrap_resources_in_azure ? 1 : 0
+  source                = "../../modules/identities"
+  resource_group_name   = local.resource_names.resource_group_identity
+  location              = var.bootstrap_location
+  managed_identities    = local.managed_identities
+  federated_credentials = var.federated_credentials
+  tags                  = var.tags
+}
+
 module "azure" {
   source                                               = "../../modules/azure"
   count                                                = var.create_bootstrap_resources_in_azure ? 1 : 0
-  user_assigned_managed_identities                     = local.managed_identities
-  federated_credentials                                = local.federated_credentials
-  resource_group_identity_name                         = local.resource_names.resource_group_identity
+  managed_identity_ids                                 = module.identities[0].managed_identity_ids
+  managed_identity_client_ids                          = module.identities[0].managed_identity_client_ids
+  managed_identity_principal_ids                       = module.identities[0].managed_identity_principal_ids
+  resource_group_identity_name                         = module.identities[0].resource_group_name
   resource_group_state_name                            = local.resource_names.resource_group_state
   create_storage_account                               = var.iac_type == local.iac_terraform
   storage_account_name                                 = local.resource_names.storage_account
@@ -71,4 +87,19 @@ resource "local_file" "command" {
   count    = var.iac_type == "terraform" ? 1 : 0
   content  = local.command_final
   filename = "${local.target_directory}/scripts/deploy-local.ps1"
+}
+
+moved {
+  from = module.azure[0].azurerm_resource_group.identity
+  to   = module.identities[0].azurerm_resource_group.identity
+}
+
+moved {
+  from = module.azure[0].azurerm_user_assigned_identity.alz
+  to   = module.identities[0].azurerm_user_assigned_identity.identities
+}
+
+moved {
+  from = module.azure[0].azurerm_federated_identity_credential.alz
+  to   = module.identities[0].azurerm_federated_identity_credential.credentials
 }

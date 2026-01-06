@@ -15,6 +15,14 @@ This bootstrap framework supports multiple Infrastructure as Code approaches:
 | **bicep** | Bicep-based Azure Landing Zones (New Framework using Azure Verified Modules) | [alz-bicep-accelerator](https://github.com/Azure/alz-bicep-accelerator) |
 | **bicep-classic** | Bicep-based Azure Landing Zones (Classic Framework) | [ALZ-Bicep](https://github.com/Azure/ALZ-Bicep) |
 
+## Features
+
+- Azure DevOps and GitHub bootstrap orchestrations
+- User-assigned managed identities with federated credentials
+- Self-hosted agents with Container Instances or Container App Jobs (Azure DevOps only)
+- Private networking support with NAT Gateway
+- Container Registry with ACR Tasks for agent images
+
 ## Configuration
 
 The supported frameworks and their configuration are defined in [`.config/ALZ-Powershell.config.json`](.config/ALZ-Powershell.config.json).

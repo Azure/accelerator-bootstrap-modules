@@ -3,7 +3,7 @@ locals {
     user_assigned_managed_identity_key = value.user_assigned_managed_identity_key
     custom_role_definition_key         = value.custom_role_definition_key
     scope                              = value.scope
-    principal_id                       = azurerm_user_assigned_identity.alz[value.user_assigned_managed_identity_key].principal_id
+    principal_id                       = var.managed_identity_principal_ids[value.user_assigned_managed_identity_key]
   } }
 
   additional_role_assignments = { for assignment in flatten([

@@ -1,3 +1,8 @@
+# Validation: Container App Jobs are not supported for GitHub
+locals {
+  validation_container_app_jobs_not_supported = var.use_self_hosted_agents && var.use_container_app_jobs ? tobool("ERROR: Container App Jobs (use_container_app_jobs=true) are only supported with Azure DevOps, not GitHub. Please use Container Instances instead (use_container_app_jobs=false).") : true
+}
+
 module "resource_names" {
   source           = "../../modules/resource_names"
   azure_location   = var.bootstrap_location
@@ -16,11 +21,25 @@ module "files" {
   additional_folders_path           = var.additional_folders_path
 }
 
+# ========================================
+# IDENTITY MANAGEMENT
+# ========================================
+# Create all bootstrap identities (plan, apply) in a dedicated module
+# This must happen before github module to get federated credentials
+
+module "identities" {
+  source              = "../../modules/identities"
+  resource_group_name = local.resource_names.resource_group_identity
+  location            = var.bootstrap_location
+  managed_identities  = local.managed_identities
+  # Federated credentials created after github module provides subjects/issuers
+  federated_credentials = local.federated_credentials_for_identities
+  tags                  = var.tags
+}
+
 module "azure" {
   source                                                    = "../../modules/azure"
-  user_assigned_managed_identities                          = local.managed_identities
-  federated_credentials                                     = local.federated_credentials
-  resource_group_identity_name                              = local.resource_names.resource_group_identity
+  resource_group_identity_name                              = module.identities.resource_group_name
   resource_group_state_name                                 = local.resource_names.resource_group_state
   resource_group_agents_name                                = local.resource_names.resource_group_agents
   resource_group_network_name                               = local.resource_names.resource_group_network
@@ -28,6 +47,9 @@ module "azure" {
   storage_account_name                                      = local.resource_names.storage_account
   storage_container_name                                    = local.resource_names.storage_container
   azure_location                                            = var.bootstrap_location
+  managed_identity_ids                                      = module.identities.managed_identity_ids
+  managed_identity_client_ids                               = module.identities.managed_identity_client_ids
+  managed_identity_principal_ids                            = module.identities.managed_identity_principal_ids
   target_subscriptions                                      = local.target_subscriptions
   root_parent_management_group_id                           = local.root_parent_management_group_id
   agent_container_instances                                 = local.runner_container_instances
@@ -81,7 +103,7 @@ module "github" {
   repository_files                             = module.file_manipulation.repository_files
   template_repository_files                    = module.file_manipulation.template_repository_files
   workflows                                    = local.workflows
-  managed_identity_client_ids                  = module.azure.user_assigned_managed_identity_client_ids
+  managed_identity_client_ids                  = module.identities.managed_identity_client_ids
   azure_tenant_id                              = data.azurerm_client_config.current.tenant_id
   azure_subscription_id                        = var.subscription_ids["management"]
   backend_azure_resource_group_name            = local.resource_names.resource_group_state
@@ -123,3 +145,27 @@ module "file_manipulation" {
   pipeline_template_files_directory_path = local.pipeline_template_files_directory_path
   concurrency_value                      = local.resource_names.storage_container
 }
+
+# ========================================
+# STATE MIGRATION (Backwards Compatibility)
+# ========================================
+# These moved blocks ensure existing deployments migrate smoothly to the new identity module structure
+
+moved {
+  from = module.azure.azurerm_resource_group.identity
+  to   = module.identities.azurerm_resource_group.identity
+}
+
+moved {
+  from = module.azure.azurerm_user_assigned_identity.alz["plan"]
+  to   = module.identities.azurerm_user_assigned_identity.identities["plan"]
+}
+
+moved {
+  from = module.azure.azurerm_user_assigned_identity.alz["apply"]
+  to   = module.identities.azurerm_user_assigned_identity.identities["apply"]
+}
+
+# Note: Federated credentials in github are dynamically created based on subjects
+# The moved blocks need to account for the dynamic keys from module.github.subjects
+# Users may need to manually move these or use terraform state mv commands

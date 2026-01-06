@@ -57,7 +57,7 @@ resource "azurerm_container_registry_task_schedule_run_now" "alz" {
 }
 
 resource "azurerm_role_assignment" "container_registry_pull_for_container_instance" {
-  count                = var.use_self_hosted_agents ? 1 : 0
+  count                = var.use_self_hosted_agents && !var.use_container_app_jobs ? 1 : 0
   scope                = azurerm_container_registry.alz[0].id
   role_definition_name = "AcrPull"
   principal_id         = azurerm_user_assigned_identity.container_instances[0].principal_id
@@ -68,4 +68,18 @@ resource "azurerm_role_assignment" "container_registry_push_for_task" {
   scope                = azurerm_container_registry.alz[0].id
   role_definition_name = "AcrPush"
   principal_id         = azurerm_container_registry_task.alz[0].identity[0].principal_id
+}
+
+resource "azurerm_role_assignment" "container_registry_pull_for_agent" {
+  count                = var.use_self_hosted_agents && var.use_container_app_jobs ? 1 : 0
+  scope                = azurerm_container_registry.alz[0].id
+  role_definition_name = "AcrPull"
+  principal_id         = var.managed_identity_principal_ids["agent"]
+}
+
+resource "azurerm_role_assignment" "container_registry_push_for_agent" {
+  count                = var.use_self_hosted_agents && var.use_container_app_jobs ? 1 : 0
+  scope                = azurerm_container_registry.alz[0].id
+  role_definition_name = "AcrPush"
+  principal_id         = var.managed_identity_principal_ids["agent"]
 }

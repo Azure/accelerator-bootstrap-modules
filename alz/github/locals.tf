@@ -57,12 +57,14 @@ locals {
     (local.apply_key) = local.resource_names.user_assigned_managed_identity_apply
   }
 
-  federated_credentials = { for key, value in module.github.subjects :
+  # Federated credentials for the identities module (includes audience)
+  federated_credentials_for_identities = { for key, value in module.github.subjects :
     key => {
       user_assigned_managed_identity_key = value.user_assigned_managed_identity_key
       federated_credential_subject       = value.subject
       federated_credential_issuer        = module.github.issuer
       federated_credential_name          = "${local.resource_names.user_assigned_managed_identity_federated_credentials_prefix}-${key}"
+      audience                           = ["api://AzureADTokenExchange"]
     }
   }
 

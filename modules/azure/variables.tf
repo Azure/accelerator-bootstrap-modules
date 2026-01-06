@@ -8,38 +8,20 @@ variable "azure_location" {
   type        = string
 }
 
-variable "user_assigned_managed_identities" {
-  description = <<-EOT
-    **(Required)** Map of user-assigned managed identity names to create for Azure Landing Zones automation.
-
-    Typically includes 'plan' and 'apply' identities used for Terraform/Bicep plan and apply operations
-    with appropriate RBAC permissions.
-  EOT
+# Managed identities are now created externally and passed in
+variable "managed_identity_ids" {
   type        = map(string)
+  description = "Map of managed identity resource IDs (key = logical name like 'plan', 'apply')"
 }
 
-variable "federated_credentials" {
-  description = <<-EOT
-    **(Optional, default: `{}`)** Configuration for OIDC federated identity credentials.
+variable "managed_identity_client_ids" {
+  type        = map(string)
+  description = "Map of managed identity client IDs for outputs"
+}
 
-    Links user-assigned managed identities with external identity providers (GitHub Actions, Azure DevOps, etc.).
-    Enables keyless authentication by establishing trust relationships between Azure and external CI/CD systems.
-
-    Map structure:
-    - **Key**: Unique identifier for the credential
-    - **Value**: Object containing:
-      - `user_assigned_managed_identity_key` (string) - Key of the managed identity to federate
-      - `federated_credential_subject` (string) - Subject claim from external IdP
-      - `federated_credential_issuer` (string) - Issuer URL of external IdP
-      - `federated_credential_name` (string) - Display name for the credential
-  EOT
-  type = map(object({
-    user_assigned_managed_identity_key = string
-    federated_credential_subject       = string
-    federated_credential_issuer        = string
-    federated_credential_name          = string
-  }))
-  default = {}
+variable "managed_identity_principal_ids" {
+  type        = map(string)
+  description = "Map of managed identity principal IDs for role assignments"
 }
 
 variable "resource_group_identity_name" {
@@ -399,6 +381,18 @@ variable "virtual_network_subnet_address_prefix_private_endpoints" {
   default     = "10.0.0.64/26"
 }
 
+variable "virtual_network_subnet_name_container_apps" {
+  type        = string
+  description = "Name of the virtual network subnet for Container Apps"
+  default     = ""
+}
+
+variable "virtual_network_subnet_address_prefix_container_apps" {
+  type        = string
+  description = "Address prefix for the Container Apps subnet"
+  default     = "10.0.0.128/26"
+}
+
 variable "storage_account_private_endpoint_name" {
   description = <<-EOT
     **(Optional, default: `""`)** Name of the private endpoint for the storage account.
@@ -506,6 +500,59 @@ variable "use_self_hosted_agents" {
   EOT
   type        = bool
   default     = true
+}
+
+variable "use_container_app_jobs" {
+  type        = bool
+  default     = false
+  description = "Whether to use Container App Jobs for self-hosted agents (Azure DevOps only). Mutually exclusive with Container Instances."
+}
+
+variable "agent_container_cpu" {
+  type        = number
+  default     = 2
+  description = "CPU allocation for agent containers"
+}
+
+variable "agent_container_memory" {
+  type        = number
+  default     = 4
+  description = "Memory allocation for agent containers in Gibibytes"
+}
+
+# Container App Jobs naming variables
+variable "container_app_environment_name" {
+  type        = string
+  default     = ""
+  description = "Name for the Container App Environment"
+}
+
+variable "container_app_job_name" {
+  type        = string
+  default     = ""
+  description = "Name for the Container App Job"
+}
+
+variable "container_app_job_placeholder_name" {
+  type        = string
+  default     = ""
+  description = "Name for the Container App Job placeholder"
+}
+
+variable "container_app_infrastructure_resource_group_name" {
+  type        = string
+  default     = ""
+  description = "Name for the Container Apps infrastructure resource group"
+}
+
+variable "service_name" {
+  type        = string
+  description = "Service name for resource naming"
+}
+
+variable "environment_name" {
+  type        = string
+  description = "Environment name for resource naming"
 }
 
 variable "agent_container_instance_managed_identity_name" {

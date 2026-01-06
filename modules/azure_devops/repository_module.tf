@@ -1,10 +1,35 @@
+# When creating a new project, Azure DevOps automatically creates a default repository
+# with the same name as the project. We need to rename this default repo to avoid conflicts
+# with our Terraform-managed repository.
+resource "azuredevops_git_repository" "default_rename" {
+  count          = var.create_project ? 1 : 0
+  project_id     = azuredevops_project.alz[0].id
+  name           = "${var.project_name}-default"
+  default_branch = "refs/heads/main"
+
+  initialization {
+    init_type = "Clean"
+  }
+
+  lifecycle {
+    ignore_changes = [initialization, default_branch]
+  }
+
+  depends_on = [azuredevops_project.alz]
+}
+
 resource "azuredevops_git_repository" "alz" {
-  depends_on     = [azuredevops_environment.alz]
+  depends_on     = [azuredevops_environment.alz, azuredevops_git_repository.default_rename]
   project_id     = local.project_id
   name           = var.repository_name
   default_branch = local.default_branch
+
   initialization {
     init_type = "Clean"
+  }
+
+  lifecycle {
+    ignore_changes = [initialization]
   }
 }
 
