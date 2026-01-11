@@ -18,56 +18,58 @@ module "files" {
 
 module "azure" {
   source                                                    = "../../modules/azure"
-  user_assigned_managed_identities                          = local.managed_identities
-  federated_credentials                                     = local.federated_credentials
-  resource_group_identity_name                              = local.resource_names.resource_group_identity
-  resource_group_state_name                                 = local.resource_names.resource_group_state
-  resource_group_agents_name                                = local.resource_names.resource_group_agents
-  resource_group_network_name                               = local.resource_names.resource_group_network
-  create_storage_account                                    = var.iac_type == local.iac_terraform
-  storage_account_name                                      = local.resource_names.storage_account
-  storage_container_name                                    = local.resource_names.storage_container
-  azure_location                                            = var.bootstrap_location
-  target_subscriptions                                      = local.target_subscriptions
-  root_parent_management_group_id                           = local.root_parent_management_group_id
-  agent_container_instances                                 = local.runner_container_instances
   agent_container_instance_managed_identity_name            = local.resource_names.container_instance_managed_identity
-  agent_organization_url                                    = local.runner_organization_repository_url
-  agent_token                                               = var.github_runners_personal_access_token
-  agent_organization_environment_variable                   = var.runner_organization_environment_variable
-  agent_pool_name                                           = local.resource_names.version_control_system_runner_group
-  agent_pool_environment_variable                           = var.runner_group_environment_variable
+  agent_container_instances                                 = local.runner_container_instances
   agent_name_environment_variable                           = var.runner_name_environment_variable
-  use_agent_pool_environment_variable                       = local.use_runner_group
+  agent_organization_environment_variable                   = var.runner_organization_environment_variable
+  agent_organization_url                                    = local.runner_organization_repository_url
+  agent_pool_environment_variable                           = var.runner_group_environment_variable
+  agent_pool_name                                           = local.resource_names.version_control_system_runner_group
+  agent_token                                               = var.github_runners_personal_access_token
   agent_token_environment_variable                          = var.runner_token_environment_variable
-  virtual_network_name                                      = local.resource_names.virtual_network
-  virtual_network_subnet_name_container_instances           = local.resource_names.subnet_container_instances
-  virtual_network_subnet_name_private_endpoints             = local.resource_names.subnet_private_endpoints
-  storage_account_private_endpoint_name                     = local.resource_names.storage_account_private_endpoint
-  use_private_networking                                    = local.use_private_networking
   allow_storage_access_from_my_ip                           = local.allow_storage_access_from_my_ip
-  virtual_network_address_space                             = var.virtual_network_address_space
-  virtual_network_subnet_address_prefix_container_instances = var.virtual_network_subnet_address_prefix_container_instances
-  virtual_network_subnet_address_prefix_private_endpoints   = var.virtual_network_subnet_address_prefix_private_endpoints
-  storage_account_replication_type                          = var.storage_account_replication_type
-  public_ip_name                                            = local.resource_names.public_ip
-  nat_gateway_name                                          = local.resource_names.nat_gateway
-  use_self_hosted_agents                                    = var.use_self_hosted_runners
-  container_registry_name                                   = local.resource_names.container_registry
-  container_registry_private_endpoint_name                  = local.resource_names.container_registry_private_endpoint
-  container_registry_image_name                             = local.resource_names.container_image_name
-  container_registry_image_tag                              = var.runner_container_image_tag
+  azure_location                                            = var.bootstrap_location
   container_registry_dockerfile_name                        = var.runner_container_image_dockerfile
   container_registry_dockerfile_repository_folder_url       = local.runner_container_instance_dockerfile_url
+  container_registry_image_name                             = local.resource_names.container_image_name
+  container_registry_image_tag                              = var.runner_container_image_tag
+  container_registry_name                                   = local.resource_names.container_registry
+  container_registry_private_endpoint_name                  = local.resource_names.container_registry_private_endpoint
+  container_registry_task_timer_trigger_enabled             = var.container_registry_task_timer_trigger_enabled
+  container_registry_task_timer_trigger_schedule            = var.container_registry_task_timer_trigger_schedule
+  create_storage_account                                    = var.iac_type == local.iac_terraform
   custom_role_definitions                                   = var.iac_type == "terraform" ? local.custom_role_definitions_terraform : (var.iac_type == "bicep" ? local.custom_role_definitions_bicep : local.custom_role_definitions_bicep_classic)
+  federated_credentials                                     = local.federated_credentials
+  nat_gateway_name                                          = local.resource_names.nat_gateway
+  public_ip_name                                            = local.resource_names.public_ip
+  resource_group_agents_name                                = local.resource_names.resource_group_agents
+  resource_group_identity_name                              = local.resource_names.resource_group_identity
+  resource_group_network_name                               = local.resource_names.resource_group_network
+  resource_group_state_name                                 = local.resource_names.resource_group_state
   role_assignments                                          = var.iac_type == "terraform" ? var.role_assignments_terraform : var.role_assignments_bicep
+  root_parent_management_group_id                           = local.root_parent_management_group_id
   storage_account_blob_soft_delete_enabled                  = var.storage_account_blob_soft_delete_enabled
   storage_account_blob_soft_delete_retention_days           = var.storage_account_blob_soft_delete_retention_days
   storage_account_blob_versioning_enabled                   = var.storage_account_blob_versioning_enabled
   storage_account_container_soft_delete_enabled             = var.storage_account_container_soft_delete_enabled
   storage_account_container_soft_delete_retention_days      = var.storage_account_container_soft_delete_retention_days
+  storage_account_name                                      = local.resource_names.storage_account
+  storage_account_private_endpoint_name                     = local.resource_names.storage_account_private_endpoint
+  storage_account_replication_type                          = var.storage_account_replication_type
+  storage_container_name                                    = local.resource_names.storage_container
+  target_subscriptions                                      = local.target_subscriptions
   tenant_role_assignment_enabled                            = var.iac_type == "bicep" && var.bicep_tenant_role_assignment_enabled
   tenant_role_assignment_role_definition_name               = var.bicep_tenant_role_assignment_role_definition_name
+  use_agent_pool_environment_variable                       = local.use_runner_group
+  use_private_networking                                    = local.use_private_networking
+  use_self_hosted_agents                                    = var.use_self_hosted_runners
+  user_assigned_managed_identities                          = local.managed_identities
+  virtual_network_address_space                             = var.virtual_network_address_space
+  virtual_network_name                                      = local.resource_names.virtual_network
+  virtual_network_subnet_address_prefix_container_instances = var.virtual_network_subnet_address_prefix_container_instances
+  virtual_network_subnet_address_prefix_private_endpoints   = var.virtual_network_subnet_address_prefix_private_endpoints
+  virtual_network_subnet_name_container_instances           = local.resource_names.subnet_container_instances
+  virtual_network_subnet_name_private_endpoints             = local.resource_names.subnet_private_endpoints
 }
 
 module "github" {

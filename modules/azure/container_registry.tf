@@ -36,6 +36,11 @@ resource "azurerm_container_registry_task" "alz" {
   identity {
     type = "SystemAssigned" # Note this has to be a System Assigned Identity to work with private networking and `network_rule_bypass_option` set to `AzureServices`
   }
+  timer_trigger {
+    name     = "scheduled-build"
+    schedule = var.container_registry_task_timer_trigger_schedule
+    enabled  = var.container_registry_task_timer_trigger_enabled
+  }
   registry_credential {
     custom {
       login_server = azurerm_container_registry.alz[0].login_server
