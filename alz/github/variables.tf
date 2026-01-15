@@ -692,11 +692,8 @@ variable "custom_role_definitions_bicep" {
       description = "This is a custom role created by the Azure Landing Zones Accelerator for running Bicep What If for the Management Group hierarchy and its associated governance resources such as policy, RBAC etc... You must use the `--validation-level providerNoRbac` (Az CLI 2.75.0 or later) or `-ValidationLevel providerNoRbac` (Az PowerShell 13.4.0 or later (Az.Resources 7.10.0 or later)) flag when running Bicep What If with this role."
       permissions = {
         actions = [
-          "*/read",
           "Microsoft.Resources/deployments/whatIf/action",
           "Microsoft.Resources/deployments/validate/action",
-          "Microsoft.Resources/subscriptions/operationResults/read",
-          "Microsoft.Management/operationResults/*/read"
         ]
         not_actions = []
       }
@@ -882,7 +879,7 @@ variable "role_assignments_bicep" {
   }))
   default = {
     plan = {
-      custom_role_definition_key         = "Reader"
+      built_in_role_definition_name         = "Reader"
       user_assigned_managed_identity_key = "plan"
       scope                              = "management_group"
     }
@@ -892,7 +889,7 @@ variable "role_assignments_bicep" {
       scope                              = "management_group"
     }
     apply_management_group = {
-      custom_role_definition_key         = "Owner"
+      built_in_role_definition_name         = "Owner"
       user_assigned_managed_identity_key = "apply"
       scope                              = "management_group"
     }
