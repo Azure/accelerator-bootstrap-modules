@@ -271,6 +271,17 @@ variable "root_parent_management_group_id" {
   type        = string
 }
 
+variable "move_subscriptions_to_target_management_group" {
+  description = <<-EOT
+    **(Optional, default: `true`)** Controls whether to move target subscriptions under the intermediate root management group.
+
+    When enabled, subscriptions listed in `target_subscriptions` are moved under the created intermediate root management group.
+    Ensures all landing zone subscriptions are organized under the same management group hierarchy.
+  EOT
+  type        = bool
+  default     = true
+}
+
 variable "intermediate_root_management_group_creation_enabled" {
   description = <<-EOT
     **(Optional, default: `true`)** Controls whether to create an intermediate root management group under the root parent.
