@@ -300,7 +300,7 @@ jobs:
           # Terraform
           if($infrastructureAsCode -eq "terraform") {
             $Inputs["resource_name_suffix"] = $uniqueId
-            $architectureFilePath = "${{ env.STARTER_MODULE_FOLDER }}/lib/architecture_definitions/alz_custom.alz_architecture_definition.yaml"
+            $architectureFilePath = "${{ env.STARTER_MODULE_FOLDER }}/templates/$starterModule/lib/architecture_definitions/alz_custom.alz_architecture_definition.yaml"
             $architectureFile = Get-Content -Path $architectureFilePath -Raw
             $architectureFile = $architectureFile.Replace("id: test", "id: test-$uniqueId")
             $architectureFile = $architectureFile.Replace("display_name: Test", "display_name: Test $uniqueId")
