@@ -12,16 +12,16 @@ locals {
 }
 
 locals {
-    import_block = <<EOT
+  import_block = <<EOT
 import {
    to = azapi_resource.management_groups_level_0["${local.intermediate_root_management_group.id}"]
    id = "/providers/Microsoft.Management/managementGroups/${local.intermediate_root_management_group.id}"
 }
 EOT
 
-    import_block_files = local.is_terraform_iac_type ? {
-        "imports.management_groups.tf" = {
-            content = local.import_block
-        }
-    } : {}
+  import_block_files = local.is_terraform_iac_type ? {
+    "imports.management_groups.tf" = {
+      content = local.import_block
+    }
+  } : {}
 }
