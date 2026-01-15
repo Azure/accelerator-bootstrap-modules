@@ -14,7 +14,7 @@ locals {
 locals {
   import_block = <<EOT
 import {
-  to = azapi_resource.management_groups_level_0["${local.intermediate_root_management_group.id}"]
+  to = ${var.terraform_intermediate_root_management_group_state_resource_path_for_import}["${local.intermediate_root_management_group.id}"]
   id = "/providers/Microsoft.Management/managementGroups/${local.intermediate_root_management_group.id}"
 }
 EOT
