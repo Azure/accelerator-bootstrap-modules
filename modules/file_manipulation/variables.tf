@@ -230,3 +230,13 @@ variable "concurrency_value" {
   type        = string
   default     = null
 }
+
+variable "terraform_architecture_file_path" {
+  description = <<-EOT
+    **(Required)** Relative path to the Terraform architecture definition JSON file within the module folder.
+
+    This file defines the structure and components of the Terraform deployment architecture.
+    Used for dynamic file manipulation based on architecture specifics.
+  EOT
+  type        = string
+}

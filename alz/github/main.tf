@@ -60,7 +60,7 @@ module "azure" {
   container_registry_dockerfile_name                        = var.runner_container_image_dockerfile
   container_registry_dockerfile_repository_folder_url       = local.runner_container_instance_dockerfile_url
   custom_role_definitions                                   = var.iac_type == "terraform" ? local.custom_role_definitions_terraform : (var.iac_type == "bicep" ? local.custom_role_definitions_bicep : local.custom_role_definitions_bicep_classic)
-  role_assignments                                          = var.iac_type == "terraform" ? var.role_assignments_terraform : var.role_assignments_bicep
+  role_assignments                                          = var.iac_type == "terraform" ? var.role_assignments_terraform : (var.iac_type == "bicep" ? var.role_assignments_bicep : var.role_assignments_bicep_classic)
   storage_account_blob_soft_delete_enabled                  = var.storage_account_blob_soft_delete_enabled
   storage_account_blob_soft_delete_retention_days           = var.storage_account_blob_soft_delete_retention_days
   storage_account_blob_versioning_enabled                   = var.storage_account_blob_versioning_enabled
@@ -68,6 +68,9 @@ module "azure" {
   storage_account_container_soft_delete_retention_days      = var.storage_account_container_soft_delete_retention_days
   tenant_role_assignment_enabled                            = var.iac_type == "bicep" && var.bicep_tenant_role_assignment_enabled
   tenant_role_assignment_role_definition_name               = var.bicep_tenant_role_assignment_role_definition_name
+  intermediate_root_management_group_creation_enabled       = var.iac_type != "bicep-classic"
+  intermediate_root_management_group_id                     = module.file_manipulation.intermediate_root_management_group_id
+  intermediate_root_management_group_display_name           = module.file_manipulation.intermediate_root_management_group_display_name
 }
 
 module "github" {
@@ -122,4 +125,5 @@ module "file_manipulation" {
   pipeline_files_directory_path          = local.pipeline_files_directory_path
   pipeline_template_files_directory_path = local.pipeline_template_files_directory_path
   concurrency_value                      = local.resource_names.storage_container
+  terraform_architecture_file_path       = var.terraform_architecture_file_path
 }

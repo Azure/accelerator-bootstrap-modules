@@ -33,7 +33,7 @@ module "azure" {
   use_self_hosted_agents                               = false
   use_private_networking                               = false
   custom_role_definitions                              = var.iac_type == "terraform" ? local.custom_role_definitions_terraform : (var.iac_type == "bicep" ? local.custom_role_definitions_bicep : local.custom_role_definitions_bicep_classic)
-  role_assignments                                     = var.iac_type == "terraform" ? var.role_assignments_terraform : var.role_assignments_bicep
+  role_assignments                                     = var.iac_type == "terraform" ? var.role_assignments_terraform : (var.iac_type == "bicep" ? var.role_assignments_bicep : var.role_assignments_bicep_classic)
   additional_role_assignment_principal_ids             = var.grant_permissions_to_current_user ? { current_user = data.azurerm_client_config.current.object_id } : {}
   storage_account_blob_soft_delete_enabled             = var.storage_account_blob_soft_delete_enabled
   storage_account_blob_soft_delete_retention_days      = var.storage_account_blob_soft_delete_retention_days
@@ -42,6 +42,9 @@ module "azure" {
   storage_account_container_soft_delete_retention_days = var.storage_account_container_soft_delete_retention_days
   tenant_role_assignment_enabled                       = var.iac_type == "bicep" && var.bicep_tenant_role_assignment_enabled
   tenant_role_assignment_role_definition_name          = var.bicep_tenant_role_assignment_role_definition_name
+  intermediate_root_management_group_creation_enabled  = var.iac_type != "bicep-classic"
+  intermediate_root_management_group_id                = module.file_manipulation.intermediate_root_management_group_id
+  intermediate_root_management_group_display_name      = module.file_manipulation.intermediate_root_management_group_display_name
 }
 
 module "file_manipulation" {
@@ -59,6 +62,7 @@ module "file_manipulation" {
   pipeline_target_folder_name      = local.script_target_folder_name
   bicep_parameters_file_path       = var.bicep_parameters_file_path
   pipeline_files_directory_path    = local.script_source_folder_path
+  terraform_architecture_file_path = var.terraform_architecture_file_path
 }
 
 resource "local_file" "alz" {
