@@ -297,6 +297,16 @@ jobs:
           $Inputs["child_management_group_display_name"] = "E2E Test"
           $Inputs["resource_group_location"] = $location
 
+          # Terraform
+          if($infrastructureAsCode -eq "terraform") {
+            $Inputs["resource_name_suffix"] = $uniqueId
+            $architectureFilePath = "${{ env.STARTER_MODULE_FOLDER }}/lib/architecture_definitions/alz_custom.alz_architecture_definition.yaml"
+            $architectureFile = Get-Content -Path $architectureFilePath -Raw
+            $architectureFile = $architectureFile.Replace("id: test", "id: test-$uniqueId")
+            $architectureFile = $architectureFile.Replace("display_name: Test", "display_name: Test $uniqueId")
+            $architectureFile | Out-File -FilePath $architectureFilePath -Encoding utf8 -Force
+          }
+
           # Bicep Classic
           if($infrastructureAsCode -eq "bicep-classic") {
             $Inputs["Prefix"] = $uniqueId
