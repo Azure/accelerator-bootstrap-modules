@@ -45,7 +45,7 @@ locals {
 
   management_group_role_assignments = {
     for key, value in local.combined_role_assignments : key => {
-      scope                = var.intermediate_root_management_group_creation_enabled ? azapi_resource.intermediate_root_management_group.id : data.azurerm_management_group.alz.id
+      scope                = var.intermediate_root_management_group_creation_enabled ? azapi_resource.intermediate_root_management_group[0].id : data.azurerm_management_group.alz.id
       role_definition_id   = value.built_in_role_definition_name == null ? azurerm_role_definition.alz[value.custom_role_definition_key].role_definition_resource_id : null
       role_definition_name = value.built_in_role_definition_name
       principal_id         = value.principal_id
