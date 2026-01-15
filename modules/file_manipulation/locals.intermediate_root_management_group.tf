@@ -1,7 +1,7 @@
 locals {
   is_terraform_iac_type                        = var.iac_type == "terraform"
   terraform_architecture                       = local.is_terraform_iac_type ? endswith(var.terraform_architecture_file_path, ".yaml") || endswith(var.terraform_architecture_file_path, ".json") ? yamldecode(file("${var.module_folder_path}/${var.terraform_architecture_file_path}")) : jsondecode(file("${var.module_folder_path}/${var.terraform_architecture_file_path}")) : null
-  terraform_intermediate_root_management_group = local.is_terraform_iac_type ? ([ for management_group in local.terraform_architecture.management_groups : management_group if management_group.parent_id == null ])[0] : null
+  terraform_intermediate_root_management_group = local.is_terraform_iac_type ? ([for management_group in local.terraform_architecture.management_groups : management_group if management_group.parent_id == null])[0] : null
   intermediate_root_management_group = local.is_terraform_iac_type ? {
     id           = local.terraform_intermediate_root_management_group.id
     display_name = local.terraform_intermediate_root_management_group.display_name

@@ -45,7 +45,7 @@ module "azure" {
   intermediate_root_management_group_creation_enabled  = var.iac_type != "bicep-classic"
   intermediate_root_management_group_id                = module.file_manipulation.intermediate_root_management_group_id
   intermediate_root_management_group_display_name      = module.file_manipulation.intermediate_root_management_group_display_name
-  move_subscriptions_to_target_management_group             = var.iac_type != "bicep-classic"
+  move_subscriptions_to_target_management_group        = var.iac_type != "bicep-classic"
 }
 
 module "file_manipulation" {

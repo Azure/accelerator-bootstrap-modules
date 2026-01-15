@@ -592,7 +592,7 @@ variable "role_assignments_bicep" {
   }))
   default = {
     plan = {
-      built_in_role_definition_name         = "Reader"
+      built_in_role_definition_name      = "Reader"
       user_assigned_managed_identity_key = "plan"
       scope                              = "management_group"
     }
@@ -602,7 +602,7 @@ variable "role_assignments_bicep" {
       scope                              = "management_group"
     }
     apply_management_group = {
-      built_in_role_definition_name         = "Owner"
+      built_in_role_definition_name      = "Owner"
       user_assigned_managed_identity_key = "apply"
       scope                              = "management_group"
     }
