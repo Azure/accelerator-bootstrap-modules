@@ -302,8 +302,11 @@ jobs:
             $Inputs["resource_name_suffix"] = $uniqueId
             $architectureFilePath = "${{ env.STARTER_MODULE_FOLDER }}/templates/$starterModule/lib/architecture_definitions/alz_custom.alz_architecture_definition.yaml"
             $architectureFile = Get-Content -Path $architectureFilePath -Raw
-            $architectureFile = $architectureFile.Replace("id: test", "id: test-$uniqueId")
+            $architectureFile = $architectureFile.Replace("- id: child-test", "- id: child-test-$uniqueId")
+            $architectureFile = $architectureFile.Replace("display_name: Child Test", "display_name: Child Test $uniqueId")
+            $architectureFile = $architectureFile.Replace("- id: test", "- id: test-$uniqueId")
             $architectureFile = $architectureFile.Replace("display_name: Test", "display_name: Test $uniqueId")
+            $architectureFile = $architectureFile.Replace("parent_id: test", "prefix: $uniqueId")
             $architectureFile | Out-File -FilePath $architectureFilePath -Encoding utf8 -Force
           }
 
