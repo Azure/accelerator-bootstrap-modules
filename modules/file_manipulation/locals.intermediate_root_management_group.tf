@@ -17,7 +17,7 @@ locals {
 
 # Transform the intermediate root management group in the terraform architecture file to ensure it is marked as existing
 locals {
-  terraform_management_groups_non_root = local.is_terraform_iac_type ? [ for management_group in local.terraform_architecture.management_groups : management_group if management_group.parent_id != null ] : null
+  terraform_management_groups_non_root = local.is_terraform_iac_type ? [for management_group in local.terraform_architecture.management_groups : management_group if management_group.parent_id != null] : null
   terraform_intermediate_root_management_group_updated = local.is_terraform_iac_type ? merge(
     local.terraform_intermediate_root_management_group,
     {
