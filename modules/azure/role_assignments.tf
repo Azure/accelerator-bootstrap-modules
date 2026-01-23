@@ -32,7 +32,7 @@ locals {
       for subscription_id, subscription in data.azurerm_subscription.alz : {
         key                  = "${value.user_assigned_managed_identity_key}-${value.custom_role_definition_key}-${subscription_id}"
         scope                = subscription.id
-        role_definition_id   = value.built_in_role_definition_name ? "${subscription.id}${azurerm_role_definition.alz[value.custom_role_definition_key].role_definition_resource_id}" : null
+        role_definition_id   = value.built_in_role_definition_name == null ? "${subscription.id}${azurerm_role_definition.alz[value.custom_role_definition_key].role_definition_resource_id}" : null
         role_definition_name = value.built_in_role_definition_name
         principal_id         = value.principal_id
       }
