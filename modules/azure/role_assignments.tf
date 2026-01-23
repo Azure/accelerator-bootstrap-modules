@@ -38,9 +38,10 @@ locals {
       }
     ] if value.scope == "subscription"
     ]) : assignment.key => {
-    scope              = assignment.scope
-    role_definition_id = assignment.role_definition_id
-    principal_id       = assignment.principal_id
+    scope                = assignment.scope
+    role_definition_id   = assignment.role_definition_id
+    role_definition_name = assignment.role_definition_name
+    principal_id         = assignment.principal_id
   } }
 
   management_group_role_assignments = {
