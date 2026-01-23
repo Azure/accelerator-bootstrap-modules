@@ -308,6 +308,8 @@ jobs:
             $architectureFile = $architectureFile.Replace("display_name: Test", "display_name: Test $uniqueId")
             $architectureFile = $architectureFile.Replace("parent_id: test", "prefix: $uniqueId")
             $architectureFile | Out-File -FilePath $architectureFilePath -Encoding utf8 -Force
+            Write-Host "Modified Architecture File Content:"
+            Write-Host $architectureFile
           }
 
           # Bicep Classic
