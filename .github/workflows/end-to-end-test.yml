@@ -332,6 +332,9 @@ jobs:
           $json = ConvertTo-Json $Inputs -Depth 100
           $json | Out-File -FilePath inputs.json -Encoding utf8 -Force
 
+          Write-Host "Inputs File Content:"
+          Write-Host $json
+
         shell: pwsh
 
       - name: Run ALZ PowerShell
