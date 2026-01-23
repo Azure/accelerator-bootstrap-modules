@@ -17,16 +17,21 @@ runs:
         inlineScript: |
           $intRootMgId = $env:MANAGEMENT_GROUP_ID_PREFIX + $env:INTERMEDIATE_ROOT_MANAGEMENT_GROUP_ID + $env:MANAGEMENT_GROUP_ID_POSTFIX
 
-          $managementGroups = Get-AzManagementGroup
-          $intRootMg = $managementGroups | Where-Object { $_.Name -eq $intRootMgId }
+          $managementGroup = Get-AzManagementGroup -GroupName $intRootMgId -Expand
 
           $firstDeployment = $true
 
-          if($intRootMg -eq $null) {
-            Write-Warning "Cannot find the $intRootMgId Management Group, so assuming this is the first deployment. We must skip checking some deployments since their dependent resources do not exist yet."
+          if($managementGroup -eq $null) {
+            Write-Warning "Cannot find the $intRootMgId Management Group, so assuming this is the first deployment."
           } else {
-            Write-Host "Found the $intRootMgId Management Group, so assuming this is not the first deployment."
-            $firstDeployment = $false
+            Write-Host "Found the $intRootMgId Management Group."
+            $children = $managementGroup.Children | Where-Object { $_.Type -eq "Microsoft.Management/managementGroups" }
+            if($children.Count -gt 0) {
+              Write-Host "The $intRootMgId Management Group has child management groups, so this is NOT the first deployment."
+              $firstDeployment = $false
+            } else {
+              Write-Host "The $intRootMgId Management Group has NO child management groups, so assuming this is the first deployment."
+            }
           }
           echo "firstDeployment=$firstDeployment" >> $env:GITHUB_ENV
       env:
