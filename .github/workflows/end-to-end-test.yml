@@ -306,7 +306,7 @@ jobs:
             $architectureFile = $architectureFile.Replace("display_name: Child Test", "display_name: Child Test $uniqueId")
             $architectureFile = $architectureFile.Replace("- id: test", "- id: test-$uniqueId")
             $architectureFile = $architectureFile.Replace("display_name: Test", "display_name: Test $uniqueId")
-            $architectureFile = $architectureFile.Replace("parent_id: test", "prefix: $uniqueId")
+            $architectureFile = $architectureFile.Replace("parent_id: test", "parent_id: test-$uniqueId")
             $architectureFile | Out-File -FilePath $architectureFilePath -Encoding utf8 -Force
             Write-Host "Modified Architecture File Content:"
             Write-Host $architectureFile
