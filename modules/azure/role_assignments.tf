@@ -10,8 +10,8 @@ locals {
   additional_role_assignments = { for assignment in flatten([
     for key, value in var.role_assignments : [
       for princial_key, principal_value in var.additional_role_assignment_principal_ids : {
-        composite_key                      = "${value.scope}-${value.custom_role_definition_key}-${princial_key}"
-        user_assigned_managed_identity_key = "${value.scope}-${value.custom_role_definition_key}-${princial_key}"
+        composite_key                      = "${value.scope}-${coalesce(value.custom_role_definition_key, value.built_in_role_definition_name)}-${princial_key}"
+        user_assigned_managed_identity_key = "${value.scope}-${coalesce(value.custom_role_definition_key, value.built_in_role_definition_name)}-${princial_key}"
         built_in_role_definition_name      = value.built_in_role_definition_name
         custom_role_definition_key         = value.custom_role_definition_key
         scope                              = value.scope
@@ -30,7 +30,7 @@ locals {
   subscription_role_assignments = { for assignment in flatten([
     for key, value in local.combined_role_assignments : [
       for subscription_id, subscription in data.azurerm_subscription.alz : {
-        key                  = "${value.user_assigned_managed_identity_key}-${value.custom_role_definition_key}-${subscription_id}"
+        key                  = "${value.user_assigned_managed_identity_key}-${coalesce(value.custom_role_definition_key, value.built_in_role_definition_name)}-${subscription_id}"
         scope                = subscription.id
         role_definition_id   = value.built_in_role_definition_name == null ? "${subscription.id}${azurerm_role_definition.alz[value.custom_role_definition_key].role_definition_resource_id}" : null
         role_definition_name = value.built_in_role_definition_name
