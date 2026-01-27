@@ -132,6 +132,13 @@ jobs:
           terraform_wrapper: false
         if: ${{ matrix.terraformVersion != 'latest' }}
 
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.ARM_CLIENT_ID }}
+          tenant-id: ${{ vars.ARM_TENANT_ID }}
+          subscription-id: ${{ vars.ARM_SUBSCRIPTION_ID }}
+
       - name: Setup ALZ Module Inputs
         run: |
 
@@ -281,10 +288,10 @@ jobs:
           $rootParentManagementGroupId = $selfHostedAgents -eq "none" ? "${{ vars.NESTED_ROOT_PARENT_MANAGEMENT_GROUP_ID }}" : ""
           $Inputs["root_parent_management_group_id"] = $rootParentManagementGroupId
 
-          $subscriptionIDManagement = "accelerator-bootstrap-modules-$shortNamePrefix-management"
-          $subscriptionIDConnectivity = "accelerator-bootstrap-modules-$shortNamePrefix-connectivity"
-          $subscriptionIDIdentity = "accelerator-bootstrap-modules-$shortNamePrefix-identity"
-          $subscriptionIDSecurity = "accelerator-bootstrap-modules-$shortNamePrefix-security"
+          $subscriptionIDManagement = az account show --subscription "accelerator-bootstrap-modules-$shortNamePrefix-management" | ConvertFrom-Json | Select-Object -ExpandProperty id
+          $subscriptionIDConnectivity = az account show --subscription "accelerator-bootstrap-modules-$shortNamePrefix-connectivity" | ConvertFrom-Json | Select-Object -ExpandProperty id
+          $subscriptionIDIdentity = az account show --subscription "accelerator-bootstrap-modules-$shortNamePrefix-identity" | ConvertFrom-Json | Select-Object -ExpandProperty id
+          $subscriptionIDSecurity = az account show --subscription "accelerator-bootstrap-modules-$shortNamePrefix-security" | ConvertFrom-Json | Select-Object -ExpandProperty id
 
           $Inputs["subscription_ids"] = @{
             management   = $subscriptionIDManagement
