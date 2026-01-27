@@ -1,3 +1,4 @@
+[CmdletBinding()]
 param(
     [string]$billingScope,
     [string]$subscriptionNamePrefix = "accelerator-bootstrap-modules",
@@ -25,7 +26,7 @@ Write-Host "====================================" -ForegroundColor Cyan
 Write-Host ""
 
 $confirmation = Read-Host "Do you want to continue with this account? (y/n)"
-if ($confirmation -ne 'y' -and $confirmation -ne 'Y') {
+if ($confirmation -ine 'y') {
     Write-Host "Operation cancelled by user." -ForegroundColor Red
     exit 0
 }
@@ -112,7 +113,7 @@ if ($planOnly) {
 
 # Prompt for confirmation before creating
 $createConfirmation = Read-Host "Do you want to create these $($subscriptionsToCreate.Count) subscription(s)? (y/n)"
-if ($createConfirmation -ne 'y' -and $createConfirmation -ne 'Y') {
+if ($createConfirmation -ine 'y') {
     Write-Host "Operation cancelled by user." -ForegroundColor Red
     return
 }
@@ -132,6 +133,7 @@ $results = $subscriptionsToCreate | ForEach-Object -Parallel {
     $scope = $using:billingScope
     $retries = $using:maxRetries
     $state = $using:rateLimitState
+    $VerbosePreference = $using:VerbosePreference
     $retryCount = 0
     $success = $false
 
@@ -156,7 +158,8 @@ $results = $subscriptionsToCreate | ForEach-Object -Parallel {
                 $hours = [int]$Matches[1]
                 $minutes = [int]$Matches[2]
                 $seconds = [int]$Matches[3]
-                $waitSeconds = ($hours * 3600) + ($minutes * 60) + $seconds + 10  # Add 10 seconds buffer
+                $waitSeconds = ($hours * 3600) + ($minutes * 60) + $seconds + (1 * 60)  # Add 60 second buffer
+                Write-Verbose $errorMessage
 
                 # Set the shared rate limit wait time
                 $newWaitUntil = [DateTime]::Now.AddSeconds($waitSeconds)
