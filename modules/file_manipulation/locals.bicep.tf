@@ -49,6 +49,7 @@ locals {
     displayName                = replace(replace(script_file.displayName, "{{unique_postfix}}", var.resource_names.unique_postfix), "{{time_stamp}}", var.resource_names.time_stamp_formatted)
     templateFilePath           = script_file.templateFilePath
     templateParametersFilePath = script_file.templateParametersFilePath
+    managementGroupIdVariable  = try(format(local.id_variable_template, script_file.managementGroupId), local.id_variable_template_empty)
     subscriptionIdVariable     = try(format(local.id_variable_template, script_file.subscriptionId), local.id_variable_template_empty)
     resourceGroupNameVariable  = try(format(local.id_variable_template, script_file.resourceGroupName), local.id_variable_template_empty)
     deploymentType             = script_file.deploymentType
