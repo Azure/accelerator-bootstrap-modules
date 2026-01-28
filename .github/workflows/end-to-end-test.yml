@@ -396,7 +396,11 @@ jobs:
             -ManagementGroups "test-$uniqueId" `
             -Subscriptions $env:SUBSCRIPTION_ID_MANAGEMENT, $env:SUBSCRIPTION_ID_CONNECTIVITY, $env:SUBSCRIPTION_ID_IDENTITY, $env:SUBSCRIPTION_ID_SECURITY `
             -AdditionalSubscriptions $env:SUBSCRIPTION_ID_BOOTSTRAP `
-            -DeleteTargetManagementGroups
+            -DeleteTargetManagementGroups `
+            -AllowNoManagementGroupMatch `
+            -BypassConfirmation `
+            -BypassConfirmationTimeoutSeconds 0
+
 
         shell: pwsh
 
@@ -564,7 +568,10 @@ jobs:
             -ManagementGroups "test-$uniqueId" `
             -Subscriptions $env:SUBSCRIPTION_ID_MANAGEMENT, $env:SUBSCRIPTION_ID_CONNECTIVITY, $env:SUBSCRIPTION_ID_IDENTITY, $env:SUBSCRIPTION_ID_SECURITY `
             -AdditionalSubscriptions $env:SUBSCRIPTION_ID_BOOTSTRAP `
-            -DeleteTargetManagementGroups
+            -DeleteTargetManagementGroups `
+            -AllowNoManagementGroupMatch `
+            -BypassConfirmation `
+            -BypassConfirmationTimeoutSeconds 0
 
         shell: pwsh
         if: always()
