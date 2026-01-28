@@ -324,7 +324,8 @@ jobs:
           $Inputs["apply_approvers"] = @()
 
           # Target a nested parent MG for public to test that scenario
-          $rootParentManagementGroupId = $selfHostedAgents -eq "none" ? "${{ vars.NESTED_ROOT_PARENT_MANAGEMENT_GROUP_ID }}" : ""
+          $rootParentManagementGroupId = $selfHostedAgents -eq "none" ? "${{ vars.NESTED_ROOT_PARENT_MANAGEMENT_GROUP_ID }}" : "${{ vars.ARM_TENANT_ID}}"
+          "ROOT_PARENT_MANAGEMENT_GROUP_ID=$rootParentManagementGroupId" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
           $Inputs["root_parent_management_group_id"] = $rootParentManagementGroupId
 
           # Subscription IDs
@@ -401,6 +402,8 @@ jobs:
             -ManagementGroups "test-$uniqueId" `
             -Subscriptions $env:SUBSCRIPTION_ID_MANAGEMENT, $env:SUBSCRIPTION_ID_CONNECTIVITY, $env:SUBSCRIPTION_ID_IDENTITY, $env:SUBSCRIPTION_ID_SECURITY `
             -AdditionalSubscriptions $env:SUBSCRIPTION_ID_BOOTSTRAP `
+            -SubscriptionsTargetManagementGroup $env:ROOT_PARENT_MANAGEMENT_GROUP_ID `
+            -ForceSubscriptionPlacement `
             -DeleteTargetManagementGroups `
             -AllowNoManagementGroupMatch `
             -BypassConfirmation `
@@ -573,6 +576,8 @@ jobs:
             -ManagementGroups "test-$uniqueId" `
             -Subscriptions $env:SUBSCRIPTION_ID_MANAGEMENT, $env:SUBSCRIPTION_ID_CONNECTIVITY, $env:SUBSCRIPTION_ID_IDENTITY, $env:SUBSCRIPTION_ID_SECURITY `
             -AdditionalSubscriptions $env:SUBSCRIPTION_ID_BOOTSTRAP `
+            -SubscriptionsTargetManagementGroup $env:ROOT_PARENT_MANAGEMENT_GROUP_ID `
+            -ForceSubscriptionPlacement `
             -DeleteTargetManagementGroups `
             -AllowNoManagementGroupMatch `
             -BypassConfirmation `
