@@ -227,16 +227,16 @@ if ($resourceProviders.Count -gt 0 -and -not $planOnly) {
                     Write-Host "Registering $provider for $subscriptionName ($subscriptionId)..." -ForegroundColor Yellow
                     az provider register --namespace $provider --subscription $subscriptionId --output none --wait
                     if ($LASTEXITCODE -eq 0) {
-                        Write-Host "  Registration initiated: $provider for $subscriptionName" -ForegroundColor Green
+                        Write-Host "Registration succeeded: $provider for $subscriptionName" -ForegroundColor Green
                     } else {
-                        Write-Host "  Failed to register: $provider for $subscriptionName" -ForegroundColor Red
+                        Write-Host "Failed to register: $provider for $subscriptionName" -ForegroundColor Red
                     }
                 } else {
-                    Write-Host "  Already registered: $provider for $subscriptionName" -ForegroundColor Gray
+                    Write-Host "Already registered: $provider for $subscriptionName" -ForegroundColor Gray
                 }
             }
         } else {
-            Write-Host "  Could not get subscription ID for alias: $subscriptionName" -ForegroundColor Red
+            Write-Host "Could not get subscription ID for alias: $subscriptionName" -ForegroundColor Red
         }
     } -ThrottleLimit $resourceProviderThrottleLimit
 
