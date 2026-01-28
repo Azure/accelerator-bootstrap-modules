@@ -3,8 +3,10 @@ param(
     [string]$billingScope,
     [string]$subscriptionNamePrefix = "accelerator-bootstrap-modules",
     [string[]]$subscriptionTypes = @("connectivity", "management", "identity", "security", "bootstrap"),
+    [string[]]$resourceProviders = @("Microsoft.Security"),
     [int]$maxRetries = 5,
     [int]$throttleLimit = 2,
+    [int]$resourceProviderThrottleLimit = 10,
     [switch]$planOnly
 )
 
@@ -95,101 +97,149 @@ if ($existingSubscriptions.Count -gt 0) {
 Write-Host ""
 if ($subscriptionsToCreate.Count -eq 0) {
     Write-Host "No new subscriptions to create. All aliases already exist." -ForegroundColor Green
-    return
 }
 
-Write-Host "=== Subscriptions to Create ===" -ForegroundColor Cyan
-foreach ($sub in $subscriptionsToCreate) {
-    Write-Host "  - $sub" -ForegroundColor Yellow
+if ($subscriptionsToCreate.Count -gt 0) {
+    Write-Host "=== Subscriptions to Create ===" -ForegroundColor Cyan
+    foreach ($sub in $subscriptionsToCreate) {
+        Write-Host "  - $sub" -ForegroundColor Yellow
+    }
+    Write-Host ""
+    Write-Host "Total: $($subscriptionsToCreate.Count) subscription(s) to create" -ForegroundColor Cyan
+    Write-Host ""
 }
-Write-Host ""
-Write-Host "Total: $($subscriptionsToCreate.Count) subscription(s) to create" -ForegroundColor Cyan
-Write-Host ""
 
 if ($planOnly) {
     Write-Host "Plan only mode - no subscriptions will be created." -ForegroundColor Magenta
     return
 }
 
-# Prompt for confirmation before creating
-$createConfirmation = Read-Host "Do you want to create these $($subscriptionsToCreate.Count) subscription(s)? (y/n)"
-if ($createConfirmation -ine 'y') {
-    Write-Host "Operation cancelled by user." -ForegroundColor Red
-    return
-}
+if ($subscriptionsToCreate.Count -gt 0) {
+    # Prompt for confirmation before creating
+    $createConfirmation = Read-Host "Do you want to create these $($subscriptionsToCreate.Count) subscription(s)? (y/n)"
+    if ($createConfirmation -ine 'y') {
+        Write-Host "Operation cancelled by user." -ForegroundColor Red
+        return
+    }
 
-Write-Host ""
+    Write-Host ""
 
-# Create a thread-safe hashtable to track rate limiting across parallel tasks
-$rateLimitState = [hashtable]::Synchronized(@{
-    WaitUntil = [DateTime]::MinValue
-})
+    # Create a thread-safe hashtable to track rate limiting across parallel tasks
+    $rateLimitState = [hashtable]::Synchronized(@{
+        WaitUntil = [DateTime]::MinValue
+    })
 
-# Create the subscriptions in parallel with retry logic
-Write-Host "Creating subscriptions (throttle: $throttleLimit)..." -ForegroundColor Cyan
+    # Create the subscriptions in parallel with retry logic
+    Write-Host "Creating subscriptions (throttle: $throttleLimit)..." -ForegroundColor Cyan
 
-$results = $subscriptionsToCreate | ForEach-Object -Parallel {
-    $subscriptionName = $_
-    $scope = $using:billingScope
-    $retries = $using:maxRetries
-    $state = $using:rateLimitState
-    $VerbosePreference = $using:VerbosePreference
-    $retryCount = 0
-    $success = $false
+    $results = $subscriptionsToCreate | ForEach-Object -Parallel {
+        $subscriptionName = $_
+        $scope = $using:billingScope
+        $retries = $using:maxRetries
+        $state = $using:rateLimitState
+        $VerbosePreference = $using:VerbosePreference
+        $retryCount = 0
+        $success = $false
 
-    while (-not $success -and $retryCount -lt $retries) {
-        # Check if we're in a rate limit wait period
-        $waitUntil = $state.WaitUntil
-        if ($waitUntil -gt [DateTime]::Now) {
-            $waitSeconds = [math]::Ceiling(($waitUntil - [DateTime]::Now).TotalSeconds)
-            Write-Host "Rate limit active. $subscriptionName waiting $waitSeconds seconds..." -ForegroundColor Yellow
-            Start-Sleep -Seconds $waitSeconds
-        }
-
-        Write-Host "Creating subscription: $subscriptionName (Attempt $($retryCount + 1) of $retries)" -ForegroundColor Yellow
-        $result = az account alias create --name "$subscriptionName" --billing-scope "$scope" --display-name "$subscriptionName" --workload "Production" 2>&1
-
-        if ($LASTEXITCODE -eq 0) {
-            $success = $true
-            Write-Host "Successfully created: $subscriptionName" -ForegroundColor Green
-        } else {
-            $errorMessage = $result | Out-String
-            if ($errorMessage -match "TooManyRequests.*Retry in (\d{2}):(\d{2}):(\d{2})") {
-                $hours = [int]$Matches[1]
-                $minutes = [int]$Matches[2]
-                $seconds = [int]$Matches[3]
-                $waitSeconds = ($hours * 3600) + ($minutes * 60) + $seconds + (1 * 60)  # Add 60 second buffer
-                Write-Verbose $errorMessage
-
-                # Set the shared rate limit wait time
-                $newWaitUntil = [DateTime]::Now.AddSeconds($waitSeconds)
-                if ($newWaitUntil -gt $state.WaitUntil) {
-                    $state.WaitUntil = $newWaitUntil
-                    Write-Host "Rate limit hit! All tasks will wait until $($newWaitUntil.ToString('HH:mm:ss'))" -ForegroundColor Red
-                }
-
-                Write-Host "Rate limited for $subscriptionName. Waiting $waitSeconds seconds before retry..." -ForegroundColor Yellow
+        while (-not $success -and $retryCount -lt $retries) {
+            # Check if we're in a rate limit wait period
+            $waitUntil = $state.WaitUntil
+            if ($waitUntil -gt [DateTime]::Now) {
+                $waitSeconds = [math]::Ceiling(($waitUntil - [DateTime]::Now).TotalSeconds)
+                Write-Host "Rate limit active. $subscriptionName waiting $waitSeconds seconds..." -ForegroundColor Yellow
                 Start-Sleep -Seconds $waitSeconds
-                $retryCount++
+            }
+
+            Write-Host "Creating subscription: $subscriptionName (Attempt $($retryCount + 1) of $retries)" -ForegroundColor Yellow
+            $result = az account alias create --name "$subscriptionName" --billing-scope "$scope" --display-name "$subscriptionName" --workload "Production" 2>&1
+
+            if ($LASTEXITCODE -eq 0) {
+                $success = $true
+                Write-Host "Successfully created: $subscriptionName" -ForegroundColor Green
             } else {
-                Write-Host "Failed to create $subscriptionName : $errorMessage" -ForegroundColor Red
-                break
+                $errorMessage = $result | Out-String
+                if ($errorMessage -match "TooManyRequests.*Retry in (\d{2}):(\d{2}):(\d{2})") {
+                    $hours = [int]$Matches[1]
+                    $minutes = [int]$Matches[2]
+                    $seconds = [int]$Matches[3]
+                    $waitSeconds = ($hours * 3600) + ($minutes * 60) + $seconds + (1 * 60)  # Add 60 second buffer
+                    Write-Verbose $errorMessage
+
+                    # Set the shared rate limit wait time
+                    $newWaitUntil = [DateTime]::Now.AddSeconds($waitSeconds)
+                    if ($newWaitUntil -gt $state.WaitUntil) {
+                        $state.WaitUntil = $newWaitUntil
+                        Write-Host "Rate limit hit! All tasks will wait until $($newWaitUntil.ToString('HH:mm:ss'))" -ForegroundColor Red
+                    }
+
+                    Write-Host "Rate limited for $subscriptionName. Waiting $waitSeconds seconds before retry..." -ForegroundColor Yellow
+                    Start-Sleep -Seconds $waitSeconds
+                    $retryCount++
+                } else {
+                    Write-Host "Failed to create $subscriptionName : $errorMessage" -ForegroundColor Red
+                    break
+                }
             }
         }
+
+        [PSCustomObject]@{
+            Name = $subscriptionName
+            Success = $success
+        }
+    } -ThrottleLimit $throttleLimit
+
+    $successCount = ($results | Where-Object { $_.Success }).Count
+    $failCount = ($results | Where-Object { -not $_.Success }).Count
+
+    Write-Host ""
+    Write-Host "Subscription creation complete." -ForegroundColor Green
+    Write-Host "  Successful: $successCount" -ForegroundColor Green
+    if ($failCount -gt 0) {
+        Write-Host "  Failed: $failCount" -ForegroundColor Red
     }
+}
 
-    [PSCustomObject]@{
-        Name = $subscriptionName
-        Success = $success
-    }
-} -ThrottleLimit $throttleLimit
+# Register resource providers for all subscriptions
+if ($resourceProviders.Count -gt 0 -and -not $planOnly) {
+    Write-Host ""
+    Write-Host "=== Registering Resource Providers ==="  -ForegroundColor Cyan
+    Write-Host "Providers: $($resourceProviders -join ', ')" -ForegroundColor Yellow
 
-$successCount = ($results | Where-Object { $_.Success }).Count
-$failCount = ($results | Where-Object { -not $_.Success }).Count
+    $allSubscriptionNames = $subscriptionsToCreate + $existingSubscriptions
 
-Write-Host ""
-Write-Host "Subscription creation complete." -ForegroundColor Green
-Write-Host "  Successful: $successCount" -ForegroundColor Green
-if ($failCount -gt 0) {
-    Write-Host "  Failed: $failCount" -ForegroundColor Red
+    # Get subscription IDs for all aliases and register providers
+    $allSubscriptionNames | ForEach-Object -Parallel {
+        $subscriptionName = $_
+        $providers = $using:resourceProviders
+        $VerbosePreference = $using:VerbosePreference
+
+        # Get the subscription ID from the alias
+        $aliasInfo = az account alias show --name "$subscriptionName" --output json 2>$null | ConvertFrom-Json
+
+        if ($aliasInfo -and $aliasInfo.properties.subscriptionId) {
+            $subscriptionId = $aliasInfo.properties.subscriptionId
+
+            foreach ($provider in $providers) {
+                # Check if provider is already registered
+                $providerState = az provider show --namespace $provider --subscription $subscriptionId --query "registrationState" --output tsv 2>$null
+
+                if ($providerState -ine "Registered") {
+                    Write-Host "Registering $provider for $subscriptionName ($subscriptionId)..." -ForegroundColor Yellow
+                    az provider register --namespace $provider --subscription $subscriptionId --output none --wait
+                    if ($LASTEXITCODE -eq 0) {
+                        Write-Host "  Registration initiated: $provider for $subscriptionName" -ForegroundColor Green
+                    } else {
+                        Write-Host "  Failed to register: $provider for $subscriptionName" -ForegroundColor Red
+                    }
+                } else {
+                    Write-Host "  Already registered: $provider for $subscriptionName" -ForegroundColor Gray
+                }
+            }
+        } else {
+            Write-Host "  Could not get subscription ID for alias: $subscriptionName" -ForegroundColor Red
+        }
+    } -ThrottleLimit $resourceProviderThrottleLimit
+
+    Write-Host ""
+    Write-Host "Resource provider registration complete." -ForegroundColor Green
 }
