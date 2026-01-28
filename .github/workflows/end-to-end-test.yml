@@ -390,6 +390,8 @@ jobs:
 
           $uniqueId = $env:UNIQUE_ID
 
+          Invoke-Build -File ${{ env.POWERSHELL_MODULE_FOLDER }}/src/ALZ.build.ps1 Install | Out-String | Write-Verbose
+
           Remove-PlatformLandingZone `
             -ManagementGroups "test-$uniqueId" `
             -Subscriptions $env:SUBSCRIPTION_ID_MANAGEMENT, $env:SUBSCRIPTION_ID_CONNECTIVITY, $env:SUBSCRIPTION_ID_IDENTITY, $env:SUBSCRIPTION_ID_SECURITY `
@@ -400,6 +402,8 @@ jobs:
 
       - name: Run ALZ PowerShell
         run: |
+
+          Invoke-Build -File ${{ env.POWERSHELL_MODULE_FOLDER }}/src/ALZ.build.ps1 Install | Out-String | Write-Verbose
 
           # Get Inputs
           $versionControlSystem = "${{ matrix.versionControlSystem }}"
@@ -530,6 +534,8 @@ jobs:
       - name: Run Terraform Destroy to Clean Up
         if: ${{ always() && ((inputs.skip_destroy != '' && inputs.skip_destroy || 'no') == 'no') }}
         run: |
+          Invoke-Build -File ${{ env.POWERSHELL_MODULE_FOLDER }}/src/ALZ.build.ps1 Install | Out-String | Write-Verbose
+
           # Get Inputs
           $versionControlSystem = "${{ matrix.versionControlSystem }}"
 
@@ -551,6 +557,8 @@ jobs:
           }
 
           $uniqueId = $env:UNIQUE_ID
+
+          Invoke-Build -File ${{ env.POWERSHELL_MODULE_FOLDER }}/src/ALZ.build.ps1 Install | Out-String | Write-Verbose
 
           Remove-PlatformLandingZone `
             -ManagementGroups "test-$uniqueId" `
