@@ -139,6 +139,32 @@ jobs:
           tenant-id: ${{ vars.ARM_TENANT_ID }}
           subscription-id: ${{ vars.ARM_SUBSCRIPTION_ID }}
 
+      - name: Get Subscriptions
+        run: |
+          $subscriptionIDBootstrap = az account show --subscription "accelerator-bootstrap-modules-$shortNamePrefix-bootstrap" | ConvertFrom-Json | Select-Object -ExpandProperty id
+          $subscriptionIDManagement = az account show --subscription "accelerator-bootstrap-modules-$shortNamePrefix-management" | ConvertFrom-Json | Select-Object -ExpandProperty id
+          $subscriptionIDConnectivity = az account show --subscription "accelerator-bootstrap-modules-$shortNamePrefix-connectivity" | ConvertFrom-Json | Select-Object -ExpandProperty id
+          $subscriptionIDIdentity = az account show --subscription "accelerator-bootstrap-modules-$shortNamePrefix-identity" | ConvertFrom-Json | Select-Object -ExpandProperty id
+          $subscriptionIDSecurity = az account show --subscription "accelerator-bootstrap-modules-$shortNamePrefix-security" | ConvertFrom-Json | Select-Object -ExpandProperty id
+
+          "ARM_SUBSCRIPTION_ID=$subscriptionIDBootstrap" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "SUBSCRIPTION_ID_BOOTSTRAP=$subscriptionIDBootstrap" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "SUBSCRIPTION_ID_MANAGEMENT=$subscriptionIDManagement" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "SUBSCRIPTION_ID_CONNECTIVITY=$subscriptionIDConnectivity" | Out-File -File
+          "SUBSCRIPTION_ID_IDENTITY=$subscriptionIDIdentity" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "SUBSCRIPTION_ID_SECURITY=$subscriptionIDSecurity" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+        shell: pwsh
+
+      - name: Install the Accelerator PowerShell Module
+        run: |
+          Write-Host "Installing the Accelerator PowerShell Module"
+          ${{ env.POWERSHELL_MODULE_FOLDER }}/actions_bootstrap_for_e2e_tests.ps1 | Out-String | Write-Verbose
+          Invoke-Build -File ${{ env.POWERSHELL_MODULE_FOLDER }}/src/ALZ.build.ps1 BuildAndInstallOnly | Out-String | Write-Verbose
+          Write-Host "Installed Accelerator Module"
+
+        shell: pwsh
+
       - name: Setup ALZ Module Inputs
         run: |
 
@@ -242,7 +268,6 @@ jobs:
           } else {
             $Inputs["starter_locations"] = @($location)
           }
-          $Inputs["bootstrap_subscription_id"] = ""
           $Inputs["service_name"] = "alz"
           $Inputs["environment_name"] = $uniqueId
           $Inputs["postfix_number"] = "1"
@@ -288,16 +313,14 @@ jobs:
           $rootParentManagementGroupId = $selfHostedAgents -eq "none" ? "${{ vars.NESTED_ROOT_PARENT_MANAGEMENT_GROUP_ID }}" : ""
           $Inputs["root_parent_management_group_id"] = $rootParentManagementGroupId
 
-          $subscriptionIDManagement = az account show --subscription "accelerator-bootstrap-modules-$shortNamePrefix-management" | ConvertFrom-Json | Select-Object -ExpandProperty id
-          $subscriptionIDConnectivity = az account show --subscription "accelerator-bootstrap-modules-$shortNamePrefix-connectivity" | ConvertFrom-Json | Select-Object -ExpandProperty id
-          $subscriptionIDIdentity = az account show --subscription "accelerator-bootstrap-modules-$shortNamePrefix-identity" | ConvertFrom-Json | Select-Object -ExpandProperty id
-          $subscriptionIDSecurity = az account show --subscription "accelerator-bootstrap-modules-$shortNamePrefix-security" | ConvertFrom-Json | Select-Object -ExpandProperty id
+          # Subscription IDs
+          $Inputs["bootstrap_subscription_id"] = $env:SUBSCRIPTION_ID_BOOTSTRAP
 
           $Inputs["subscription_ids"] = @{
-            management   = $subscriptionIDManagement
-            connectivity = $subscriptionIDConnectivity
-            identity     = $subscriptionIDIdentity
-            security     = $subscriptionIDSecurity
+            management   = $env:SUBSCRIPTION_ID_MANAGEMENT
+            connectivity = $env:SUBSCRIPTION_ID_CONNECTIVITY
+            identity     = $env:SUBSCRIPTION_ID_IDENTITY
+            security     = $env:SUBSCRIPTION_ID_SECURITY
           }
 
           # Test specific inputs
@@ -332,8 +355,8 @@ jobs:
           # Bicep
           if($infrastructureAsCode -eq "bicep") {
             $Inputs["network_type"] = "none"
-            $Inputs["management_group_int_root_id"] = "alz-$uniqueId"
-            $Inputs["management_group_int_root_name"] = "alz-$uniqueId"
+            $Inputs["management_group_int_root_id"] = "test-$uniqueId"
+            $Inputs["management_group_int_root_name"] = "Test $uniqueId"
             $Inputs["management_group_id_prefix"] = ""
             $Inputs["management_group_id_postfix"] = ""
             $Inputs["management_group_name_prefix"] = ""
@@ -348,18 +371,25 @@ jobs:
 
         shell: pwsh
 
+      - name: Clean Up Pre-Run
+        run: |
+
+          $uniqueId = $env:UNIQUE_ID
+
+          Remove-PlatformLandingZone `
+            -ManagementGroups "test-$uniqueId" `
+            -Subscriptions $env:SUBSCRIPTION_ID_MANAGEMENT, $env:SUBSCRIPTION_ID_CONNECTIVITY, $env:SUBSCRIPTION_ID_IDENTITY, $env:SUBSCRIPTION_ID_SECURITY `
+            -AdditionalSubscriptions $env:SUBSCRIPTION_ID_BOOTSTRAP `
+            -DeleteTargetManagementGroups
+
+        shell: pwsh
+
       - name: Run ALZ PowerShell
         run: |
 
           # Get Inputs
           $versionControlSystem = "${{ matrix.versionControlSystem }}"
           $infrastructureAsCode = "${{ matrix.infrastructureAsCode }}"
-
-          # Install the Module
-          Write-Host "Installing the Accelerator PowerShell Module"
-          ${{ env.POWERSHELL_MODULE_FOLDER }}/actions_bootstrap_for_e2e_tests.ps1 | Out-String | Write-Verbose
-          Invoke-Build -File ${{ env.POWERSHELL_MODULE_FOLDER }}/src/ALZ.build.ps1 BuildAndInstallOnly | Out-String | Write-Verbose
-          Write-Host "Installed Accelerator Module"
 
           # Run the Module in a retry loop
           $retryCount = 0
@@ -418,7 +448,6 @@ jobs:
         shell: pwsh
         env:
           ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
-          ARM_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }}
           ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
           ARM_USE_OIDC: true
 
@@ -487,14 +516,8 @@ jobs:
       - name: Run Terraform Destroy to Clean Up
         if: ${{ always() && ((inputs.skip_destroy != '' && inputs.skip_destroy || 'no') == 'no') }}
         run: |
-
           # Get Inputs
           $versionControlSystem = "${{ matrix.versionControlSystem }}"
-
-          Write-Host "Installing the Accelerator PowerShell Module"
-          ${{ env.POWERSHELL_MODULE_FOLDER }}/actions_bootstrap_for_e2e_tests.ps1 | Out-String | Write-Verbose
-          Invoke-Build -File ${{ env.POWERSHELL_MODULE_FOLDER }}/src/ALZ.build.ps1 BuildAndInstallOnly | Out-String | Write-Verbose
-          Write-Host "Installed Accelerator Module"
 
           # Run destroy
           ${{ env.BOOTSTRAP_MODULE_FOLDER }}/.github/tests/scripts/destroy.ps1 -versionControlSystem $versionControlSystem
@@ -502,6 +525,18 @@ jobs:
         shell: pwsh
         env:
           ARM_TENANT_ID: ${{ vars.ARM_TENANT_ID }}
-          ARM_SUBSCRIPTION_ID: ${{ vars.ARM_SUBSCRIPTION_ID }}
           ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
           ARM_USE_OIDC: true
+
+      - name: Clean Up Post-Run
+        run: |
+          $uniqueId = $env:UNIQUE_ID
+
+          Remove-PlatformLandingZone `
+            -ManagementGroups "test-$uniqueId" `
+            -Subscriptions $env:SUBSCRIPTION_ID_MANAGEMENT, $env:SUBSCRIPTION_ID_CONNECTIVITY, $env:SUBSCRIPTION_ID_IDENTITY, $env:SUBSCRIPTION_ID_SECURITY `
+            -AdditionalSubscriptions $env:SUBSCRIPTION_ID_BOOTSTRAP `
+            -DeleteTargetManagementGroups
+
+        shell: pwsh
+        if: always()

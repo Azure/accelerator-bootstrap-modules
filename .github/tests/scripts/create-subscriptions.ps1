@@ -2,7 +2,7 @@
 param(
     [string]$billingScope,
     [string]$subscriptionNamePrefix = "accelerator-bootstrap-modules",
-    [string[]]$subscriptionTypes = @("connectivity", "management", "identity", "security"),
+    [string[]]$subscriptionTypes = @("connectivity", "management", "identity", "security", "bootstrap"),
     [int]$maxRetries = 5,
     [int]$throttleLimit = 2,
     [switch]$planOnly
