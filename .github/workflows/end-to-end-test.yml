@@ -141,6 +141,15 @@ jobs:
 
       - name: Get Subscriptions
         run: |
+          $deployAzureResources = "${{ matrix.deployAzureResources }}"
+          if($deployAzureResources -eq "false") {
+            Write-Host "Skipping subscription retrieval as deployAzureResources is set to false."
+            "ARM_SUBSCRIPTION_ID=${{ vars.ARM_SUBSCRIPTION_ID }}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+            exit 0
+          }
+
+          $shortNamePrefix = "${{ matrix.ShortNamePrefix }}"
+
           $subscriptionIDBootstrap = az account show --subscription "accelerator-bootstrap-modules-$shortNamePrefix-bootstrap" | ConvertFrom-Json | Select-Object -ExpandProperty id
           $subscriptionIDManagement = az account show --subscription "accelerator-bootstrap-modules-$shortNamePrefix-management" | ConvertFrom-Json | Select-Object -ExpandProperty id
           $subscriptionIDConnectivity = az account show --subscription "accelerator-bootstrap-modules-$shortNamePrefix-connectivity" | ConvertFrom-Json | Select-Object -ExpandProperty id
@@ -373,6 +382,11 @@ jobs:
 
       - name: Clean Up Pre-Run
         run: |
+          $deployAzureResources = "${{ matrix.deployAzureResources }}"
+          if($deployAzureResources -eq "false") {
+            Write-Host "Skipping cleanup as deployAzureResources is set to false."
+            exit 0
+          }
 
           $uniqueId = $env:UNIQUE_ID
 
@@ -530,6 +544,12 @@ jobs:
 
       - name: Clean Up Post-Run
         run: |
+          $deployAzureResources = "${{ matrix.deployAzureResources }}"
+          if($deployAzureResources -eq "false") {
+            Write-Host "Skipping cleanup as deployAzureResources is set to false."
+            exit 0
+          }
+
           $uniqueId = $env:UNIQUE_ID
 
           Remove-PlatformLandingZone `
