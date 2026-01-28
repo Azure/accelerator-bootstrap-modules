@@ -395,11 +395,12 @@ jobs:
           }
 
           $uniqueId = $env:UNIQUE_ID
+          $shortNamePrefix = "${{ matrix.ShortNamePrefix }}"
 
           Invoke-Build -File ${{ env.POWERSHELL_MODULE_FOLDER }}/src/ALZ.build.ps1 Install | Out-String | Write-Verbose
 
           Remove-PlatformLandingZone `
-            -ManagementGroups "test-$uniqueId" `
+            -ManagementGroups "$shortNamePrefix" `
             -Subscriptions $env:SUBSCRIPTION_ID_MANAGEMENT, $env:SUBSCRIPTION_ID_CONNECTIVITY, $env:SUBSCRIPTION_ID_IDENTITY, $env:SUBSCRIPTION_ID_SECURITY `
             -AdditionalSubscriptions $env:SUBSCRIPTION_ID_BOOTSTRAP `
             -SubscriptionsTargetManagementGroup $env:ROOT_PARENT_MANAGEMENT_GROUP_ID `
