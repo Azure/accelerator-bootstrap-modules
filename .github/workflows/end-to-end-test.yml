@@ -561,6 +561,13 @@ jobs:
           ARM_CLIENT_ID: ${{ vars.ARM_CLIENT_ID }}
           ARM_USE_OIDC: true
 
+      - name: Azure login for a new access token
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.ARM_CLIENT_ID }}
+          tenant-id: ${{ vars.ARM_TENANT_ID }}
+          subscription-id: ${{ vars.ARM_SUBSCRIPTION_ID }}
+
       - name: Clean Up Post-Run
         run: |
           $deployAzureResources = "${{ matrix.deployAzureResources }}"
