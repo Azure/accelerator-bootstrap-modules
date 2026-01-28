@@ -34,7 +34,6 @@ module "azure" {
   use_private_networking                               = false
   custom_role_definitions                              = var.iac_type == "terraform" ? local.custom_role_definitions_terraform : (var.iac_type == "bicep" ? local.custom_role_definitions_bicep : local.custom_role_definitions_bicep_classic)
   role_assignments                                     = var.iac_type == "terraform" ? var.role_assignments_terraform : (var.iac_type == "bicep" ? var.role_assignments_bicep : var.role_assignments_bicep_classic)
-  additional_role_assignment_principal_ids             = var.grant_permissions_to_current_user ? { current_user = data.azurerm_client_config.current.object_id } : {}
   storage_account_blob_soft_delete_enabled             = var.storage_account_blob_soft_delete_enabled
   storage_account_blob_soft_delete_retention_days      = var.storage_account_blob_soft_delete_retention_days
   storage_account_blob_versioning_enabled              = var.storage_account_blob_versioning_enabled

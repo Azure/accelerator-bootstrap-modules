@@ -610,18 +610,6 @@ variable "role_assignments" {
   }))
 }
 
-variable "additional_role_assignment_principal_ids" {
-  description = <<-EOT
-    **(Optional, default: `{}`)** Additional Azure AD principal IDs to grant the same role assignments.
-
-    Map of principal IDs (users, groups, service principals) to grant the same role assignments
-    as the managed identities. Useful for granting permissions to human operators or existing
-    service principals for troubleshooting or manual operations.
-  EOT
-  type        = map(string)
-  default     = {}
-}
-
 variable "tenant_role_assignment_enabled" {
   description = <<-EOT
     **(Optional, default: `false`)** Enable tenant-level role assignment for managed identities.

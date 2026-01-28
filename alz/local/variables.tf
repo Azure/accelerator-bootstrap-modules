@@ -188,17 +188,6 @@ variable "postfix_number" {
   default     = 1
 }
 
-variable "grant_permissions_to_current_user" {
-  description = <<-EOT
-    **(Optional, default: `true`)** Whether to grant permissions to the current Azure CLI user.
-
-    When true, assigns permissions to the currently authenticated user in addition to the managed identities.
-    Useful for local development and testing.
-  EOT
-  type        = bool
-  default     = true
-}
-
 variable "additional_files" {
   description = <<-EOT
     **(Optional, default: `[]`)** Additional files to include in the deployment.
