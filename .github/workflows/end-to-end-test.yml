@@ -145,6 +145,11 @@ jobs:
           if($deployAzureResources -eq "false") {
             Write-Host "Skipping subscription retrieval as deployAzureResources is set to false."
             "ARM_SUBSCRIPTION_ID=${{ vars.ARM_SUBSCRIPTION_ID }}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+            "SUBSCRIPTION_ID_BOOTSTRAP=${{ vars.ARM_SUBSCRIPTION_ID }}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+            "SUBSCRIPTION_ID_MANAGEMENT=${{ vars.ARM_SUBSCRIPTION_ID }}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+            "SUBSCRIPTION_ID_CONNECTIVITY=${{ vars.ARM_SUBSCRIPTION_ID }}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+            "SUBSCRIPTION_ID_IDENTITY=${{ vars.ARM_SUBSCRIPTION_ID }}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+            "SUBSCRIPTION_ID_SECURITY=${{ vars.ARM_SUBSCRIPTION_ID }}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
             exit 0
           }
 
