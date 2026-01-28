@@ -159,7 +159,7 @@ jobs:
           "ARM_SUBSCRIPTION_ID=$subscriptionIDBootstrap" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "SUBSCRIPTION_ID_BOOTSTRAP=$subscriptionIDBootstrap" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "SUBSCRIPTION_ID_MANAGEMENT=$subscriptionIDManagement" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "SUBSCRIPTION_ID_CONNECTIVITY=$subscriptionIDConnectivity" | Out-File -File
+          "SUBSCRIPTION_ID_CONNECTIVITY=$subscriptionIDConnectivity" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "SUBSCRIPTION_ID_IDENTITY=$subscriptionIDIdentity" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           "SUBSCRIPTION_ID_SECURITY=$subscriptionIDSecurity" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
