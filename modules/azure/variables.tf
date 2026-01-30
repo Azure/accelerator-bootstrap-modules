@@ -271,6 +271,47 @@ variable "root_parent_management_group_id" {
   type        = string
 }
 
+variable "move_subscriptions_to_target_management_group" {
+  description = <<-EOT
+    **(Optional, default: `true`)** Controls whether to move target subscriptions under the intermediate root management group.
+
+    When enabled, subscriptions listed in `target_subscriptions` are moved under the created intermediate root management group.
+    Ensures all landing zone subscriptions are organized under the same management group hierarchy.
+  EOT
+  type        = bool
+  default     = true
+}
+
+variable "intermediate_root_management_group_creation_enabled" {
+  description = <<-EOT
+    **(Optional, default: `true`)** Controls whether to create an intermediate root management group under the root parent.
+
+    When enabled, creates a dedicated management group to serve as the root for all Azure Landing Zones management groups and subscriptions.
+    Helps isolate landing zone resources from other management groups in the tenant.
+  EOT
+  type        = bool
+  default     = true
+}
+
+variable "intermediate_root_management_group_id" {
+  description = <<-EOT
+    **(Required)** The ID of the intermediate root management group to create under the root parent.
+
+    This management group serves as the root for all Azure Landing Zones management groups and subscriptions.
+    Must be unique within the tenant.
+  EOT
+  type        = string
+}
+
+variable "intermediate_root_management_group_display_name" {
+  description = <<-EOT
+    **(Required)** The display name for the intermediate root management group.
+
+    This is a human-readable name shown in the Azure portal for the management group.
+  EOT
+  type        = string
+}
+
 variable "resource_providers" {
   description = <<-EOT
     **(Optional, default: comprehensive list)** The resource providers to register in the Azure subscription.
@@ -556,12 +597,14 @@ variable "role_assignments" {
     Map structure:
     - **Key**: Assignment identifier (e.g., 'plan_management_group')
     - **Value**: Object containing:
+      - `built_in_role_definition_name` (string) - Name of built-in role (optional)
       - `custom_role_definition_key` (string) - Key from custom_role_definitions
       - `user_assigned_managed_identity_key` (string) - Key from user_assigned_managed_identities
       - `scope` (string) - Assignment scope ('management_group' or 'subscription')
   EOT
   type = map(object({
-    custom_role_definition_key         = string
+    built_in_role_definition_name      = optional(string)
+    custom_role_definition_key         = optional(string)
     user_assigned_managed_identity_key = string
     scope                              = string
   }))

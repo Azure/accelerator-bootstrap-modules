@@ -593,11 +593,7 @@ variable "custom_role_definitions_terraform" {
         - `actions` (list(string)) - Allowed Azure actions
         - `not_actions` (list(string)) - Denied Azure actions
 
-    Default includes 4 predefined roles:
-    - `alz_management_group_contributor` - Manage management group hierarchy and governance
-    - `alz_management_group_reader` - Read management group structure and validate deployments
-    - `alz_subscription_owner` - Full access to platform subscriptions
-    - `alz_subscription_reader` - Read/write access for platform subscription resources
+    Default is empty, meaning no custom roles are created.
 
     See default value for complete role action definitions.
   EOT
@@ -609,89 +605,7 @@ variable "custom_role_definitions_terraform" {
       not_actions = list(string)
     })
   }))
-  default = {
-    alz_management_group_contributor = {
-      name        = "Azure Landing Zones Management Group Contributor ({{service_name}}-{{environment_name}})"
-      description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing the Management Group Structure."
-      permissions = {
-        actions = [
-          "Microsoft.Management/managementGroups/delete",
-          "Microsoft.Management/managementGroups/read",
-          "Microsoft.Management/managementGroups/subscriptions/delete",
-          "Microsoft.Management/managementGroups/subscriptions/write",
-          "Microsoft.Management/managementGroups/settings/read",
-          "Microsoft.Management/managementGroups/settings/write",
-          "Microsoft.Management/managementGroups/settings/delete",
-          "Microsoft.Management/managementGroups/write",
-          "Microsoft.Management/managementGroups/subscriptions/read",
-          "Microsoft.Authorization/policyDefinitions/write",
-          "Microsoft.Authorization/policySetDefinitions/write",
-          "Microsoft.Authorization/policyAssignments/write",
-          "Microsoft.Authorization/roleDefinitions/write",
-          "Microsoft.Authorization/*/read",
-          "Microsoft.Authorization/roleAssignments/write",
-          "Microsoft.Authorization/roleAssignments/delete",
-          "Microsoft.Insights/diagnosticSettings/write"
-        ]
-        not_actions = []
-      }
-    }
-    alz_management_group_reader = {
-      name        = "Azure Landing Zones Management Group Reader ({{service_name}}-{{environment_name}})"
-      description = "This is a custom role created by the Azure Landing Zones Accelerator for Reading the Management Group Structure."
-      permissions = {
-        actions = [
-          "Microsoft.Management/managementGroups/read",
-          "Microsoft.Management/managementGroups/subscriptions/read",
-          "Microsoft.Management/managementGroups/settings/read",
-          "Microsoft.Authorization/*/read",
-          "Microsoft.Authorization/policyDefinitions/write",
-          "Microsoft.Authorization/policySetDefinitions/write",
-          "Microsoft.Authorization/roleDefinitions/write",
-          "Microsoft.Authorization/policyAssignments/write",
-          "Microsoft.Insights/diagnosticSettings/write",
-          "Microsoft.Insights/diagnosticSettings/read",
-          "Microsoft.Resources/deployments/whatIf/action",
-          "Microsoft.Resources/deployments/write",
-          "Microsoft.Resources/deploymentStacks/read",
-          "Microsoft.Resources/deploymentStacks/validate/action"
-        ]
-        not_actions = []
-      }
-    }
-    alz_subscription_owner = {
-      name        = "Azure Landing Zones Subscription Owner ({{service_name}}-{{environment_name}})"
-      description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing in platform subscriptions."
-      permissions = {
-        actions = [
-          "*"
-        ]
-        not_actions = []
-      }
-    }
-    alz_subscription_reader = {
-      name        = "Azure Landing Zones Subscription Reader ({{service_name}}-{{environment_name}})"
-      description = "This is a custom role created by the Azure Landing Zones Accelerator for Reading the platform subscriptions."
-      permissions = {
-        actions = [
-          "*/read",
-          "Microsoft.Resources/subscriptions/resourceGroups/write",
-          "Microsoft.ManagedIdentity/userAssignedIdentities/write",
-          "Microsoft.Automation/automationAccounts/write",
-          "Microsoft.OperationalInsights/workspaces/write",
-          "Microsoft.OperationalInsights/workspaces/linkedServices/write",
-          "Microsoft.OperationsManagement/solutions/write",
-          "Microsoft.Insights/dataCollectionRules/write",
-          "Microsoft.Authorization/locks/write",
-          "Microsoft.Network/*/write",
-          "Microsoft.Resources/deployments/whatIf/action",
-          "Microsoft.Resources/deployments/write",
-          "Microsoft.SecurityInsights/onboardingStates/write"
-        ]
-        not_actions = []
-      }
-    }
-  }
+  default = {}
 }
 
 variable "custom_role_definitions_bicep" {
@@ -707,11 +621,8 @@ variable "custom_role_definitions_bicep" {
         - `actions` (list(string)) - Allowed Azure actions
         - `not_actions` (list(string)) - Denied Azure actions
 
-    Default includes 4 predefined roles:
-    - `alz_management_group_contributor` - Manage management group hierarchy and governance
-    - `alz_management_group_reader` - Run Bicep What-If validations (requires --validation-level providerNoRbac flag)
-    - `alz_subscription_owner` - Full access to platform subscriptions
-    - `alz_subscription_reader` - Run Bicep What-If for subscription deployments
+    Default includes 1 predefined roles:
+    - `alz_reader` - Run Bicep What-If validations (requires --validation-level providerNoRbac flag)s
 
     See default value for complete role action definitions.
   EOT
@@ -724,58 +635,13 @@ variable "custom_role_definitions_bicep" {
     })
   }))
   default = {
-    alz_management_group_contributor = {
-      name        = "Azure Landing Zones Management Group Contributor ({{service_name}}-{{environment_name}})"
-      description = "This is a custom role created by the Azure Landing Zones Accelerator for creating and managing the Management Group hierarchy and its associated governance resources such as policy, RBAC etc..."
-      permissions = {
-        actions = [
-          "*/read",
-          "Microsoft.Management/*",
-          "Microsoft.Authorization/*",
-          "Microsoft.Resources/*",
-          "Microsoft.Support/*",
-          "Microsoft.Insights/diagnosticSettings/*"
-        ]
-        not_actions = [
-          "Microsoft.Resources/subscriptions/resourceGroups/write",
-          "Microsoft.Resources/subscriptions/resourceGroups/delete"
-        ]
-      }
-    }
-    alz_management_group_reader = {
+    alz_reader = {
       name        = "Azure Landing Zones Management Group What If ({{service_name}}-{{environment_name}})"
       description = "This is a custom role created by the Azure Landing Zones Accelerator for running Bicep What If for the Management Group hierarchy and its associated governance resources such as policy, RBAC etc... You must use the `--validation-level providerNoRbac` (Az CLI 2.75.0 or later) or `-ValidationLevel providerNoRbac` (Az PowerShell 13.4.0 or later (Az.Resources 7.10.0 or later)) flag when running Bicep What If with this role."
       permissions = {
         actions = [
-          "*/read",
           "Microsoft.Resources/deployments/whatIf/action",
           "Microsoft.Resources/deployments/validate/action",
-          "Microsoft.Resources/subscriptions/operationResults/read",
-          "Microsoft.Management/operationResults/*/read"
-        ]
-        not_actions = []
-      }
-    }
-    alz_subscription_owner = {
-      name        = "Azure Landing Zones Subscription Owner ({{service_name}}-{{environment_name}})"
-      description = "This is a custom role created by the Azure Landing Zones Accelerator for Writing in platform subscriptions."
-      permissions = {
-        actions = [
-          "*"
-        ]
-        not_actions = []
-      }
-    }
-    alz_subscription_reader = {
-      name        = "Azure Landing Zones Subscription What If ({{service_name}}-{{environment_name}})"
-      description = "This is a custom role created by the Azure Landing Zones Accelerator for running Bicep What If for the Management Group hierarchy and its associated governance resources such as policy, RBAC etc... You must use the `--validation-level providerNoRbac` (Az CLI 2.75.0 or later) or `-ValidationLevel providerNoRbac` (Az PowerShell 13.4.0 or later (Az.Resources 7.10.0 or later)) flag when running Bicep What If with this role."
-      permissions = {
-        actions = [
-          "*/read",
-          "Microsoft.Resources/deployments/whatIf/action",
-          "Microsoft.Resources/deployments/validate/action",
-          "Microsoft.Resources/subscriptions/operationResults/read",
-          "Microsoft.Management/operationResults/*/read"
         ]
         not_actions = []
       }
@@ -909,39 +775,31 @@ variable "role_assignments_terraform" {
     Map of role assignment configurations where:
     - **Key**: Assignment identifier (e.g., 'plan_management_group')
     - **Value**: Object containing:
+      - `built_in_role_definition_name` (string) - Name of built-in role (e.g., 'Owner', 'Contributor')
       - `custom_role_definition_key` (string) - Key from custom_role_definitions_terraform
       - `user_assigned_managed_identity_key` (string) - Managed identity key ('plan' or 'apply')
       - `scope` (string) - Assignment scope ('management_group' or 'subscription')
 
-    Default includes 4 assignments:
-    - Plan and apply access for management group operations
-    - Plan and apply access for subscription operations
+    Default includes 2 assignments:
+    - Plan and apply access
+
   EOT
   type = map(object({
-    custom_role_definition_key         = string
+    built_in_role_definition_name      = optional(string)
+    custom_role_definition_key         = optional(string)
     user_assigned_managed_identity_key = string
     scope                              = string
   }))
   default = {
-    plan_management_group = {
-      custom_role_definition_key         = "alz_management_group_reader"
+    plan = {
+      built_in_role_definition_name      = "Reader"
       user_assigned_managed_identity_key = "plan"
       scope                              = "management_group"
     }
-    apply_management_group = {
-      custom_role_definition_key         = "alz_management_group_contributor"
+    apply = {
+      built_in_role_definition_name      = "Owner"
       user_assigned_managed_identity_key = "apply"
       scope                              = "management_group"
-    }
-    plan_subscription = {
-      custom_role_definition_key         = "alz_subscription_reader"
-      user_assigned_managed_identity_key = "plan"
-      scope                              = "subscription"
-    }
-    apply_subscription = {
-      custom_role_definition_key         = "alz_subscription_owner"
-      user_assigned_managed_identity_key = "apply"
-      scope                              = "subscription"
     }
   }
 }
@@ -953,6 +811,47 @@ variable "role_assignments_bicep" {
     Map of role assignment configurations where:
     - **Key**: Assignment identifier (e.g., 'plan_management_group')
     - **Value**: Object containing:
+      - `built_in_role_definition_name` (string) - Name of built-in role (e.g., 'Owner', 'Contributor')
+      - `custom_role_definition_key` (string) - Key from custom_role_definitions_bicep
+      - `user_assigned_managed_identity_key` (string) - Managed identity key ('plan' or 'apply')
+      - `scope` (string) - Assignment scope ('management_group' or 'subscription')
+
+    Default includes 3 assignments:
+    - Plan and apply access operations
+  EOT
+  type = map(object({
+    built_in_role_definition_name      = optional(string)
+    custom_role_definition_key         = optional(string)
+    user_assigned_managed_identity_key = string
+    scope                              = string
+  }))
+  default = {
+    plan = {
+      built_in_role_definition_name      = "Reader"
+      user_assigned_managed_identity_key = "plan"
+      scope                              = "management_group"
+    }
+    plan_custom = {
+      custom_role_definition_key         = "alz_reader"
+      user_assigned_managed_identity_key = "plan"
+      scope                              = "management_group"
+    }
+    apply_management_group = {
+      built_in_role_definition_name      = "Owner"
+      user_assigned_managed_identity_key = "apply"
+      scope                              = "management_group"
+    }
+  }
+}
+
+variable "role_assignments_bicep_classic" {
+  description = <<-EOT
+    **(Optional)** RBAC role assignments for Bicep Classic based deployments.
+
+    Map of role assignment configurations where:
+    - **Key**: Assignment identifier (e.g., 'plan_management_group')
+    - **Value**: Object containing:
+      - `built_in_role_definition_name` (string) - Name of built-in role (e.g., 'Owner', 'Contributor')
       - `custom_role_definition_key` (string) - Key from custom_role_definitions_bicep
       - `user_assigned_managed_identity_key` (string) - Managed identity key ('plan' or 'apply')
       - `scope` (string) - Assignment scope ('management_group' or 'subscription')
@@ -962,7 +861,8 @@ variable "role_assignments_bicep" {
     - Plan and apply access for subscription operations
   EOT
   type = map(object({
-    custom_role_definition_key         = string
+    built_in_role_definition_name      = optional(string)
+    custom_role_definition_key         = optional(string)
     user_assigned_managed_identity_key = string
     scope                              = string
   }))
@@ -1077,4 +977,15 @@ variable "bicep_tenant_role_assignment_role_definition_name" {
   EOT
   type        = string
   default     = "Landing Zone Management Owner"
+}
+
+variable "terraform_architecture_file_path" {
+  description = <<-EOT
+    **(Required)** Relative path to the Terraform architecture definition JSON file within the module folder.
+
+    This file defines the structure and components of the Terraform deployment architecture.
+    Used for dynamic file manipulation based on architecture specifics.
+  EOT
+  type        = string
+  default     = "lib/architecture_definitions/alz_custom.alz_architecture_definition.yaml"
 }

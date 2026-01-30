@@ -48,7 +48,7 @@ $combinations = [ordered]@{
     infrastructureAsCode = @("terraform")
     agentType            = @("public", "private", "none")
     operatingSystem      = @("ubuntu")
-    starterModule        = @("test_nested")
+    starterModule        = @("test")
     regions              = @("multi")
     terraformVersion     = @("latest")
     deployAzureResources = @("true")
@@ -58,7 +58,7 @@ $combinations = [ordered]@{
     infrastructureAsCode = @("terraform")
     agentType            = @("public", "private", "none")
     operatingSystem      = @("ubuntu")
-    starterModule        = @("test_nested")
+    starterModule        = @("test")
     regions              = @("multi")
     terraformVersion     = @("latest")
     deployAzureResources = @("true")
@@ -80,7 +80,7 @@ $combinations = [ordered]@{
     operatingSystem      = @("ubuntu", "windows", "macos")
     starterModule        = @("test")
     regions              = @("multi")
-    terraformVersion     = @("1.5.0")
+    terraformVersion     = @("1.6.0")
     deployAzureResources = @("false")
   }
   local_single_region_tests                = [ordered]@{
@@ -164,7 +164,8 @@ function Get-MatrixRecursively {
 
   $combination.Name = $name.Trim("-")
   $combination.Hash = Get-Hash $name
-  $combination.ShortName = "r" + $combination.Hash.Substring(0, 5).ToLower() + "r" + $runNumber
+  $combination.ShortNamePrefix = "r" + $combination.Hash.Substring(0, 5).ToLower()
+  $combination.ShortName = $combination.ShortNamePrefix + "r" + $runNumber
 
   $calculatedCombinations += $combination
 

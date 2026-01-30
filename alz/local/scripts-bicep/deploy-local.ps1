@@ -25,7 +25,6 @@ if ($deployApproved -ne "yes") {
     -displayName "${script_file.displayName}" `
     -templateFilePath "${script_file.templateFilePath}" `
     -templateParametersFilePath "${script_file.templateParametersFilePath}" `
-    -managementGroupId ${script_file.managementGroupIdVariable} `
     -subscriptionId ${script_file.subscriptionIdVariable} `
     -resourceGroupName ${script_file.resourceGroupNameVariable} `
     -location $env:LOCATION `

@@ -10,9 +10,6 @@ parameters:
     type: string
   - name: templateParametersFilePath
     type: string
-  - name: managementGroupId
-    type: string
-    default: ''
   - name: subscriptionId
     type: string
     default: ''
@@ -71,7 +68,8 @@ steps:
         }
 
         # Generate deployment stack name
-        $deploymentPrefix = $env:MANAGEMENT_GROUP_ID_PREFIX + $env:INTERMEDIATE_ROOT_MANAGEMENT_GROUP_ID + $env:MANAGEMENT_GROUP_ID_POSTFIX
+        $intRootMgId = $env:MANAGEMENT_GROUP_ID_PREFIX + $env:INTERMEDIATE_ROOT_MANAGEMENT_GROUP_ID + $env:MANAGEMENT_GROUP_ID_POSTFIX
+        $deploymentPrefix = $intRootMgId
         $deploymentNameBase = "$${{ parameters.name }}".Replace(" ", "-")
         $deploymentNameMaxLength = 64 - $deploymentPrefix.Length - 1
         if ($deploymentNameBase.Length -gt $deploymentNameMaxLength) {
@@ -89,7 +87,7 @@ steps:
         Write-Host "Deployment Name: $deploymentName" -ForegroundColor DarkGray
         Write-Host "Template File Path: $${{ parameters.templateFilePath }}" -ForegroundColor DarkGray
         Write-Host "Template Parameters File Path: $${{ parameters.templateParametersFilePath }}" -ForegroundColor DarkGray
-        Write-Host "Management Group Id: $${{ parameters.managementGroupId }}" -ForegroundColor DarkGray
+        Write-Host "Management Group Id: $intRootMgId" -ForegroundColor DarkGray
         Write-Host "Subscription Id: $${{ parameters.subscriptionId }}" -ForegroundColor DarkGray
         Write-Host "Resource Group Name: $${{ parameters.resourceGroupName }}" -ForegroundColor DarkGray
         Write-Host "Location: $${{ parameters.location }}" -ForegroundColor DarkGray
@@ -128,14 +126,9 @@ steps:
           try {
             switch ($deploymentType) {
               "managementGroup" {
-                $targetManagementGroupId = "$${{ parameters.managementGroupId }}"
-                if ([string]::IsNullOrWhiteSpace($targetManagementGroupId)) {
-                  $targetManagementGroupId = (Get-AzContext).Tenant.TenantId
-                }
-
                 Write-Host "Running Management Group What-If: $deploymentName" -ForegroundColor Cyan
                 $whatIfParameters.Location = "$${{ parameters.location }}"
-                $whatIfParameters.ManagementGroupId = $targetManagementGroupId
+                $whatIfParameters.ManagementGroupId = $intRootMgId
                 $result = New-AzManagementGroupDeployment @whatIfParameters
               }
               "subscription" {
@@ -191,15 +184,10 @@ steps:
           try {
             switch ($deploymentType) {
               "managementGroup" {
-                $targetManagementGroupId = "$${{ parameters.managementGroupId }}"
-                if ([string]::IsNullOrWhiteSpace($targetManagementGroupId)) {
-                  $targetManagementGroupId = (Get-AzContext).Tenant.TenantId
-                }
-
                 # Clean up all deployments before each deployment to avoid quota issues
                 try {
                   Write-Host "Cleaning up existing deployments in management group..." -ForegroundColor Cyan
-                  $allDeployments = Get-AzManagementGroupDeployment -ManagementGroupId $targetManagementGroupId -ErrorAction SilentlyContinue
+                  $allDeployments = Get-AzManagementGroupDeployment -ManagementGroupId $intRootMgId -ErrorAction SilentlyContinue
                   if ($allDeployments -and $allDeployments.Count -gt 0) {
                     Write-Host "Found $($allDeployments.Count) deployment(s) to clean up" -ForegroundColor Yellow
                     $batchSize = 200
@@ -207,7 +195,7 @@ steps:
                       $batch = $allDeployments | Select-Object -Skip $i -First $batchSize
                       Write-Host "  Deleting batch of $($batch.Count) deployments..." -ForegroundColor Gray
                       $batch | ForEach-Object -Parallel {
-                        Remove-AzManagementGroupDeployment -ManagementGroupId $using:targetManagementGroupId -Name $_.DeploymentName -ErrorAction SilentlyContinue
+                        Remove-AzManagementGroupDeployment -ManagementGroupId $using:intRootMgId -Name $_.DeploymentName -ErrorAction SilentlyContinue
                       } -ThrottleLimit 100
                     }
                     Write-Host "✓ All deployments cleaned up" -ForegroundColor Green
@@ -219,7 +207,7 @@ steps:
                 }
 
                 Write-Host "Creating Management Group Deployment Stack: $deploymentName" -ForegroundColor Cyan
-                $result = New-AzManagementGroupDeploymentStack @stackParameters -ManagementGroupId $targetManagementGroupId -Location "$${{ parameters.location }}"
+                $result = New-AzManagementGroupDeploymentStack @stackParameters -ManagementGroupId $intRootMgId -Location "$${{ parameters.location }}"
               }
               "subscription" {
                 if (-not [string]::IsNullOrWhiteSpace("$${{ parameters.subscriptionId }}")) {

@@ -3,7 +3,6 @@ param(
     [string]$displayName,
     [string]$templateFilePath,
     [string]$templateParametersFilePath,
-    [string]$managementGroupId,
     [string]$subscriptionId,
     [string]$resourceGroupName,
     [string]$location,
@@ -16,6 +15,8 @@ $templateRoot = Split-Path -Parent $scriptRoot
 $templateFilePath = Join-Path $templateRoot $templateFilePath
 $templateParametersFilePath = Join-Path $templateRoot $templateParametersFilePath
 
+$intRootMgId = $env:MANAGEMENT_GROUP_ID_PREFIX + $env:INTERMEDIATE_ROOT_MANAGEMENT_GROUP_ID + $env:MANAGEMENT_GROUP_ID_POSTFIX
+
 Write-Host "<---------------------------------------------------------------------------->" -ForegroundColor Blue
 Write-Host "Starting deployment stack for $displayName..." -ForegroundColor Blue
 Write-Host "<---------------------------------------------------------------------------->" -ForegroundColor Blue
@@ -24,7 +25,7 @@ Write-Host ""
 Write-Host "Display Name: $displayName" -ForegroundColor DarkGray
 Write-Host "Template File Path: $templateFilePath" -ForegroundColor DarkGray
 Write-Host "Template Parameters File Path: $templateParametersFilePath" -ForegroundColor DarkGray
-Write-Host "Management Group Id: $managementGroupId" -ForegroundColor DarkGray
+Write-Host "Management Group Id: $intRootMgId" -ForegroundColor DarkGray
 Write-Host "Subscription Id: $subscriptionId" -ForegroundColor DarkGray
 Write-Host "Resource Group Name: $resourceGroupName" -ForegroundColor DarkGray
 Write-Host "Location: $location" -ForegroundColor DarkGray
@@ -85,15 +86,10 @@ while ($retryCount -lt $retryMax) {
     try {
         switch ($deploymentType) {
             "managementGroup" {
-                $targetManagementGroupId = $managementGroupId
-                if ([string]::IsNullOrWhiteSpace($targetManagementGroupId)) {
-                    $targetManagementGroupId = (Get-AzContext).Tenant.TenantId
-                }
-
                 # Clean up all deployments before each deployment to avoid quota issues
                 try {
                     Write-Host "Cleaning up existing deployments in management group..." -ForegroundColor Cyan
-                    $allDeployments = Get-AzManagementGroupDeployment -ManagementGroupId $targetManagementGroupId -ErrorAction SilentlyContinue
+                    $allDeployments = Get-AzManagementGroupDeployment -ManagementGroupId $intRootMgId -ErrorAction SilentlyContinue
                     if ($allDeployments -and $allDeployments.Count -gt 0) {
                         Write-Host "Found $($allDeployments.Count) deployment(s) to clean up" -ForegroundColor Yellow
                         $batchSize = 200
@@ -101,7 +97,7 @@ while ($retryCount -lt $retryMax) {
                             $batch = $allDeployments | Select-Object -Skip $i -First $batchSize
                             Write-Host "  Deleting batch of $($batch.Count) deployments..." -ForegroundColor Gray
                             $batch | ForEach-Object -Parallel {
-                                Remove-AzManagementGroupDeployment -ManagementGroupId $using:targetManagementGroupId -Name $_.DeploymentName -ErrorAction SilentlyContinue
+                                Remove-AzManagementGroupDeployment -ManagementGroupId $using:intRootMgId -Name $_.DeploymentName -ErrorAction SilentlyContinue
                             } -ThrottleLimit 100
                         }
                         Write-Host "✓ All deployments cleaned up" -ForegroundColor Green
@@ -112,7 +108,7 @@ while ($retryCount -lt $retryMax) {
                     Write-Warning "Could not clean up deployments: $($_.Exception.Message)"
                 }
 
-                $result = New-AzManagementGroupDeploymentStack @stackParameters -ManagementGroupId $targetManagementGroupId -Location $location -Verbose
+                $result = New-AzManagementGroupDeploymentStack @stackParameters -ManagementGroupId $intRootMgId -Location $location -Verbose
             }
             "subscription" {
                 if (-not [string]::IsNullOrWhiteSpace($subscriptionId)) {

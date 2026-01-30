@@ -61,29 +61,13 @@ resource "azapi_resource" "storage_account_container" {
 resource "azurerm_role_assignment" "alz_storage_container" {
   for_each             = var.create_storage_account ? var.user_assigned_managed_identities : {}
   scope                = azapi_resource.storage_account_container[0].id
-  role_definition_name = "Storage Blob Data Owner"
+  role_definition_name = "Storage Blob Data Contributor"
   principal_id         = azurerm_user_assigned_identity.alz[each.key].principal_id
 }
 
 resource "azurerm_role_assignment" "alz_storage_container_additional" {
   for_each             = var.create_storage_account ? var.additional_role_assignment_principal_ids : {}
   scope                = azapi_resource.storage_account_container[0].id
-  role_definition_name = "Storage Blob Data Owner"
-  principal_id         = each.value
-}
-
-# These role assignments are a temporary addition to handle this issue in the Terraform CLI: https://github.com/hashicorp/terraform/issues/36595
-# They will be removed once the issue has been resolved
-resource "azurerm_role_assignment" "alz_storage_reader" {
-  for_each             = var.create_storage_account ? var.user_assigned_managed_identities : {}
-  scope                = azurerm_storage_account.alz[0].id
-  role_definition_name = "Reader"
-  principal_id         = azurerm_user_assigned_identity.alz[each.key].principal_id
-}
-
-resource "azurerm_role_assignment" "alz_storage_reader_additional" {
-  for_each             = var.create_storage_account ? var.additional_role_assignment_principal_ids : {}
-  scope                = azurerm_storage_account.alz[0].id
-  role_definition_name = "Reader"
+  role_definition_name = "Storage Blob Data Contributor"
   principal_id         = each.value
 }

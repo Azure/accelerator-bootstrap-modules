@@ -82,7 +82,6 @@ stages:
                     serviceConnection: '${service_connection_name_plan}'
                     templateFilePath: '${script_file.templateFilePath}'
                     templateParametersFilePath: '${script_file.templateParametersFilePath}'
-                    managementGroupId: '${script_file.managementGroupIdVariable}'
                     subscriptionId: '${script_file.subscriptionIdVariable}'
                     resourceGroupName: '${script_file.resourceGroupNameVariable}'
                     location: '$(LOCATION)'
