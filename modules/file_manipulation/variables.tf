@@ -240,13 +240,3 @@ variable "terraform_architecture_file_path" {
   EOT
   type        = string
 }
-
-variable "terraform_intermediate_root_management_group_state_resource_path_for_import" {
-  description = <<-EOT
-    **(Optional, default: `null`)** Resource path for the management group in the Terraform architecture.
-
-    Used for generating accurate resource references in Terraform deployments.
-    Null when not applicable.
-  EOT
-  type        = string
-}

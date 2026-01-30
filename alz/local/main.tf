@@ -63,7 +63,6 @@ module "file_manipulation" {
   bicep_parameters_file_path                                                  = var.bicep_parameters_file_path
   pipeline_files_directory_path                                               = local.script_source_folder_path
   terraform_architecture_file_path                                            = var.terraform_architecture_file_path
-  terraform_intermediate_root_management_group_state_resource_path_for_import = var.terraform_intermediate_root_management_group_state_resource_path_for_import
 }
 
 resource "local_file" "alz" {

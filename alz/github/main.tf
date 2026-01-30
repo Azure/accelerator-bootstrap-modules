@@ -127,5 +127,4 @@ module "file_manipulation" {
   pipeline_template_files_directory_path                                      = local.pipeline_template_files_directory_path
   concurrency_value                                                           = local.resource_names.storage_container
   terraform_architecture_file_path                                            = var.terraform_architecture_file_path
-  terraform_intermediate_root_management_group_state_resource_path_for_import = var.terraform_intermediate_root_management_group_state_resource_path_for_import
 }

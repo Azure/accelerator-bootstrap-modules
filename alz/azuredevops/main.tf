@@ -125,5 +125,4 @@ module "file_manipulation" {
   pipeline_files_directory_path                                               = local.pipeline_files_directory_path
   pipeline_template_files_directory_path                                      = local.pipeline_template_files_directory_path
   terraform_architecture_file_path                                            = var.terraform_architecture_file_path
-  terraform_intermediate_root_management_group_state_resource_path_for_import = var.terraform_intermediate_root_management_group_state_resource_path_for_import
 }

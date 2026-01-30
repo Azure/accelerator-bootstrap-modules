@@ -989,14 +989,3 @@ variable "terraform_architecture_file_path" {
   type        = string
   default     = "lib/architecture_definitions/alz_custom.alz_architecture_definition.yaml"
 }
-
-variable "terraform_intermediate_root_management_group_state_resource_path_for_import" {
-  description = <<-EOT
-    **(Optional, default: `null`)** Resource path for the management group in the Terraform architecture.
-
-    Used for generating accurate resource references in Terraform deployments.
-    Null when not applicable.
-  EOT
-  type        = string
-  default     = "module.management_groups[0].module.management_groups.azapi_resource.management_groups_level_0"
-}
