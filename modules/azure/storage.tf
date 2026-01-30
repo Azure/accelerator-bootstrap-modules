@@ -61,6 +61,13 @@ resource "azapi_resource" "storage_account_container" {
 resource "azurerm_role_assignment" "alz_storage_container" {
   for_each             = var.create_storage_account ? var.user_assigned_managed_identities : {}
   scope                = azapi_resource.storage_account_container[0].id
-  role_definition_name = "Storage Blob Data Owner"
+  role_definition_name = "Storage Blob Data Contributor"
   principal_id         = azurerm_user_assigned_identity.alz[each.key].principal_id
+}
+
+resource "azurerm_role_assignment" "alz_storage_container_additional" {
+  for_each             = var.create_storage_account ? var.additional_role_assignment_principal_ids : {}
+  scope                = azapi_resource.storage_account_container[0].id
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = each.value
 }
