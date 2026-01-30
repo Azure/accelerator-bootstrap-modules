@@ -195,7 +195,7 @@ jobs:
           $deployAzureResources = "${{ matrix.deployAzureResources }}"
 
           $locations_with_aci_zone_support = @(
-            "uksouth",
+            # "uksouth",
             "northeurope",
             "eastus2",
             "westeurope",
