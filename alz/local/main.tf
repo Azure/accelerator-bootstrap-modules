@@ -48,21 +48,21 @@ module "azure" {
 }
 
 module "file_manipulation" {
-  source                                                                      = "../../modules/file_manipulation"
-  vcs_type                                                                    = "local"
-  files                                                                       = module.files.files
-  resource_names                                                              = local.resource_names
-  iac_type                                                                    = var.iac_type
-  module_folder_path                                                          = local.starter_module_folder_path
-  bicep_config_file_path                                                      = var.bicep_config_file_path
-  starter_module_name                                                         = var.starter_module_name
-  root_module_folder_relative_path                                            = var.root_module_folder_relative_path
-  on_demand_folder_repository                                                 = var.on_demand_folder_repository
-  on_demand_folder_artifact_name                                              = var.on_demand_folder_artifact_name
-  pipeline_target_folder_name                                                 = local.script_target_folder_name
-  bicep_parameters_file_path                                                  = var.bicep_parameters_file_path
-  pipeline_files_directory_path                                               = local.script_source_folder_path
-  terraform_architecture_file_path                                            = var.terraform_architecture_file_path
+  source                           = "../../modules/file_manipulation"
+  vcs_type                         = "local"
+  files                            = module.files.files
+  resource_names                   = local.resource_names
+  iac_type                         = var.iac_type
+  module_folder_path               = local.starter_module_folder_path
+  bicep_config_file_path           = var.bicep_config_file_path
+  starter_module_name              = var.starter_module_name
+  root_module_folder_relative_path = var.root_module_folder_relative_path
+  on_demand_folder_repository      = var.on_demand_folder_repository
+  on_demand_folder_artifact_name   = var.on_demand_folder_artifact_name
+  pipeline_target_folder_name      = local.script_target_folder_name
+  bicep_parameters_file_path       = var.bicep_parameters_file_path
+  pipeline_files_directory_path    = local.script_source_folder_path
+  terraform_architecture_file_path = var.terraform_architecture_file_path
 }
 
 resource "local_file" "alz" {
