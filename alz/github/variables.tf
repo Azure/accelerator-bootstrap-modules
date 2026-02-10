@@ -496,9 +496,11 @@ variable "runner_container_memory_max" {
 
 variable "runner_container_zone_support" {
   description = <<-EOT
-    **(Optional, default: `true`)** Enable availability zone support for GitHub runner container instances.
+    **(Optional, default: `true`)** Enable availability zone support for GitHub runner container instances and container registry.
 
-    When enabled, containers are distributed across availability zones for higher availability and resilience.
+    When enabled, containers are distributed across availability zones for higher availability and resilience,
+    and the container registry is configured with zone redundancy.
+    Some regions do not support availability zones, in which case this should be set to false.
   EOT
   type        = bool
   default     = true
