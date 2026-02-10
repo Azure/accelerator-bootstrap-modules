@@ -499,9 +499,22 @@ variable "runner_container_zone_support" {
     **(Optional, default: `true`)** Enable availability zone support for GitHub runner container instances.
 
     When enabled, containers are distributed across availability zones for higher availability and resilience.
+    Some regions do not support availability zones, in which case this should be set to false.
   EOT
   type        = bool
   default     = true
+}
+
+variable "container_registry_zone_redundancy_enabled" {
+  description = <<-EOT
+    **(Optional, default: `null`)** Enable zone redundancy for the Azure Container Registry.
+
+    When enabled, the container registry is replicated across availability zones for higher availability.
+    Some regions do not support zone redundancy, in which case this should be set to false.
+    Defaults to the value of `runner_container_zone_support` if not set.
+  EOT
+  type        = bool
+  default     = null
 }
 
 variable "runner_name_environment_variable" {

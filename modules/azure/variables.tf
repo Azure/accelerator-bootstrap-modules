@@ -528,6 +528,18 @@ variable "container_registry_image_name" {
   default     = ""
 }
 
+variable "container_registry_zone_redundancy_enabled" {
+  description = <<-EOT
+    **(Optional, default: `true`)** Enable zone redundancy for the Azure Container Registry.
+
+    When enabled, the container registry is replicated across availability zones for higher availability.
+    Some regions do not support zone redundancy, in which case this should be set to false.
+    Zone redundancy requires Premium SKU, which is only used when private networking is enabled.
+  EOT
+  type        = bool
+  default     = true
+}
+
 variable "container_registry_image_tag" {
   description = <<-EOT
     **(Optional, default: `"{{.Run.ID}}"`)** Tag pattern for the container image.
