@@ -50,7 +50,7 @@ module "azure" {
   virtual_network_subnet_address_prefix_container_instances = var.virtual_network_subnet_address_prefix_container_instances
   virtual_network_subnet_address_prefix_private_endpoints   = var.virtual_network_subnet_address_prefix_private_endpoints
   storage_account_replication_type                          = var.storage_account_replication_type
-  container_registry_zone_redundancy_enabled                = var.runner_container_zone_support
+  container_registry_zone_redundancy_enabled                = coalesce(var.container_registry_zone_redundancy_enabled, var.runner_container_zone_support)
   public_ip_name                                            = local.resource_names.public_ip
   nat_gateway_name                                          = local.resource_names.nat_gateway
   use_self_hosted_agents                                    = var.use_self_hosted_runners

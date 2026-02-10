@@ -391,14 +391,25 @@ variable "agent_container_memory_max" {
 
 variable "agent_container_zone_support" {
   description = <<-EOT
-    **(Optional, default: `true`)** Enable availability zone support for Azure DevOps agent container instances and container registry.
+    **(Optional, default: `true`)** Enable availability zone support for Azure DevOps agent container instances.
 
-    When enabled, containers are distributed across availability zones for higher availability and resilience,
-    and the container registry is configured with zone redundancy.
+    When enabled, containers are distributed across availability zones for higher availability and resilience.
     Some regions do not support availability zones, in which case this should be set to false.
   EOT
   type        = bool
   default     = true
+}
+
+variable "container_registry_zone_redundancy_enabled" {
+  description = <<-EOT
+    **(Optional, default: `null`)** Enable zone redundancy for the Azure Container Registry.
+
+    When enabled, the container registry is replicated across availability zones for higher availability.
+    Some regions do not support zone redundancy, in which case this should be set to false.
+    Defaults to the value of `agent_container_zone_support` if not set.
+  EOT
+  type        = bool
+  default     = null
 }
 
 variable "built_in_configuration_file_names" {
