@@ -5,7 +5,7 @@ resource "azurerm_container_registry" "alz" {
   location                      = var.azure_location
   sku                           = var.use_private_networking ? "Premium" : "Basic"
   public_network_access_enabled = !var.use_private_networking
-  zone_redundancy_enabled       = var.use_private_networking && var.container_registry_zone_redundancy_enabled
+  zone_redundancy_enabled       = var.use_private_networking ? var.container_registry_zone_redundancy_enabled : false
   network_rule_bypass_option    = var.use_private_networking ? "AzureServices" : "None"
 }
 
