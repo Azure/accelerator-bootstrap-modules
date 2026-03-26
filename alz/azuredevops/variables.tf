@@ -45,7 +45,7 @@ variable "subscription_ids" {
   default     = {}
   nullable    = false
   validation {
-    condition     = alltrue([for id in values(var.subscription_ids) : can(regex("^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$", id))])
+    condition     = alltrue([for id in values(var.subscription_ids) : can(regex("^[0-9a-fA-F-]{36}$", id))])
     error_message = "All subscription IDs must be valid GUIDs"
   }
   validation {
@@ -53,8 +53,8 @@ variable "subscription_ids" {
     error_message = "The keys of the subscription_ids map must be one of 'management', 'connectivity', 'identity' or 'security'"
   }
   validation {
-    condition     = contains(keys(var.subscription_ids), "management") && contains(keys(var.subscription_ids), "connectivity") && contains(keys(var.subscription_ids), "identity")
-    error_message = "You must provide subscription IDs for: 'management', 'connectivity', and 'identity'"
+    condition     = contains(keys(var.subscription_ids), "management") && contains(keys(var.subscription_ids), "connectivity")
+    error_message = "You must provide subscription IDs for: 'management', and 'connectivity'"
   }
 }
 

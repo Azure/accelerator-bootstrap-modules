@@ -53,8 +53,8 @@ variable "subscription_ids" {
     error_message = "The keys of the subscription_ids map must be one of 'management', 'connectivity', 'identity' or 'security'"
   }
   validation {
-    condition     = contains(keys(var.subscription_ids), "management") && contains(keys(var.subscription_ids), "connectivity") && contains(keys(var.subscription_ids), "identity")
-    error_message = "You must provide subscription IDs for: 'management', 'connectivity', and 'identity'"
+    condition     = contains(keys(var.subscription_ids), "management") && contains(keys(var.subscription_ids), "connectivity")
+    error_message = "You must provide subscription IDs for: 'management', and 'connectivity'"
   }
 }
 
