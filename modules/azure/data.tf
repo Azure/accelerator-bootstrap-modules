@@ -1,5 +1,3 @@
-data "azurerm_client_config" "alz" {}
-
 data "azurerm_subscription" "alz" {
   for_each        = local.subscription_ids
   subscription_id = each.key
