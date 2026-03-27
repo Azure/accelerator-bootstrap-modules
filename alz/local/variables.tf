@@ -26,12 +26,28 @@ variable "root_parent_management_group_id" {
   default     = ""
 }
 
+variable "required_subscription_keys" {
+  description = <<-EOT
+    **(Optional, default: `["management", "connectivity"]`)** List of subscription keys that must be present with valid GUID values.
+
+    Keys not in this list may have null or empty string values.
+    Valid keys: 'management', 'connectivity', 'identity', 'security'
+  EOT
+  type        = list(string)
+  default     = ["management", "connectivity"]
+  nullable    = false
+  validation {
+    condition     = alltrue([for key in var.required_subscription_keys : contains(["management", "connectivity", "identity", "security"], key)])
+    error_message = "The required_subscription_keys must be one of 'management', 'connectivity', 'identity' or 'security'"
+  }
+}
+
 variable "subscription_ids" {
   description = <<-EOT
     **(Optional, default: `{}`)** Map of Azure subscription IDs where Platform Landing Zone resources will be deployed.
 
     Keys must be one of: 'management', 'connectivity', 'identity', 'security'
-    Values must be valid Azure subscription GUIDs.
+    Values must be valid Azure subscription GUIDs, or null/empty for non-required keys.
 
     Example:
     ```
@@ -45,16 +61,16 @@ variable "subscription_ids" {
   default     = {}
   nullable    = false
   validation {
-    condition     = alltrue([for id in values(var.subscription_ids) : can(regex("^[0-9a-fA-F-]{36}$", id))])
-    error_message = "All subscription IDs must be valid GUIDs"
+    condition     = alltrue([for key, id in var.subscription_ids : contains(var.required_subscription_keys, key) ? can(regex("^[0-9a-fA-F-]{36}$", id)) : (id == null || id == "" || can(regex("^[0-9a-fA-F-]{36}$", id)))])
+    error_message = "Required subscription IDs must be valid GUIDs. Optional subscription IDs must be valid GUIDs, null, or empty string."
   }
   validation {
-    condition     = alltrue([for id in keys(var.subscription_ids) : contains(["management", "connectivity", "identity", "security"], id)])
+    condition     = alltrue([for key in keys(var.subscription_ids) : contains(["management", "connectivity", "identity", "security"], key)])
     error_message = "The keys of the subscription_ids map must be one of 'management', 'connectivity', 'identity' or 'security'"
   }
   validation {
-    condition     = contains(keys(var.subscription_ids), "management") && contains(keys(var.subscription_ids), "connectivity")
-    error_message = "You must provide subscription IDs for: 'management', and 'connectivity'"
+    condition     = alltrue([for key in var.required_subscription_keys : contains(keys(var.subscription_ids), key)])
+    error_message = "You must provide subscription IDs for all required subscription keys."
   }
 }
 
