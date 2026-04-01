@@ -34,7 +34,7 @@ locals {
 }
 
 locals {
-  target_subscriptions = distinct(values(var.subscription_ids))
+  target_subscriptions = distinct([for v in values(var.subscription_ids) : v if v != null && v != ""])
 }
 
 locals {
