@@ -32,3 +32,17 @@ The tests use a set of environemnts to managed by the ALZ team. These are:
   - Organisation: microsoft-azure-landing-zones-cd-tests
 - GiHub
   - Organisation: microsoft-azure-landingzones-cd-tests
+
+## Validation Script
+
+Use the script below to validate deterministic deployment stack naming behavior for Bug #4062:
+
+- Script: `.github/tests/scripts/validate-deployment-stack-name-hash.ps1`
+- Run from repo root: `pwsh ./.github/tests/scripts/validate-deployment-stack-name-hash.ps1`
+
+This validation confirms:
+
+1. Legacy names are preserved when `prefix-base` length is within Azure's 64-character limit.
+2. Different long names (for example `stage-three` and `stage-four`) produce different final stack names.
+3. Final stack names remain within Azure's 64-character limit.
+4. Very long prefixes are trimmed safely while preserving the hash suffix when hash mode is required.
