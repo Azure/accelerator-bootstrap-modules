@@ -38,12 +38,19 @@ if ([string]::IsNullOrWhiteSpace($deploymentNameOriginalBase)) {
 }
 $deploymentNameOriginalBase = $deploymentNameOriginalBase.Replace(" ", "-")
 $deploymentNameHashLength = 10
-$deploymentNameSuffix = [System.BitConverter]::ToString([System.Security.Cryptography.SHA256]::HashData([System.Text.Encoding]::UTF8.GetBytes("$deploymentPrefix|$deploymentNameOriginalBase"))).Replace("-", "").Substring(0, $deploymentNameHashLength).ToLower()
+$hashInput = "$deploymentPrefix|$deploymentNameOriginalBase"
+$sha256 = [System.Security.Cryptography.SHA256]::Create()
+try {
+    $hashBytes = $sha256.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($hashInput))
+} finally {
+    $sha256.Dispose()
+}
+$deploymentNameSuffix = [System.BitConverter]::ToString($hashBytes).Replace("-", "").Substring(0, $deploymentNameHashLength).ToLower()
 
-$deploymentNameLegacy = "$deploymentPrefix-$deploymentNameOriginalBase"
+$deploymentNameLegacy = $deploymentNameOriginalBase
 
 if ($deploymentNameLegacy.Length -le 64) {
-    # Preserve legacy naming to keep backward compatibility when length already fits.
+    # Preserve legacy local naming to keep backward compatibility when length already fits.
     $deploymentName = $deploymentNameLegacy
 } else {
     # Keep room for "-<base>-<hash>" and trim an oversized prefix safely.
