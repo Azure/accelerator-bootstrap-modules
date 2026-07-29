@@ -46,3 +46,6 @@ This validation confirms:
 2. Different long names (for example `stage-three` and `stage-four`) produce different final stack names.
 3. Final stack names remain within Azure's 64-character limit.
 4. Very long prefixes are trimmed safely while preserving the hash suffix when hash mode is required.
+5. Deployments that previously exceeded 64 characters will now produce a different stack name (hash-suffixed); older truncated-name deployment stacks may require manual cleanup to avoid orphaned stacks/resources.
+
+
