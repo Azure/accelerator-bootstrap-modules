@@ -20,28 +20,13 @@ locals {
   repository_name_templates = var.use_template_repository ? var.repository_name_templates : var.repository_name
   template_claim_structure  = "${lower(data.github_organization.alz.login)}/${local.repository_name_templates}/%s@refs/heads/main"
 
-  # The "repo:" segment of the OIDC subject has two formats:
-  # - immutable: Includes numeric IDs for repositories created after 2026-07-15.
-  #   https://github.blog/changelog/2026-04-23-immutable-subject-claims-for-github-actions-oidc-tokens
-  # - legacy: Name-based format still issued by repositories that have not enabled immutable subjects.
-  oidc_repo_claim_immutable = "repo:${data.github_organization.alz.login}@${data.github_organization.alz.id}/${var.repository_name}@${github_repository.alz.repo_id}"
-  oidc_repo_claim_legacy    = "repo:${data.github_organization.alz.login}/${var.repository_name}"
-
-  # Add legacy and immutable subjects for each workflow/environment so authentication
-  # remains compatible regardless of the repository's immutable-subject setting.
   oidc_subjects_flattened = flatten([for key, value in var.workflows : [
-    for environment_user_assigned_managed_identity_mapping in value.environment_user_assigned_managed_identity_mappings : [
-      {
-        subject_key                        = "${key}-${environment_user_assigned_managed_identity_mapping.user_assigned_managed_identity_key}"
-        user_assigned_managed_identity_key = environment_user_assigned_managed_identity_mapping.user_assigned_managed_identity_key
-        subject                            = "${local.oidc_repo_claim_legacy}:environment:${var.environments[environment_user_assigned_managed_identity_mapping.environment_key]}:job_workflow_ref:${format(local.template_claim_structure, value.workflow_file_name)}"
-      },
-      {
-        subject_key                        = "${key}-${environment_user_assigned_managed_identity_mapping.user_assigned_managed_identity_key}-immutable"
-        user_assigned_managed_identity_key = environment_user_assigned_managed_identity_mapping.user_assigned_managed_identity_key
-        subject                            = "${local.oidc_repo_claim_immutable}:environment:${var.environments[environment_user_assigned_managed_identity_mapping.environment_key]}:job_workflow_ref:${format(local.template_claim_structure, value.workflow_file_name)}"
-      },
-    ]
+    for environment_user_assigned_managed_identity_mapping in value.environment_user_assigned_managed_identity_mappings :
+    {
+      subject_key                        = "${key}-${environment_user_assigned_managed_identity_mapping.user_assigned_managed_identity_key}"
+      user_assigned_managed_identity_key = environment_user_assigned_managed_identity_mapping.user_assigned_managed_identity_key
+      subject                            = "repo:${data.github_organization.alz.login}@${data.github_organization.alz.id}/${var.repository_name}@${github_repository.alz.repo_id}:environment:${var.environments[environment_user_assigned_managed_identity_mapping.environment_key]}:job_workflow_ref:${format(local.template_claim_structure, value.workflow_file_name)}"
+    }
     ]
   ])
 
