@@ -18,14 +18,14 @@ locals {
 
 locals {
   repository_name_templates = var.use_template_repository ? var.repository_name_templates : var.repository_name
-  template_claim_structure  = "${lower(data.github_organization.alz.login)}/${local.repository_name_templates}/%s@refs/heads/main"
+  template_claim_structure  = "${var.organization_name}/${local.repository_name_templates}/%s@refs/heads/main"
 
   oidc_subjects_flattened = flatten([for key, value in var.workflows : [
     for environment_user_assigned_managed_identity_mapping in value.environment_user_assigned_managed_identity_mappings :
     {
       subject_key                        = "${key}-${environment_user_assigned_managed_identity_mapping.user_assigned_managed_identity_key}"
       user_assigned_managed_identity_key = environment_user_assigned_managed_identity_mapping.user_assigned_managed_identity_key
-      subject                            = "repo:${data.github_organization.alz.login}@${data.github_organization.alz.id}/${var.repository_name}@${github_repository.alz.repo_id}:environment:${var.environments[environment_user_assigned_managed_identity_mapping.environment_key]}:job_workflow_ref:${format(local.template_claim_structure, value.workflow_file_name)}"
+      subject                            = "repo:${var.organization_name}@${data.github_organization.alz.id}/${var.repository_name}@${github_repository.alz.repo_id}:environment:${var.environments[environment_user_assigned_managed_identity_mapping.environment_key]}:job_workflow_ref:${format(local.template_claim_structure, value.workflow_file_name)}"
     }
     ]
   ])
