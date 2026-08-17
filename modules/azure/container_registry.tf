@@ -1,23 +1,13 @@
 resource "azurerm_container_registry" "alz" {
-  count                         = var.use_self_hosted_agents ? 1 : 0
-  name                          = var.container_registry_name
-  resource_group_name           = azurerm_resource_group.agents[0].name
-  location                      = var.azure_location
-  sku                           = var.use_private_networking ? "Premium" : "Basic"
-  public_network_access_enabled = !var.use_private_networking
-  zone_redundancy_enabled       = var.use_private_networking && var.container_registry_zone_redundancy_enabled
-  network_rule_bypass_option    = var.use_private_networking ? "AzureServices" : "None"
-}
-
-resource "azapi_update_resource" "network_rule_bypass_allowed_for_tasks" {
-  count       = var.use_self_hosted_agents && var.use_private_networking ? 1 : 0
-  type        = "Microsoft.ContainerRegistry/registries@2025-05-01-preview"
-  resource_id = azurerm_container_registry.alz[0].id
-  body = {
-    properties = {
-      networkRuleBypassAllowedForTasks = true
-    }
-  }
+  count                                 = var.use_self_hosted_agents ? 1 : 0
+  name                                  = var.container_registry_name
+  resource_group_name                   = azurerm_resource_group.agents[0].name
+  location                              = var.azure_location
+  sku                                   = var.use_private_networking ? "Premium" : "Basic"
+  public_network_access_enabled         = !var.use_private_networking
+  zone_redundancy_enabled               = var.use_private_networking && var.container_registry_zone_redundancy_enabled
+  network_rule_bypass_option            = var.use_private_networking ? "AzureServices" : "None"
+  network_rule_bypass_for_tasks_enabled = var.use_private_networking
 }
 
 resource "azurerm_container_registry_task" "alz" {
@@ -51,8 +41,7 @@ resource "azurerm_container_registry_task_schedule_run_now" "alz" {
     replace_triggered_by = [azurerm_container_registry_task.alz]
   }
   depends_on = [
-    azurerm_role_assignment.container_registry_push_for_task,
-    azapi_update_resource.network_rule_bypass_allowed_for_tasks
+    azurerm_role_assignment.container_registry_push_for_task
   ]
 }
 
