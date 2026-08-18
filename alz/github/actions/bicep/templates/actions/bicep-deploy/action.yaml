@@ -197,10 +197,10 @@ runs:
                 } else {
                   try {
                     Write-Host "Re-authenticating to Azure using OIDC..." -ForegroundColor Cyan
-$oidcToken = Invoke-RestMethod -Method Get `
-  -Uri "$($env:ACTIONS_ID_TOKEN_REQUEST_URL)&audience=api://AzureADTokenExchange" `
-  -Headers @{ Authorization = "Bearer $($env:ACTIONS_ID_TOKEN_REQUEST_TOKEN)" } `
-  -ErrorAction Stop
+                    $oidcToken = Invoke-RestMethod -Method Get `
+                      -Uri "$($env:ACTIONS_ID_TOKEN_REQUEST_URL)&audience=api://AzureADTokenExchange" `
+                      -Headers @{ Authorization = "Bearer $($env:ACTIONS_ID_TOKEN_REQUEST_TOKEN)" } `
+                      -ErrorAction Stop
                     Disable-AzContextAutosave -Scope Process | Out-Null
                     Connect-AzAccount -ServicePrincipal `
                       -ApplicationId $env:AZURE_CLIENT_ID `
