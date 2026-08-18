@@ -87,6 +87,8 @@ jobs:
       contents: read
     env:
       PARAMETERS_FILE_NAME: parameters.json
+      AZURE_CLIENT_ID: $${{ vars.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: $${{ vars.AZURE_TENANT_ID }}
 
     steps:
       - name: Show inputs
