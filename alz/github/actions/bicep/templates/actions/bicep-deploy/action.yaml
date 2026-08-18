@@ -187,6 +187,30 @@ runs:
                 Write-Host "Retrying deployment stack after $retryDelay seconds..." -ForegroundColor Yellow
                 Start-Sleep -Seconds $retryDelay
                 Write-Host "Retry attempt $retryCount" -ForegroundColor Yellow
+                if (
+                  [string]::IsNullOrWhiteSpace($env:ACTIONS_ID_TOKEN_REQUEST_URL) -or
+                  [string]::IsNullOrWhiteSpace($env:ACTIONS_ID_TOKEN_REQUEST_TOKEN) -or
+                  [string]::IsNullOrWhiteSpace($env:AZURE_CLIENT_ID) -or
+                  [string]::IsNullOrWhiteSpace($env:AZURE_TENANT_ID)
+                ) {
+                  Write-Warning "Skipping re-authentication because required OIDC variables are unavailable."
+                } else {
+                  try {
+                    Write-Host "Re-authenticating to Azure using OIDC..." -ForegroundColor Cyan
+                    $oidcToken = Invoke-RestMethod `
+                      -Uri "$($env:ACTIONS_ID_TOKEN_REQUEST_URL)&audience=api://AzureADTokenExchange" `
+                      -Headers @{ Authorization = "Bearer $($env:ACTIONS_ID_TOKEN_REQUEST_TOKEN)" }
+                    Disable-AzContextAutosave -Scope Process | Out-Null
+                    Connect-AzAccount -ServicePrincipal `
+                      -ApplicationId $env:AZURE_CLIENT_ID `
+                      -TenantId $env:AZURE_TENANT_ID `
+                      -FederatedToken $oidcToken.value `
+                      -ErrorAction Stop | Out-Null
+                    Write-Host "Re-authentication succeeded" -ForegroundColor Green
+                  } catch {
+                    Write-Warning "Re-authentication failed: $($_.Exception.Message). Continuing with the existing Azure context."
+                  }
+                }
               }
 
               $result = $null
@@ -334,3 +358,5 @@ runs:
         DEPLOYMENT_TYPE: $${{ inputs.deploymentType }}
         FIRST_RUN_WHAT_IF: $${{ inputs.firstRunWhatIf }}
         WHAT_IF_ENABLED: $${{ inputs.whatIfEnabled }}
+        AZURE_CLIENT_ID: $${{ env.AZURE_CLIENT_ID }}
+        AZURE_TENANT_ID: $${{ env.AZURE_TENANT_ID }}
