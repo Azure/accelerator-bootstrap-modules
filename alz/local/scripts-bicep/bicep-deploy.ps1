@@ -31,7 +31,42 @@ Write-Host "Resource Group Name: $resourceGroupName" -ForegroundColor DarkGray
 Write-Host "Location: $location" -ForegroundColor DarkGray
 Write-Host "Deployment Type: $deploymentType" -ForegroundColor DarkGray
 
-$deploymentName = $name
+$deploymentPrefix = $intRootMgId
+$deploymentNameOriginalBase = $name
+if ([string]::IsNullOrWhiteSpace($deploymentNameOriginalBase)) {
+    $deploymentNameOriginalBase = "deployment"
+}
+$deploymentNameOriginalBase = $deploymentNameOriginalBase.Replace(" ", "-")
+$deploymentNameHashLength = 10
+$hashInput = "$deploymentPrefix|$deploymentNameOriginalBase"
+$sha256 = [System.Security.Cryptography.SHA256]::Create()
+try {
+    $hashBytes = $sha256.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($hashInput))
+} finally {
+    $sha256.Dispose()
+}
+$deploymentNameSuffix = [System.BitConverter]::ToString($hashBytes).Replace("-", "").Substring(0, $deploymentNameHashLength).ToLower()
+
+$deploymentNameLegacy = $deploymentNameOriginalBase
+
+if ($deploymentNameLegacy.Length -le 64) {
+    # Preserve legacy local naming to keep backward compatibility when length already fits.
+    $deploymentName = $deploymentNameLegacy
+} else {
+    # Keep room for "-<base>-<hash>" and trim an oversized prefix safely.
+    $deploymentPrefixMaxLength = [Math]::Max(1, 64 - $deploymentNameHashLength - 3)
+    if ($deploymentPrefix.Length -gt $deploymentPrefixMaxLength) {
+        $deploymentPrefix = $deploymentPrefix.Substring(0, $deploymentPrefixMaxLength)
+    }
+
+    $deploymentNameBaseMaxLength = [Math]::Max(1, 64 - $deploymentPrefix.Length - $deploymentNameHashLength - 2)
+    $deploymentNameBase = $deploymentNameOriginalBase
+    if ($deploymentNameBase.Length -gt $deploymentNameBaseMaxLength) {
+        $deploymentNameBase = $deploymentNameBase.Substring(0, $deploymentNameBaseMaxLength)
+    }
+
+    $deploymentName = "$deploymentPrefix-$deploymentNameBase-$deploymentNameSuffix"
+}
 Write-Host "Deployment Stack Name: $deploymentName"
 Write-Host ""
 
