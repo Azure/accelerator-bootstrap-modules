@@ -37,6 +37,14 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Azure Login
+        if: vars.USE_STORAGE_ACCOUNT_FOR_PLAN == 'true'
+        uses: azure/login@v2
+        with:
+          client-id: $${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: $${{ vars.AZURE_TENANT_ID }}
+          subscription-id: $${{ vars.AZURE_SUBSCRIPTION_ID }}
+
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
         with:
@@ -53,29 +61,136 @@ jobs:
           -backend-config="container_name=$${{vars.BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME}}" \
           -backend-config="key=terraform.tfstate"
 
-      - name: Terraform Plan for $${{ inputs.terraform_action == 'destroy' && 'Destroy' || 'Apply' }}
+      - name: Prepare Plan Working Directory
+        id: plan_paths
+        shell: pwsh
         run: |
-          # shellcheck disable=SC2086
+          $planDir = Join-Path $env:RUNNER_TEMP "plan-$${{ github.run_id }}-$${{ github.run_attempt }}"
+          if (Test-Path -Path $planDir) {
+            Remove-Item -Path $planDir -Recurse -Force
+          }
+          New-Item -Path $planDir -ItemType Directory -Force | Out-Null
+          "plan_dir=$planDir" >> $env:GITHUB_OUTPUT
+
+      - name: Terraform Plan for $${{ inputs.terraform_action == 'destroy' && 'Destroy' || 'Apply' }}
+        shell: pwsh
+        run: |
+          $action = "$${{ inputs.terraform_action }}"
+          $planFile = Join-Path "$${{ steps.plan_paths.outputs.plan_dir }}" "tfplan"
+          $planLogFile = Join-Path "$${{ steps.plan_paths.outputs.plan_dir }}" "tfplan.log"
+
+          $command = "terraform"
+          $arguments = @()
+          $arguments += "-chdir=$${{ inputs.root_module_folder_relative_path }}"
+          $arguments += "plan"
+          $arguments += "-out=$planFile"
+          $arguments += "-input=false"
+
+          if ($action -eq 'destroy') {
+            $arguments += "-destroy"
+          }
+
+          Write-Host "Running: $command $arguments"
+          & $command $arguments *> $planLogFile
+          $planExitCode = $LASTEXITCODE
+
+          if ($planExitCode -ne 0) {
+            # A failed plan can still have streamed resource attribute values to the log before
+            # the error occurred. Only print the full captured output when the pipeline is
+            # explicitly configured to show plan content; otherwise print just Terraform's own
+            # diagnostic block(s) (its boxed "Error:"/"Warning:" sections), never the resource diff.
+            $showPlanInPipelineLogs = "$${{ vars.SHOW_PLAN_IN_PIPELINE_LOGS }}" -eq 'true'
+            if ($showPlanInPipelineLogs) {
+              Get-Content -Path $planLogFile | Write-Host
+            } else {
+              $logContent = Get-Content -Path $planLogFile -Raw
+              $diagnosticBlocks = [regex]::Matches($logContent, "(?ms)^\u2577.*?^\u2575")
+              if ($diagnosticBlocks.Count -gt 0) {
+                foreach ($block in $diagnosticBlocks) {
+                  Write-Host $block.Value
+                }
+              } else {
+                Write-Host "Terraform plan failed. Set SHOW_PLAN_IN_PIPELINE_LOGS to true on this environment to see full plan output for troubleshooting."
+              }
+            }
+            throw "Terraform plan failed with exit code $planExitCode."
+          }
+
+      - name: Show the Plan for Review
+        if: vars.SHOW_PLAN_IN_PIPELINE_LOGS == 'true'
+        shell: pwsh
+        run: |
+          $planFile = Join-Path "$${{ steps.plan_paths.outputs.plan_dir }}" "tfplan"
           terraform \
           -chdir="$${{inputs.root_module_folder_relative_path}}" \
-          plan \
-          -out=tfplan \
-          -input=false \
-          $${{ inputs.terraform_action == 'destroy' && '-destroy' || '' }}
+          show \
+          $planFile
+
+      - name: Upload Plan to Storage
+        if: vars.USE_STORAGE_ACCOUNT_FOR_PLAN == 'true'
+        shell: pwsh
+        run: |
+          $planFile = Join-Path "$${{ steps.plan_paths.outputs.plan_dir }}" "tfplan"
+          $storageAccount = "$${{ vars.BACKEND_AZURE_STORAGE_ACCOUNT_NAME }}"
+          $container = "$${{ vars.PLAN_STORAGE_CONTAINER_NAME }}"
+          $blobName = "runs/$${{ github.run_id }}/tfplan"
+          $localLength = (Get-Item -Path $planFile).Length
+
+          $maxAttempts = 3
+          $delaySeconds = 5
+          $uploaded = $false
+          for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+            az storage blob upload `
+              --account-name $storageAccount `
+              --container-name $container `
+              --name $blobName `
+              --file $planFile `
+              --auth-mode login `
+              --overwrite `
+              --only-show-errors
+            if ($LASTEXITCODE -eq 0) {
+              $uploaded = $true
+              break
+            }
+            Write-Host "Upload attempt $attempt failed with exit code $LASTEXITCODE."
+            if ($attempt -lt $maxAttempts) {
+              Start-Sleep -Seconds $delaySeconds
+              $delaySeconds *= 2
+            }
+          }
+          if (-not $uploaded) {
+            throw "Failed to upload plan blob '$blobName' after $maxAttempts attempts."
+          }
+
+          $remoteLength = az storage blob show `
+            --account-name $storageAccount `
+            --container-name $container `
+            --name $blobName `
+            --auth-mode login `
+            --query properties.contentLength `
+            --only-show-errors `
+            -o tsv
+          if ([string]::IsNullOrEmpty($remoteLength) -or [int64]$remoteLength -ne $localLength) {
+            throw "Uploaded plan blob '$blobName' content length ($remoteLength) does not match local file ($localLength)."
+          }
 
       - name: Create Module Artifact
+        shell: pwsh
         run: |
           $stagingDirectory = "staging"
           $rootModuleFolder = "$${{inputs.root_module_folder_relative_path}}"
           New-Item -Path . -Name $stagingDirectory -ItemType "directory"
-          Copy-Item -Path "./*" -Exclude @(".git", ".terraform", ".github",  $stagingDirectory) -Recurse -Destination "./$stagingDirectory"
+          Copy-Item -Path "./*" -Exclude @(".git", ".terraform", ".github", $stagingDirectory) -Recurse -Destination "./$stagingDirectory"
 
           $rootModuleFolderTerraformFolder = Join-Path -Path "./$stagingDirectory" -ChildPath $rootModuleFolder -AdditionalChildPath ".terraform"
           if(Test-Path -Path $rootModuleFolderTerraformFolder) {
             Remove-Item -Path $rootModuleFolderTerraformFolder -Recurse -Force
           }
 
-        shell: pwsh
+          if ("$${{ vars.USE_STORAGE_ACCOUNT_FOR_PLAN }}" -ne 'true') {
+            $planFile = Join-Path "$${{ steps.plan_paths.outputs.plan_dir }}" "tfplan"
+            Copy-Item -Path $planFile -Destination "./$stagingDirectory/tfplan"
+          }
 
       - name: Publish Module Artifact
         uses: actions/upload-artifact@v4
@@ -83,12 +198,14 @@ jobs:
           name: module
           path: ./staging/
 
-      - name: Show the Plan for Review
+      - name: Clean Up Plan Working Directory
+        if: always()
+        shell: pwsh
         run: |
-          terraform \
-          -chdir="$${{inputs.root_module_folder_relative_path}}" \
-          show \
-          tfplan
+          $planDir = "$${{ steps.plan_paths.outputs.plan_dir }}"
+          if (-not [string]::IsNullOrEmpty($planDir) -and (Test-Path -Path $planDir)) {
+            Remove-Item -Path $planDir -Recurse -Force
+          }
 
   apply:
     needs: plan
@@ -114,11 +231,67 @@ jobs:
         with:
           name: module
 
+      - name: Azure Login
+        if: vars.USE_STORAGE_ACCOUNT_FOR_PLAN == 'true'
+        uses: azure/login@v2
+        with:
+          client-id: $${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: $${{ vars.AZURE_TENANT_ID }}
+          subscription-id: $${{ vars.AZURE_SUBSCRIPTION_ID }}
+
       - name: Install Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_wrapper: false
           terraform_version: $${{ inputs.terraform_cli_version }}
+
+      - name: Prepare Plan Working Directory
+        id: plan_paths
+        shell: pwsh
+        run: |
+          $planDir = Join-Path $env:RUNNER_TEMP "apply-$${{ github.run_id }}-$${{ github.run_attempt }}"
+          if (Test-Path -Path $planDir) {
+            Remove-Item -Path $planDir -Recurse -Force
+          }
+          New-Item -Path $planDir -ItemType Directory -Force | Out-Null
+          "plan_dir=$planDir" >> $env:GITHUB_OUTPUT
+
+      - name: Download Plan from Storage
+        if: vars.USE_STORAGE_ACCOUNT_FOR_PLAN == 'true'
+        shell: pwsh
+        run: |
+          $planFile = Join-Path "$${{ steps.plan_paths.outputs.plan_dir }}" "tfplan"
+          $storageAccount = "$${{ vars.BACKEND_AZURE_STORAGE_ACCOUNT_NAME }}"
+          $container = "$${{ vars.PLAN_STORAGE_CONTAINER_NAME }}"
+          $blobName = "runs/$${{ github.run_id }}/tfplan"
+
+          $maxAttempts = 3
+          $delaySeconds = 5
+          $downloaded = $false
+          for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+            az storage blob download `
+              --account-name $storageAccount `
+              --container-name $container `
+              --name $blobName `
+              --file $planFile `
+              --auth-mode login `
+              --only-show-errors
+            if ($LASTEXITCODE -eq 0) {
+              $downloaded = $true
+              break
+            }
+            Write-Host "Download attempt $attempt failed with exit code $LASTEXITCODE."
+            if ($attempt -lt $maxAttempts) {
+              Start-Sleep -Seconds $delaySeconds
+              $delaySeconds *= 2
+            }
+          }
+          if (-not $downloaded) {
+            throw "Failed to download plan blob '$blobName' after $maxAttempts attempts. Failing closed: no fallback to a stale or missing plan."
+          }
+          if (-not (Test-Path -Path $planFile) -or (Get-Item -Path $planFile).Length -eq 0) {
+            throw "Downloaded plan blob '$blobName' is missing or empty."
+          }
 
       - name: Terraform Init
         run: |
@@ -131,10 +304,58 @@ jobs:
           -backend-config="key=terraform.tfstate"
 
       - name: Terraform $${{ inputs.terraform_action == 'destroy' && 'Destroy' || 'Apply' }}
+        shell: pwsh
         run: |
+          if ("$${{ vars.USE_STORAGE_ACCOUNT_FOR_PLAN }}" -eq 'true') {
+            $planFile = Join-Path "$${{ steps.plan_paths.outputs.plan_dir }}" "tfplan"
+          } else {
+            $planFile = "tfplan"
+          }
+
           terraform \
           -chdir="$${{inputs.root_module_folder_relative_path}}" \
           apply \
           -input=false \
           -auto-approve \
-          tfplan
+          $planFile
+
+      - name: Delete Applied Plan from Storage
+        if: success() && vars.USE_STORAGE_ACCOUNT_FOR_PLAN == 'true'
+        shell: pwsh
+        run: |
+          $storageAccount = "$${{ vars.BACKEND_AZURE_STORAGE_ACCOUNT_NAME }}"
+          $container = "$${{ vars.PLAN_STORAGE_CONTAINER_NAME }}"
+          $blobName = "runs/$${{ github.run_id }}/tfplan"
+
+          $maxAttempts = 3
+          $delaySeconds = 5
+          $deleted = $false
+          for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+            az storage blob delete `
+              --account-name $storageAccount `
+              --container-name $container `
+              --name $blobName `
+              --auth-mode login `
+              --only-show-errors
+            if ($LASTEXITCODE -eq 0) {
+              $deleted = $true
+              break
+            }
+            Write-Host "Delete attempt $attempt failed with exit code $LASTEXITCODE."
+            if ($attempt -lt $maxAttempts) {
+              Start-Sleep -Seconds $delaySeconds
+              $delaySeconds *= 2
+            }
+          }
+          if (-not $deleted) {
+            Write-Warning "Failed to delete applied plan blob '$blobName' after $maxAttempts attempts. It will be removed automatically by the container's lifecycle policy."
+          }
+
+      - name: Clean Up Plan Working Directory
+        if: always()
+        shell: pwsh
+        run: |
+          $planDir = "$${{ steps.plan_paths.outputs.plan_dir }}"
+          if (-not [string]::IsNullOrEmpty($planDir) -and (Test-Path -Path $planDir)) {
+            Remove-Item -Path $planDir -Recurse -Force
+          }

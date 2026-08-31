@@ -113,6 +113,36 @@ variable "storage_container_name" {
   type        = string
 }
 
+variable "create_plan_storage_container" {
+  description = <<-EOT
+    **(Optional, default: `false`)** Controls whether to create the transient blob container used to hand
+    off a Terraform plan file from the plan job to the apply job instead of a native pipeline artifact.
+
+    Only takes effect when `create_storage_account` is also `true`. When `false`, no plan container,
+    plan-container role assignments, or plan-retention lifecycle rule are created.
+  EOT
+  type        = bool
+  default     = false
+}
+
+variable "plan_storage_container_name" {
+  description = <<-EOT
+    **(Required when `create_plan_storage_container` is `true`)** Deterministic name of the blob container
+    used to store Terraform plan files uploaded by the plan job and downloaded by the apply job.
+  EOT
+  type        = string
+  default     = null
+}
+
+variable "plan_storage_retention_days" {
+  description = <<-EOT
+    **(Optional, default: `7`)** Number of days after which abandoned plan blobs (base blobs, snapshots,
+    and previous versions) under `<plan-container>/runs/` become eligible for lifecycle deletion.
+  EOT
+  type        = number
+  default     = 7
+}
+
 variable "storage_account_replication_type" {
   description = <<-EOT
     **(Optional, default: `"ZRS"`)** Replication strategy for the storage account.
