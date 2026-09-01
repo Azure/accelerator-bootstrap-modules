@@ -121,10 +121,15 @@ jobs:
         shell: pwsh
         run: |
           $planFile = Join-Path "$${{ steps.plan_paths.outputs.plan_dir }}" "tfplan"
-          terraform \
-          -chdir="$${{inputs.root_module_folder_relative_path}}" \
-          show \
-          $planFile
+          $arguments = @(
+            "-chdir=$${{ inputs.root_module_folder_relative_path }}"
+            "show"
+            $planFile
+          )
+          & terraform $arguments
+          if ($LASTEXITCODE -ne 0) {
+            throw "Terraform show failed with exit code $LASTEXITCODE."
+          }
 
       - name: Upload Plan to Storage
         if: vars.USE_STORAGE_ACCOUNT_FOR_PLAN == 'true'
@@ -312,12 +317,18 @@ jobs:
             $planFile = "tfplan"
           }
 
-          terraform \
-          -chdir="$${{inputs.root_module_folder_relative_path}}" \
-          apply \
-          -input=false \
-          -auto-approve \
-          $planFile
+          $arguments = @(
+            "-chdir=$${{ inputs.root_module_folder_relative_path }}"
+            "apply"
+            "-input=false"
+            "-auto-approve"
+            $planFile
+          )
+
+          & terraform $arguments
+          if ($LASTEXITCODE -ne 0) {
+            throw "Terraform apply failed with exit code $LASTEXITCODE."
+          }
 
       - name: Delete Applied Plan from Storage
         if: success() && vars.USE_STORAGE_ACCOUNT_FOR_PLAN == 'true'
