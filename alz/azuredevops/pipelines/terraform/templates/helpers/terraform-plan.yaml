@@ -29,12 +29,17 @@ steps:
         $env:ARM_CLIENT_ID = $clientId
         $env:ARM_USE_AZUREAD = "true"
 
+        # Keep the plan file and its captured output outside the sources directory so neither can be
+        # swept into the published pipeline artifact (Azure/Azure-Landing-Zones#4174).
+        $planFile = Join-Path $env:ALZ_PLAN_DIR "tfplan"
+        $planLogFile = Join-Path $env:ALZ_PLAN_DIR "tfplan.log"
+
         # Run Terraform Plan
         $command = "terraform"
         $arguments = @()
         $arguments += "-chdir=$${{ parameters.root_module_folder_relative_path }}"
         $arguments += "plan"
-        $arguments += "-out=tfplan"
+        $arguments += "-out=$planFile"
         $arguments += "-input=false"
 
         if ($env:TERRAFORM_ACTION -eq 'destroy') {
@@ -42,7 +47,37 @@ steps:
         }
 
         Write-Host "Running: $command $arguments"
-        & $command $arguments
+        & $command $arguments *> $planLogFile
+        $planExitCode = $LASTEXITCODE
+
+        # Only print the full captured output when the pipeline is explicitly configured to show plan
+        # content. A failed plan can still have streamed resource attribute values to the log before the
+        # error occurred, so the failure path prints just Terraform's own diagnostic block(s) - its boxed
+        # "Error:"/"Warning:" sections - never the resource diff.
+        $showPlanInPipelineLogs = $env:ALZ_SHOW_PLAN_IN_PIPELINE_LOGS -eq 'true'
+        if ($showPlanInPipelineLogs) {
+          Get-Content -Path $planLogFile | Write-Host
+        } elseif ($planExitCode -ne 0) {
+          $logContent = Get-Content -Path $planLogFile -Raw
+          $diagnosticBlocks = [regex]::Matches($logContent, "(?ms)^\u2577.*?^\u2575")
+          if ($diagnosticBlocks.Count -gt 0) {
+            foreach ($block in $diagnosticBlocks) {
+              Write-Host $block.Value
+            }
+          } else {
+            Write-Host "Terraform plan failed. Set SHOW_PLAN_IN_PIPELINE_LOGS to true on the pipeline variable group to see full plan output for troubleshooting."
+          }
+        } else {
+          Write-Host "Terraform plan succeeded. Set SHOW_PLAN_IN_PIPELINE_LOGS to true on the pipeline variable group to see the full plan output."
+        }
+
+        Remove-Item -Path $planLogFile -Force -ErrorAction SilentlyContinue
+
+        if ($planExitCode -ne 0) {
+          throw "Terraform plan failed with exit code $planExitCode."
+        }
 
     env:
       TERRAFORM_ACTION: $${{ coalesce(parameters.terraform_action, 'apply') }}
+      ALZ_PLAN_DIR: $(alzPlanDir)
+      ALZ_SHOW_PLAN_IN_PIPELINE_LOGS: $(SHOW_PLAN_IN_PIPELINE_LOGS)

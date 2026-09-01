@@ -193,8 +193,13 @@ jobs:
           }
 
           if ("$${{ vars.USE_STORAGE_ACCOUNT_FOR_PLAN }}" -ne 'true') {
+            # Legacy behaviour: the plan travels inside the artifact, readable by anyone who can read the
+            # workflow run. It must land at the same root-module-relative path the apply job reads it back
+            # from, which is not necessarily the artifact root.
             $planFile = Join-Path "$${{ steps.plan_paths.outputs.plan_dir }}" "tfplan"
-            Copy-Item -Path $planFile -Destination "./$stagingDirectory/tfplan"
+            $destinationFolder = Join-Path "./$stagingDirectory" $rootModuleFolder
+            New-Item -Path $destinationFolder -ItemType Directory -Force | Out-Null
+            Copy-Item -Path $planFile -Destination (Join-Path $destinationFolder "tfplan") -Force
           }
 
       - name: Publish Module Artifact

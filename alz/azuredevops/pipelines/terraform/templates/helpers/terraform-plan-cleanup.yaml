@@ -1,0 +1,14 @@
+---
+steps:
+  # The path arrives as an environment variable rather than an inline $(alzPlanDir) macro so that an
+  # unset variable degrades to a harmless literal string instead of being evaluated as PowerShell.
+  - pwsh: |
+      $planDir = $env:ALZ_PLAN_DIR
+      if (-not [string]::IsNullOrEmpty($planDir) -and (Test-Path -Path $planDir)) {
+        Remove-Item -Path $planDir -Recurse -Force
+        Write-Host "Removed plan working directory '$planDir'."
+      }
+    displayName: Clean Up Plan Working Directory
+    condition: always()
+    env:
+      ALZ_PLAN_DIR: $(alzPlanDir)
