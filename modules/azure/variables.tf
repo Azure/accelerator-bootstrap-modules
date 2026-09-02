@@ -138,6 +138,8 @@ variable "plan_storage_retention_days" {
   description = <<-EOT
     **(Optional, default: `7`)** Number of days after which abandoned plan blobs (base blobs, snapshots,
     and previous versions) under `<plan-container>/runs/` become eligible for lifecycle deletion.
+    Choose a value longer than the longest expected plan-to-apply approval wait. Expired plans must be
+    regenerated rather than applied.
   EOT
   type        = number
   default     = 7

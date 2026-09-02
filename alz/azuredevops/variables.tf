@@ -617,6 +617,8 @@ variable "plan_storage_retention_days" {
     snapshots, and previous versions) become eligible for lifecycle deletion.
 
     Only applies when `use_storage_account_for_plan` is `true`. Must be a positive whole number.
+    Choose a value longer than the longest expected plan-to-apply approval wait. If a plan expires
+    before approval, rerun the pipeline to generate a fresh plan.
   EOT
   type        = number
   default     = 7
