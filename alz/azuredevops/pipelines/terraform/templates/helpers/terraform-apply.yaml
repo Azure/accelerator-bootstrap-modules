@@ -30,12 +30,28 @@ steps:
         $env:ARM_USE_AZUREAD = "true"
         $env:AZAPI_RETRY_GET_AFTER_PUT_MAX_TIME = "60m" # Accounts for eventually consistent management group permissions propagation
 
+        # When the plan is handed off through Blob Storage it was downloaded into the agent temp
+        # directory; the legacy path still reads it from the extracted pipeline artifact.
+        if ($env:ALZ_USE_STORAGE_ACCOUNT_FOR_PLAN -eq 'true') {
+          $planFile = Join-Path $env:ALZ_PLAN_DIR "tfplan"
+        } else {
+          $planFile = "tfplan"
+        }
+
         # Run Terraform Apply
         $command = "terraform"
         $arguments = @()
         $arguments += "-chdir=$${{ parameters.root_module_folder_relative_path }}"
         $arguments += "apply"
+        $arguments += "-input=false"
         $arguments += "-auto-approve"
-        $arguments += "tfplan"
+        $arguments += $planFile
         Write-Host "Running: $command $arguments"
         & $command $arguments
+        if ($LASTEXITCODE -ne 0) {
+          throw "Terraform apply failed with exit code $LASTEXITCODE."
+        }
+
+    env:
+      ALZ_PLAN_DIR: $(alzPlanDir)
+      ALZ_USE_STORAGE_ACCOUNT_FOR_PLAN: $(USE_STORAGE_ACCOUNT_FOR_PLAN)

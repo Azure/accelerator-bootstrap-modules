@@ -587,6 +587,48 @@ variable "storage_account_replication_type" {
   default     = "ZRS"
 }
 
+variable "use_storage_account_for_plan" {
+  description = <<-EOT
+    **(Optional, default: `true`)** Use the state storage account to hand a Terraform plan file off between
+    the generated CD pipeline's plan and apply stages, instead of a native Azure Pipelines artifact.
+
+    `false` deliberately restores the legacy behavior of copying `tfplan` into the published module
+    artifact, where it is downloadable by anyone who can read the pipeline run.
+  EOT
+  type        = bool
+  default     = true
+}
+
+variable "show_plan_in_pipeline_logs" {
+  description = <<-EOT
+    **(Optional, default: `false`)** Allow the generated CI/CD pipelines to print the full human-readable
+    Terraform plan to the pipeline logs.
+
+    This is an explicit risk acceptance. When `false`, a plan failure prints only Terraform's own
+    diagnostic block(s) or a generic failure notice, never the resource diff.
+  EOT
+  type        = bool
+  default     = false
+}
+
+variable "plan_storage_retention_days" {
+  description = <<-EOT
+    **(Optional, default: `7`)** Number of days after which abandoned Terraform plan blobs (base blobs,
+    snapshots, and previous versions) become eligible for lifecycle deletion.
+
+    Only applies when `use_storage_account_for_plan` is `true`. Must be a positive whole number.
+    Choose a value longer than the longest expected plan-to-apply approval wait. If a plan expires
+    before approval, rerun the pipeline to generate a fresh plan.
+  EOT
+  type        = number
+  default     = 7
+
+  validation {
+    condition     = var.plan_storage_retention_days > 0 && var.plan_storage_retention_days == floor(var.plan_storage_retention_days)
+    error_message = "plan_storage_retention_days must be a positive whole number."
+  }
+}
+
 variable "bicep_config_file_path" {
   description = <<-EOT
     **(Optional, default: `".config/ALZ-Powershell.config.json"`)** Path to the Bicep configuration file.

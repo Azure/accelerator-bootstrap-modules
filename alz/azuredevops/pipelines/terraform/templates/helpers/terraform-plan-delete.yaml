@@ -1,0 +1,44 @@
+---
+parameters:
+  - name: serviceConnection
+
+steps:
+  - task: AzureCLI@2
+    displayName: Delete Applied Plan from Storage
+    condition: and(succeeded(), eq(variables['USE_STORAGE_ACCOUNT_FOR_PLAN'], 'true'))
+    inputs:
+      azureSubscription: $${{ parameters.serviceConnection }}
+      scriptType: pscore
+      scriptLocation: inlineScript
+      inlineScript: |
+        $storageAccount = $env:ALZ_STORAGE_ACCOUNT
+        $container = $env:ALZ_PLAN_CONTAINER
+        $blobName = "runs/$env:ALZ_BUILD_ID/tfplan"
+
+        $maxAttempts = 3
+        $delaySeconds = 5
+        $deleted = $false
+        for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+          az storage blob delete `
+            --account-name $storageAccount `
+            --container-name $container `
+            --name $blobName `
+            --auth-mode login `
+            --only-show-errors
+          if ($LASTEXITCODE -eq 0) {
+            $deleted = $true
+            break
+          }
+          Write-Host "Delete attempt $attempt failed with exit code $LASTEXITCODE."
+          if ($attempt -lt $maxAttempts) {
+            Start-Sleep -Seconds $delaySeconds
+            $delaySeconds *= 2
+          }
+        }
+        if (-not $deleted) {
+          Write-Warning "Failed to delete applied plan blob '$blobName' after $maxAttempts attempts. It will be removed automatically by the container's lifecycle policy."
+        }
+    env:
+      ALZ_STORAGE_ACCOUNT: $(BACKEND_AZURE_STORAGE_ACCOUNT_NAME)
+      ALZ_PLAN_CONTAINER: $(PLAN_STORAGE_CONTAINER_NAME)
+      ALZ_BUILD_ID: $(Build.BuildId)
