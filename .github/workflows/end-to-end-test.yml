@@ -133,7 +133,7 @@ jobs:
         if: ${{ matrix.terraformVersion != 'latest' }}
 
       - name: Azure login
-        uses: azure/login@v2
+        uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
         with:
           client-id: ${{ vars.ARM_CLIENT_ID }}
           tenant-id: ${{ vars.ARM_TENANT_ID }}
@@ -562,7 +562,7 @@ jobs:
           ARM_USE_OIDC: true
 
       - name: Azure login for a new access token
-        uses: azure/login@v2
+        uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
         with:
           client-id: ${{ vars.ARM_CLIENT_ID }}
           tenant-id: ${{ vars.ARM_TENANT_ID }}
