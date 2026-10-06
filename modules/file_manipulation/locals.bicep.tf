@@ -27,7 +27,7 @@ locals {
 
   bicep_module_files_templated = { for key, value in local.bicep_module_files_prepped_for_templating : key =>
     {
-      content = replace(templatestring(value.content, local.bicep_module_file_replacements), "$$${", "$${")
+      content = replace(replace(templatestring(value.content, local.bicep_module_file_replacements), "subscriptionsToPlaceInManagementGroup: ['']", "subscriptionsToPlaceInManagementGroup: []"), "$$${", "$${")
     }
   }
 
