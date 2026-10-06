@@ -39,7 +39,7 @@ runs:
   using: "composite"
   steps:
     - name: Run Bicep Deploy with Deployment Stack
-      uses: azure/powershell@v2
+      uses: azure/powershell@f5b8adcfff1904872c7b98d4012d4914d74b1a82 # v3.0.0
       with:
         azPSVersion: 'latest'
         inlineScript: |
