@@ -65,7 +65,7 @@ jobs:
 
     steps:
       - name: Checkout Bootstrap Modules
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: ${{ env.BOOTSTRAP_MODULE_FOLDER }}
       - name: Generate Matrix
@@ -90,19 +90,19 @@ jobs:
     runs-on: ${{ matrix.operatingSystem }}-latest
     steps:
       - name: Checkout Bootstrap Modules
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           path: ${{ env.BOOTSTRAP_MODULE_FOLDER }}
 
       - name: Checkout PowerShell Module
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ${{ env.POWERSHELL_MODULE_REPOSITORY }}
           ref: ${{ env.ALZ_POWERSHELL_BRANCH }}
           path: ${{ env.POWERSHELL_MODULE_FOLDER }}
 
       - name: Checkout Starter Modules for Bicep
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: ${{ matrix.infrastructureAsCode == 'bicep' }}
         with:
           repository: ${{ env.BICEP_STARTER_MODULE_REPOSITORY }}
@@ -110,7 +110,7 @@ jobs:
           path: ${{ env.STARTER_MODULE_FOLDER }}
 
       - name: Checkout Starter Modules for Bicep Classic
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: ${{ matrix.infrastructureAsCode == 'bicep-classic' }}
         with:
           repository: ${{ env.BICEP_CLASSIC_STARTER_MODULE_REPOSITORY }}
@@ -118,7 +118,7 @@ jobs:
           path: ${{ env.STARTER_MODULE_FOLDER }}
 
       - name: Checkout Starter Modules for Terraform
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: ${{ matrix.infrastructureAsCode == 'terraform' }}
         with:
           repository: ${{ env.TERRAFORM_STARTER_MODULE_REPOSITORY }}
@@ -126,14 +126,14 @@ jobs:
           path: ${{ env.STARTER_MODULE_FOLDER }}
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
         with:
           terraform_version: ${{ matrix.terraformVersion }}
           terraform_wrapper: false
         if: ${{ matrix.terraformVersion != 'latest' }}
 
       - name: Azure login
-        uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         with:
           client-id: ${{ vars.ARM_CLIENT_ID }}
           tenant-id: ${{ vars.ARM_TENANT_ID }}
@@ -538,7 +538,7 @@ jobs:
         shell: pwsh
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
         with:
           terraform_version: "latest"
           terraform_wrapper: false
@@ -562,7 +562,7 @@ jobs:
           ARM_USE_OIDC: true
 
       - name: Azure login for a new access token
-        uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2.3.1
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         with:
           client-id: ${{ vars.ARM_CLIENT_ID }}
           tenant-id: ${{ vars.ARM_TENANT_ID }}
