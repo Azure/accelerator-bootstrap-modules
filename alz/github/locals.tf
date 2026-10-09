@@ -41,6 +41,18 @@ locals {
 }
 
 locals {
+  # Deterministic, bounded plan-container name (Azure/Azure-Landing-Zones#4174). Storage container names
+  # must be 3-63 characters, so a short state-container name gets a readable "-tfplan" suffix; a name that
+  # would overflow 63 characters instead gets a stable hash-derived name so it never exceeds the limit.
+  create_plan_storage_container = var.iac_type == local.iac_terraform && var.use_storage_account_for_plan
+  plan_storage_container_name = local.create_plan_storage_container ? (
+    length(local.resource_names.storage_container) <= 56 ?
+    "${local.resource_names.storage_container}-tfplan" :
+    "tfplan-${substr(sha256(local.resource_names.storage_container), 0, 32)}"
+  ) : null
+}
+
+locals {
   target_subscriptions = distinct([for v in values(var.subscription_ids) : v if v != null && v != ""])
 }
 

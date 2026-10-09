@@ -1,0 +1,52 @@
+---
+parameters:
+  - name: serviceConnection
+
+steps:
+  - task: AzureCLI@2
+    displayName: Download Plan from Storage
+    condition: and(succeeded(), eq(variables['USE_STORAGE_ACCOUNT_FOR_PLAN'], 'true'))
+    inputs:
+      azureSubscription: $${{ parameters.serviceConnection }}
+      scriptType: pscore
+      scriptLocation: inlineScript
+      inlineScript: |
+        $planFile = Join-Path $env:ALZ_PLAN_DIR "tfplan"
+        $storageAccount = $env:ALZ_STORAGE_ACCOUNT
+        $container = $env:ALZ_PLAN_CONTAINER
+        $blobName = "runs/$env:ALZ_BUILD_ID/tfplan"
+
+        $maxAttempts = 3
+        $delaySeconds = 5
+        $downloaded = $false
+        for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+          az storage blob download `
+            --account-name $storageAccount `
+            --container-name $container `
+            --name $blobName `
+            --file $planFile `
+            --auth-mode login `
+            --only-show-errors
+          if ($LASTEXITCODE -eq 0) {
+            $downloaded = $true
+            break
+          }
+          Write-Host "Download attempt $attempt failed with exit code $LASTEXITCODE."
+          if ($attempt -lt $maxAttempts) {
+            Start-Sleep -Seconds $delaySeconds
+            $delaySeconds *= 2
+          }
+        }
+        if (-not $downloaded) {
+          throw "Failed to download plan blob '$blobName' after $maxAttempts attempts. Failing closed: no fallback to a stale or missing plan."
+        }
+        if (-not (Test-Path -Path $planFile) -or (Get-Item -Path $planFile).Length -eq 0) {
+          throw "Downloaded plan blob '$blobName' is missing or empty."
+        }
+
+        Write-Host "Downloaded plan blob '$blobName' to '$planFile'."
+    env:
+      ALZ_PLAN_DIR: $(alzPlanDir)
+      ALZ_STORAGE_ACCOUNT: $(BACKEND_AZURE_STORAGE_ACCOUNT_NAME)
+      ALZ_PLAN_CONTAINER: $(PLAN_STORAGE_CONTAINER_NAME)
+      ALZ_BUILD_ID: $(Build.BuildId)
