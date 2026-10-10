@@ -7,6 +7,18 @@ variable "iac_type" {
   type        = string
 }
 
+variable "move_subscriptions_to_target_management_group" {
+  description = <<-EOT
+    **(Optional)** Whether to move the target subscriptions under the intermediate root management group.
+
+    Defaults to `true` for Terraform and Bicep (and `false` for bicep-classic). Set to `false` for brownfield
+    estates where the platform subscriptions are already placed in a management group hierarchy, to avoid
+    relocating them during bootstrap.
+  EOT
+  type        = bool
+  default     = null
+}
+
 variable "module_folder_path" {
   description = <<-EOT
     **(Required)** The filesystem path to the folder containing ALZ starter modules.
