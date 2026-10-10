@@ -20,10 +20,10 @@ jobs:
     environment: ${environment_name_plan}
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
         with:
           terraform_wrapper: false
           terraform_version: $${{ inputs.terraform_cli_version }}
@@ -71,10 +71,10 @@ jobs:
       ARM_USE_OIDC: true
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install Terraform
-        uses: hashicorp/setup-terraform@v3
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4.0.1
         with:
           terraform_wrapper: false
           terraform_version: $${{ inputs.terraform_cli_version }}
@@ -99,7 +99,7 @@ jobs:
 
       - name: Update Pull Request
         if: (success() || failure()) && github.event_name == 'pull_request'
-        uses: actions/github-script@v6
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           github-token: $${{ secrets.GITHUB_TOKEN }}
           script: |

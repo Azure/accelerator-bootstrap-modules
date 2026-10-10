@@ -27,7 +27,7 @@ runs:
       shell: pwsh
 
     - name: Upgrade AZ PowerShell
-      uses: azure/powershell@v2
+      uses: azure/powershell@f5b8adcfff1904872c7b98d4012d4914d74b1a82 # v3.0.0
       if: $${{ env.runPowerShellAzUpgrade == 'true' }}
       with:
         azPSVersion: '$${{ env.latestPowerShellAzVersion }}'
