@@ -138,6 +138,39 @@ variable "backend_azure_storage_account_container_name" {
   type        = string
 }
 
+variable "use_storage_account_for_plan" {
+  description = <<-EOT
+    **(Required)** Whether the generated CD workflow hands a Terraform plan file off between the plan and
+    apply jobs through the state storage account instead of a native GitHub Actions artifact.
+
+    Published to the repository as the `USE_STORAGE_ACCOUNT_FOR_PLAN` Actions variable, consumed by the
+    generated workflow. Only meaningful when `create_storage_account_variables` is `true`.
+  EOT
+  type        = bool
+}
+
+variable "show_plan_in_pipeline_logs" {
+  description = <<-EOT
+    **(Required)** Whether the generated CI/CD workflows are allowed to print the full human-readable
+    Terraform plan to the pipeline logs.
+
+    Published to the repository as the `SHOW_PLAN_IN_PIPELINE_LOGS` Actions variable. This is an explicit
+    risk acceptance; when `false` (the recommended default) only a generic failure notice or Terraform's
+    own diagnostic blocks are printed on plan failure, never the resource diff.
+  EOT
+  type        = bool
+}
+
+variable "backend_azure_storage_account_plan_container_name" {
+  description = <<-EOT
+    **(Optional, default: `null`)** Deterministic name of the blob container used to store Terraform plan
+    files. Published to the repository as the `PLAN_STORAGE_CONTAINER_NAME` Actions variable when not
+    null. Null when `use_storage_account_for_plan` is `false`.
+  EOT
+  type        = string
+  default     = null
+}
+
 variable "approvers" {
   description = <<-EOT
     **(Required)** List of GitHub usernames who are authorized to approve deployments in protected environments.

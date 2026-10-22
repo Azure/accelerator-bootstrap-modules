@@ -1,0 +1,70 @@
+---
+parameters:
+  - name: serviceConnection
+
+steps:
+  - task: AzureCLI@2
+    displayName: Upload Plan to Storage
+    condition: and(succeeded(), eq(variables['USE_STORAGE_ACCOUNT_FOR_PLAN'], 'true'))
+    inputs:
+      azureSubscription: $${{ parameters.serviceConnection }}
+      scriptType: pscore
+      scriptLocation: inlineScript
+      inlineScript: |
+        $planFile = Join-Path $env:ALZ_PLAN_DIR "tfplan"
+        $storageAccount = $env:ALZ_STORAGE_ACCOUNT
+        $container = $env:ALZ_PLAN_CONTAINER
+        $blobName = "runs/$env:ALZ_BUILD_ID/tfplan"
+
+        if (-not (Test-Path -Path $planFile)) {
+          throw "Plan file '$planFile' was not produced by the plan step."
+        }
+        $localLength = (Get-Item -Path $planFile).Length
+        if ($localLength -eq 0) {
+          throw "Plan file '$planFile' is empty."
+        }
+
+        $maxAttempts = 3
+        $delaySeconds = 5
+        $uploaded = $false
+        for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
+          az storage blob upload `
+            --account-name $storageAccount `
+            --container-name $container `
+            --name $blobName `
+            --file $planFile `
+            --auth-mode login `
+            --overwrite `
+            --only-show-errors
+          if ($LASTEXITCODE -eq 0) {
+            $uploaded = $true
+            break
+          }
+          Write-Host "Upload attempt $attempt failed with exit code $LASTEXITCODE."
+          if ($attempt -lt $maxAttempts) {
+            Start-Sleep -Seconds $delaySeconds
+            $delaySeconds *= 2
+          }
+        }
+        if (-not $uploaded) {
+          throw "Failed to upload plan blob '$blobName' after $maxAttempts attempts."
+        }
+
+        $remoteLength = az storage blob show `
+          --account-name $storageAccount `
+          --container-name $container `
+          --name $blobName `
+          --auth-mode login `
+          --query properties.contentLength `
+          --only-show-errors `
+          -o tsv
+        if ([string]::IsNullOrEmpty($remoteLength) -or [int64]$remoteLength -ne $localLength) {
+          throw "Uploaded plan blob '$blobName' content length ($remoteLength) does not match local file ($localLength)."
+        }
+
+        Write-Host "Uploaded plan blob '$blobName' ($localLength bytes) to container '$container'."
+    env:
+      ALZ_PLAN_DIR: $(alzPlanDir)
+      ALZ_STORAGE_ACCOUNT: $(BACKEND_AZURE_STORAGE_ACCOUNT_NAME)
+      ALZ_PLAN_CONTAINER: $(PLAN_STORAGE_CONTAINER_NAME)
+      ALZ_BUILD_ID: $(Build.BuildId)

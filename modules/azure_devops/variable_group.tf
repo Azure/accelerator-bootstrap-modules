@@ -19,6 +19,25 @@ resource "azuredevops_variable_group" "alz" {
     name  = "BACKEND_AZURE_STORAGE_ACCOUNT_CONTAINER_NAME"
     value = var.backend_azure_storage_account_container_name
   }
+
+  variable {
+    name  = "USE_STORAGE_ACCOUNT_FOR_PLAN"
+    value = var.use_storage_account_for_plan ? "true" : "false"
+  }
+
+  variable {
+    name  = "SHOW_PLAN_IN_PIPELINE_LOGS"
+    value = var.show_plan_in_pipeline_logs ? "true" : "false"
+  }
+
+  dynamic "variable" {
+    for_each = var.use_storage_account_for_plan && var.backend_azure_storage_account_plan_container_name != null ? [1] : []
+
+    content {
+      name  = "PLAN_STORAGE_CONTAINER_NAME"
+      value = var.backend_azure_storage_account_plan_container_name
+    }
+  }
 }
 
 moved {

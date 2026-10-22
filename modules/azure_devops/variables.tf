@@ -212,6 +212,39 @@ variable "backend_azure_storage_account_container_name" {
   type        = string
 }
 
+variable "use_storage_account_for_plan" {
+  description = <<-EOT
+    **(Required)** Whether the generated CD pipeline hands a Terraform plan file off between the plan and
+    apply stages through the state storage account instead of a native Azure Pipelines artifact.
+
+    Published to the pipeline variable group as `USE_STORAGE_ACCOUNT_FOR_PLAN`, consumed by the generated
+    pipeline templates. Only meaningful when `create_variable_group` is `true`.
+  EOT
+  type        = bool
+}
+
+variable "show_plan_in_pipeline_logs" {
+  description = <<-EOT
+    **(Required)** Whether the generated CI/CD pipelines are allowed to print the full human-readable
+    Terraform plan to the pipeline logs.
+
+    Published to the pipeline variable group as `SHOW_PLAN_IN_PIPELINE_LOGS`. This is an explicit risk
+    acceptance; when `false` (the recommended default) only a generic failure notice or Terraform's own
+    diagnostic blocks are printed on plan failure, never the resource diff.
+  EOT
+  type        = bool
+}
+
+variable "backend_azure_storage_account_plan_container_name" {
+  description = <<-EOT
+    **(Optional, default: `null`)** Deterministic name of the blob container used to store Terraform plan
+    files. Published to the pipeline variable group as `PLAN_STORAGE_CONTAINER_NAME` when not null. Null
+    when `use_storage_account_for_plan` is `false`.
+  EOT
+  type        = string
+  default     = null
+}
+
 variable "approvers" {
   description = <<-EOT
     **(Required)** List of Azure DevOps user principal names (emails) authorized to approve deployments.

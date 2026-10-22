@@ -1,0 +1,22 @@
+---
+parameters:
+  - name: purpose
+    default: 'plan'
+
+steps:
+  - pwsh: |
+      # Keep the plan file out of $(Build.SourcesDirectory) so it can never be swept into the published
+      # pipeline artifact (Azure/Azure-Landing-Zones#4174). The job attempt is part of the *local* path
+      # only, never the remote blob key, so a retried job cannot pick up residue from an earlier attempt.
+      $planDir = Join-Path $env:ALZ_AGENT_TEMP "alz-$${{ parameters.purpose }}-$env:ALZ_BUILD_ID-$env:ALZ_JOB_ATTEMPT"
+      if (Test-Path -Path $planDir) {
+        Remove-Item -Path $planDir -Recurse -Force
+      }
+      New-Item -Path $planDir -ItemType Directory -Force | Out-Null
+      Write-Host "##vso[task.setvariable variable=alzPlanDir]$planDir"
+      Write-Host "Plan working directory: $planDir"
+    displayName: Prepare Plan Working Directory
+    env:
+      ALZ_AGENT_TEMP: $(Agent.TempDirectory)
+      ALZ_BUILD_ID: $(Build.BuildId)
+      ALZ_JOB_ATTEMPT: $(System.JobAttempt)

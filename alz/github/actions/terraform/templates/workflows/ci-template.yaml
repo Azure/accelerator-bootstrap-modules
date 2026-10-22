@@ -91,11 +91,42 @@ jobs:
 
       - name: Terraform Plan
         id: plan
+        shell: pwsh
         run: |
-          terraform \
-          -chdir="$${{inputs.root_module_folder_relative_path}}" \
-          plan \
-          -input=false
+          $planLogFile = Join-Path $env:RUNNER_TEMP "tfplan-$${{ github.run_id }}-$${{ github.run_attempt }}.log"
+
+          terraform `
+          -chdir="$${{inputs.root_module_folder_relative_path}}" `
+          plan `
+          -input=false *> $planLogFile
+          $planExitCode = $LASTEXITCODE
+
+          # Only print the full captured output when the pipeline is explicitly configured to show
+          # plan content; a failed plan can still have streamed resource attribute values to the log
+          # before the error occurred, so the failure path prints just Terraform's own diagnostic
+          # block(s), never the resource diff.
+          $showPlanInPipelineLogs = "$${{ vars.SHOW_PLAN_IN_PIPELINE_LOGS }}" -eq 'true'
+          if ($showPlanInPipelineLogs) {
+            Get-Content -Path $planLogFile | Write-Host
+          } elseif ($planExitCode -ne 0) {
+            $logContent = Get-Content -Path $planLogFile -Raw
+            $diagnosticBlocks = [regex]::Matches($logContent, "(?ms)^\u2577.*?^\u2575")
+            if ($diagnosticBlocks.Count -gt 0) {
+              foreach ($block in $diagnosticBlocks) {
+                Write-Host $block.Value
+              }
+            } else {
+              Write-Host "Terraform plan failed. Set SHOW_PLAN_IN_PIPELINE_LOGS to true on this environment to see full plan output for troubleshooting."
+            }
+          } else {
+            Write-Host "Terraform plan succeeded. Set SHOW_PLAN_IN_PIPELINE_LOGS to true on this environment to see the full plan output."
+          }
+
+          Remove-Item -Path $planLogFile -Force -ErrorAction SilentlyContinue
+
+          if ($planExitCode -ne 0) {
+            throw "Terraform plan failed with exit code $planExitCode."
+          }
 
       - name: Update Pull Request
         if: (success() || failure()) && github.event_name == 'pull_request'

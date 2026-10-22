@@ -25,6 +25,9 @@ module "azure" {
   create_storage_account                                    = var.iac_type == local.iac_terraform
   storage_account_name                                      = local.resource_names.storage_account
   storage_container_name                                    = local.resource_names.storage_container
+  create_plan_storage_container                             = local.create_plan_storage_container
+  plan_storage_container_name                               = local.plan_storage_container_name
+  plan_storage_retention_days                               = var.plan_storage_retention_days
   azure_location                                            = var.bootstrap_location
   user_assigned_managed_identities                          = local.managed_identities
   federated_credentials                                     = local.federated_credentials
@@ -75,32 +78,35 @@ module "azure" {
 }
 
 module "azure_devops" {
-  source                                       = "../../modules/azure_devops"
-  use_legacy_organization_url                  = var.azure_devops_use_organisation_legacy_url
-  organization_name                            = var.azure_devops_organization_name
-  create_project                               = var.azure_devops_create_project
-  project_name                                 = var.azure_devops_project_name
-  environments                                 = local.environments
-  managed_identity_client_ids                  = module.azure.user_assigned_managed_identity_client_ids
-  repository_name                              = local.resource_names.version_control_system_repository
-  repository_files                             = module.file_manipulation.repository_files
-  template_repository_files                    = module.file_manipulation.template_repository_files
-  use_template_repository                      = var.use_separate_repository_for_templates
-  repository_name_templates                    = local.resource_names.version_control_system_repository_templates
-  variable_group_name                          = local.resource_names.version_control_system_variable_group
-  azure_tenant_id                              = data.azurerm_client_config.current.tenant_id
-  azure_subscription_id                        = var.subscription_ids["management"]
-  azure_subscription_name                      = data.azurerm_subscription.management.display_name
-  pipelines                                    = local.pipelines
-  backend_azure_resource_group_name            = local.resource_names.resource_group_state
-  backend_azure_storage_account_name           = local.resource_names.storage_account
-  backend_azure_storage_account_container_name = local.resource_names.storage_container
-  approvers                                    = var.apply_approvers
-  group_name                                   = local.resource_names.version_control_system_group
-  agent_pool_name                              = local.resource_names.version_control_system_agent_pool
-  use_self_hosted_agents                       = var.use_self_hosted_agents
-  create_branch_policies                       = var.create_branch_policies
-  create_variable_group                        = var.iac_type == "terraform"
+  source                                            = "../../modules/azure_devops"
+  use_legacy_organization_url                       = var.azure_devops_use_organisation_legacy_url
+  organization_name                                 = var.azure_devops_organization_name
+  create_project                                    = var.azure_devops_create_project
+  project_name                                      = var.azure_devops_project_name
+  environments                                      = local.environments
+  managed_identity_client_ids                       = module.azure.user_assigned_managed_identity_client_ids
+  repository_name                                   = local.resource_names.version_control_system_repository
+  repository_files                                  = module.file_manipulation.repository_files
+  template_repository_files                         = module.file_manipulation.template_repository_files
+  use_template_repository                           = var.use_separate_repository_for_templates
+  repository_name_templates                         = local.resource_names.version_control_system_repository_templates
+  variable_group_name                               = local.resource_names.version_control_system_variable_group
+  azure_tenant_id                                   = data.azurerm_client_config.current.tenant_id
+  azure_subscription_id                             = var.subscription_ids["management"]
+  azure_subscription_name                           = data.azurerm_subscription.management.display_name
+  pipelines                                         = local.pipelines
+  backend_azure_resource_group_name                 = local.resource_names.resource_group_state
+  backend_azure_storage_account_name                = local.resource_names.storage_account
+  backend_azure_storage_account_container_name      = local.resource_names.storage_container
+  use_storage_account_for_plan                      = local.create_plan_storage_container
+  show_plan_in_pipeline_logs                        = var.show_plan_in_pipeline_logs
+  backend_azure_storage_account_plan_container_name = local.plan_storage_container_name
+  approvers                                         = var.apply_approvers
+  group_name                                        = local.resource_names.version_control_system_group
+  agent_pool_name                                   = local.resource_names.version_control_system_agent_pool
+  use_self_hosted_agents                            = var.use_self_hosted_agents
+  create_branch_policies                            = var.create_branch_policies
+  create_variable_group                             = var.iac_type == "terraform"
 }
 
 module "file_manipulation" {
