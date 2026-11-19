@@ -22,7 +22,7 @@ jobs:
         shell: pwsh
         run: |
           $output = @()
-            Get-ChildItem -Recurse -File -Filter '*.bicep' | Where-Object { $_.FullName -notlike "*\.bicep\*" } | ForEach-Object {
+          Get-ChildItem -Recurse -File -Filter '*.bicep' | Where-Object { $_.FullName -notlike "*\.bicep\*" } | ForEach-Object {
               Write-Information "==> Attempting Bicep Build For File: $_" -InformationAction Continue
               $bicepOutput = bicep build $_.FullName 2>&1
               if ($LastExitCode -ne 0)
