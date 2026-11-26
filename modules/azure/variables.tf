@@ -395,6 +395,20 @@ variable "nat_gateway_name" {
   default     = ""
 }
 
+variable "nat_gateway_zone_redundancy_enabled" {
+  description = <<-EOT
+    **(Optional, default: `false`)** Deploy a zone-redundant NAT Gateway and Public IP.
+
+    When enabled, the NAT Gateway and its Public IP use the `StandardV2` SKU, and the Public IP spans the availability zones of the region.
+    When disabled, both use the `Standard` SKU with no availability zones.
+    Changing this value replaces the NAT Gateway and Public IP, which changes the outbound IP address of the agents.
+    Some regions do not support the `StandardV2` NAT Gateway, in which case this should be set to false.
+  EOT
+  type        = bool
+  default     = false
+  nullable    = false
+}
+
 variable "virtual_network_subnet_name_container_instances" {
   description = <<-EOT
     **(Optional, default: `""`)** Name of the subnet delegated for Azure Container Instances.

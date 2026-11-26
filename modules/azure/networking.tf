@@ -12,7 +12,8 @@ resource "azurerm_public_ip" "alz" {
   location            = var.azure_location
   resource_group_name = azurerm_resource_group.network[0].name
   allocation_method   = "Static"
-  sku                 = "Standard"
+  sku                 = var.nat_gateway_zone_redundancy_enabled ? "StandardV2" : "Standard"
+  zones               = var.nat_gateway_zone_redundancy_enabled && length(local.bootstrap_location_zones) > 0 ? local.bootstrap_location_zones : null
 }
 
 resource "azurerm_nat_gateway" "alz" {
@@ -20,7 +21,7 @@ resource "azurerm_nat_gateway" "alz" {
   name                = var.nat_gateway_name
   location            = var.azure_location
   resource_group_name = azurerm_resource_group.network[0].name
-  sku_name            = "Standard"
+  sku_name            = var.nat_gateway_zone_redundancy_enabled ? "StandardV2" : "Standard"
 }
 
 resource "azurerm_nat_gateway_public_ip_association" "alz" {

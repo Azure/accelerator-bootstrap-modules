@@ -52,6 +52,7 @@ module "azure" {
   container_registry_zone_redundancy_enabled                = coalesce(var.container_registry_zone_redundancy_enabled, var.agent_container_zone_support)
   public_ip_name                                            = local.resource_names.public_ip
   nat_gateway_name                                          = local.resource_names.nat_gateway
+  nat_gateway_zone_redundancy_enabled                       = var.nat_gateway_zone_redundancy_enabled
   use_self_hosted_agents                                    = var.use_self_hosted_agents
   container_registry_name                                   = local.resource_names.container_registry
   container_registry_private_endpoint_name                  = local.resource_names.container_registry_private_endpoint
